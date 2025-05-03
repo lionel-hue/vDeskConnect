@@ -1,3 +1,3 @@
 # vDeskConnect
 
-### Apercu a venir. 
+### Documentation coming soon. 
