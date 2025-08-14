@@ -1,0 +1,350 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+    background-color: #0f172a;
+    color: #f8fafc;
+    line-height: 1.5;
+}
+
+.app {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.container {
+    width: 100%;
+    max-width: 28rem;
+}
+
+/* Card Styles */
+.card {
+    background-color: #1e293b;
+    border: 1px solid #374151;
+    border-radius: 0.5rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.card-header .header-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    text-align: left;
+}
+
+.logo {
+    width: 4rem;
+    height: 4rem;
+    background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    font-weight: bold;
+    font-size: 1.25rem;
+    color: white;
+}
+
+.role-icon {
+    width: 3rem;
+    height: 3rem;
+    background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.back-btn {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 0.25rem;
+    transition: color 0.2s;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.back-btn:hover {
+    color: #e2e8f0;
+}
+
+.card-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #f8fafc;
+    margin-bottom: 0.5rem;
+}
+
+.card-description {
+    color: #94a3b8;
+    font-size: 0.875rem;
+}
+
+.card-content {
+    padding: 0 1.5rem 1.5rem;
+}
+
+/* Form Styles */
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.label {
+    color: #e2e8f0;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.input {
+    background-color: #374151;
+    border: 1px solid #4b5563;
+    border-radius: 0.375rem;
+    padding: 0.625rem 0.75rem;
+    color: #f8fafc;
+    font-size: 0.875rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input::placeholder {
+    color: #9ca3af;
+}
+
+.input:focus {
+    outline: none;
+    border-color: #8b5cf6;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+}
+
+.input-wrapper {
+    position: relative;
+}
+
+.password-input {
+    padding-right: 2.5rem;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+}
+
+.password-toggle:hover {
+    color: #e2e8f0;
+}
+
+/* Button Styles */
+.btn {
+    padding: 0.625rem 1rem;
+    border-radius: 0.375rem;
+    border: none;
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    text-decoration: none;
+    color: white;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #7c3aed, #2563eb);
+}
+
+.btn-teacher-gradient {
+    background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+}
+
+.btn-teacher-gradient:hover {
+    background: linear-gradient(135deg, #7c3aed, #2563eb);
+}
+
+.btn-student-gradient {
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+}
+
+.btn-student-gradient:hover {
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+}
+
+.btn-selection {
+    padding: 1.5rem;
+    text-align: left;
+    width: 100%;
+    margin-bottom: 1rem;
+}
+
+.btn-teacher {
+    background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+}
+
+.btn-teacher:hover {
+    background: linear-gradient(135deg, #7c3aed, #2563eb);
+}
+
+.btn-student {
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+}
+
+.btn-student:hover {
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+}
+
+.btn-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.btn-title {
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.btn-subtitle {
+    font-size: 0.875rem;
+    opacity: 0.9;
+}
+
+.selection-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+.link-btn {
+    background: none;
+    border: none;
+    color: #a78bfa;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: color 0.2s;
+    text-decoration: none;
+}
+
+.link-btn:hover {
+    color: #c4b5fd;
+}
+
+.footer-link {
+    text-align: center;
+}
+
+/* Responsive Design */
+@media (max-width: 640px) {
+    .app {
+        padding: 0.5rem;
+    }
+    
+    .card-header,
+    .card-content {
+        padding: 1rem;
+    }
+    
+    .card-content {
+        padding-top: 0;
+    }
+    
+    .logo {
+        width: 3.5rem;
+        height: 3.5rem;
+        font-size: 1.125rem;
+    }
+    
+    .card-title {
+        font-size: 1.25rem;
+    }
+    
+    .btn-selection {
+        padding: 1.25rem;
+    }
+}
+
+/* Loading and Disabled States */
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn:disabled:hover {
+    background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+}
+
+/* Form Validation Styles */
+.input.error {
+    border-color: #ef4444;
+}
+
+.input.error:focus {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.error-message {
+    color: #ef4444;
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+    padding: 0.5rem;
+    background-color: rgba(239, 68, 68, 0.1);
+    border-radius: 0.25rem;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+/* Success Message */
+.success-message {
+    background-color: #065f46;
+    border: 1px solid #059669;
+    color: #d1fae5;
+    padding: 0.75rem;
+    border-radius: 0.375rem;
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+}
