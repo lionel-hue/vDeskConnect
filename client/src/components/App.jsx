@@ -1,10 +1,19 @@
 import { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import { 
+  ArrowLeft, 
+  ArrowRight, 
+  BookOpen, 
+  GraduationCap, 
+  Users, 
+  Eye, 
+  EyeOff 
+} from 'lucide-react';
 import Login from './auth/Login';
 import SignupSelection from './auth/SignupSelection';
 import SignupTeacher from './auth/SignupTeacher';
 import SignupStudent from './auth/SignupStudent';
-import '../style/welcome.css';
+import '../style/auth.css';
 
 function App() {
     const [formMessage, setFormMessage] = useState(null);
