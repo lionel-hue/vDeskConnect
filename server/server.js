@@ -1,17 +1,19 @@
 import express from "express"
 import cors from "cors"
-import router from "./routes/auth/Student.js"
+import signup_router from "./routes/auth/signup.js"
+import login_router from "./routes/auth/login.js"
 
 
-const PORT = process.env.PORT || 8080
+const PORT = process.env.VITE_PORT || 8080
 
 const app = express()
 
 app.use( cors() )
 app.use( express.json() )
 
-//Student Routes
+
 // --auth
-app.use("/auth/student/", router )
+app.use("/auth/", signup_router )
+app.use("/auth/", login_router )
 
 app.listen(PORT, ()=> { console.log(`server started on port ${PORT}!`)})

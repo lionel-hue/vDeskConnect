@@ -151,6 +151,7 @@ body {
     color: #f8fafc;
     font-size: 0.875rem;
     transition: border-color 0.2s, box-shadow 0.2s;
+    resize: vertical;
 }
 
 .input::placeholder {
@@ -211,10 +212,38 @@ body {
 .btn-primary {
     background: linear-gradient(135deg, #8b5cf6, #3b82f6);
     color: white;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
 }
 
 .btn-primary:hover {
     background: linear-gradient(135deg, #7c3aed, #2563eb);
+}
+
+/* Navigation Button Styles - CORRECTED */
+.btn-nav {
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+    min-width: auto;
+    gap: 0.5rem;
+}
+
+.btn-next {
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    color: white;
+}
+
+.btn-next:hover {
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+}
+
+.btn-prev {
+    background: #334155;
+    color: white;
+}
+
+.btn-prev:hover {
+    background: #475569;
 }
 
 .btn-teacher-gradient {
@@ -233,24 +262,18 @@ body {
     background: linear-gradient(135deg, #2563eb, #7c3aed);
 }
 
-.btn-next {
-    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-    margin-left: auto;
-}
-
-.btn-prev {
-    background: #334155;
-    margin-right: auto;
-}
-
-.btn-prev:hover {
-    background: #475569;
-}
-
+/* Form Navigation - CORRECTED */
 .form-navigation {
     display: flex;
     justify-content: space-between;
-    margin-top: 1rem;
+    align-items: center;
+    margin-top: 1.5rem;
+    gap: 1rem;
+}
+
+/* When only Next button is present (Step 1) */
+.form-navigation .btn-nav:only-child {
+    margin-left: auto;
 }
 
 .btn-selection {
@@ -346,6 +369,16 @@ body {
     .btn-selection {
         padding: 1.25rem;
     }
+    
+    .form-navigation {
+        flex-direction: row;
+        gap: 0.75rem;
+    }
+    
+    .btn-nav {
+        flex: 1;
+        min-width: unset;
+    }
 }
 
 /* Loading and Disabled States */
@@ -403,26 +436,44 @@ select.input:focus {
     background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238b5cf6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
 }
 
-/* Step indicator */
+/* Enhanced Step indicator */
 .step-indicator {
     display: flex;
     justify-content: center;
     gap: 0.5rem;
-    margin-bottom: 1rem;
+    margin-top: 1rem;
+    margin-bottom: 0;
 }
 
 .step-dot {
-    width: 0.5rem;
-    height: 0.5rem;
+    width: 0.75rem;
+    height: 0.75rem;
     border-radius: 50%;
     background-color: #334155;
     transition: all 0.3s ease;
+    position: relative;
 }
 
 .step-dot.active {
     background-color: #8b5cf6;
-    width: 1rem;
-    border-radius: 0.25rem;
+    transform: scale(1.2);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+}
+
+.step-dot.completed {
+    background-color: #10b981;
+    position: relative;
+}
+
+.step-dot.completed::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 0.5rem;
+    font-weight: bold;
 }
 
 /* Subject Selection Styles */
@@ -483,4 +534,61 @@ select.input:focus {
   color: #e2e8f0;
   font-size: 0.875rem;
   cursor: pointer;
-}   
+}
+
+/* Textarea specific styles */
+textarea.input {
+    min-height: 4rem;
+    font-family: inherit;
+}
+
+/* Progress indication */
+.step-progress {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    text-align: center;
+    margin-top: 0.5rem;
+}
+
+/* Enhanced animations for step transitions */
+@keyframes slideInRight {
+    from { 
+        opacity: 0; 
+        transform: translateX(30px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateX(0); 
+    }
+}
+
+@keyframes slideInLeft {
+    from { 
+        opacity: 0; 
+        transform: translateX(-30px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateX(0); 
+    }
+}
+
+.form-step.active {
+    animation: slideInRight 0.4s ease-out;
+}
+
+/* Improved mobile responsiveness for multi-step form */
+@media (max-width: 640px) {
+    .step-indicator {
+        gap: 0.375rem;
+    }
+    
+    .step-dot {
+        width: 0.625rem;
+        height: 0.625rem;
+    }
+    
+    .subject-options {
+        grid-template-columns: 1fr;
+    }
+}

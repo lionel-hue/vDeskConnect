@@ -1,26 +1,72 @@
 import { useState } from 'react';
-import { useForm } from '../../hooks/useForm';
-import { validateForm } from '../../utils/validation';
+import { validateStep, validateForm } from '../../utils/validation';
 import { usePasswordToggle } from '../../hooks/usePasswordToggle';
 import { ArrowLeft, ArrowRight, GraduationCap, Eye, EyeOff } from 'lucide-react';
 
 function SignupStudent({ onBackClick, onSuccess, showMessage }) {
-    const { values, errors, isSubmitting, handleChange, setErrors, setIsSubmitting } = useForm({
+    // Enhanced form state with all new fields including invitation code
+    const [values, setValues] = useState({
+        // Step 1: Basic Information
         name: '',
         age: '',
         email: '',
         password: '',
         confirmPassword: '',
+
+        // Step 2: Academic Information
         studentType: 'junior',
         grade: '',
         department: '',
-        role: ''
+        role: '',
+
+        // Step 3: Personal Details
+        dateOfBirth: '',
+        stateOfOrigin: '',
+        sex: '',
+        previousAddress: '',
+        currentAddress: '',
+
+        // Step 4: Medical Information
+        bloodGroup: '',
+        genotype: '',
+        height: '',
+        weight: '',
+        disability: 'none',
+
+        // Step 5: Parent/Guardian Information
+        parentGuardianType: 'parent',
+        parentGuardianPhone: '',
+        parentGuardianEmail: '',
+        parentGuardianAddress: '',
+        parentGuardianAddressDifferent: false,
+
+        // Step 6: Invitation Code
+        invitationCode: ''
     });
 
+    const [errors, setErrors] = useState({});
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [passwordType, IconPassword, togglePassword] = usePasswordToggle();
     const [confirmPasswordType, IconConfirmPassword, toggleConfirmPassword] = usePasswordToggle();
     const [currentStep, setCurrentStep] = useState(1);
+    const totalSteps = 6; // Updated to include invitation code step
 
+    // Nigerian States
+    const nigerianStates = [
+        'Abia', 'Adamawa', 'Akwa Ibom', 'Anambra', 'Bauchi', 'Bayelsa', 'Benue', 'Borno',
+        'Cross River', 'Delta', 'Ebonyi', 'Edo', 'Ekiti', 'Enugu', 'FCT', 'Gombe',
+        'Imo', 'Jigawa', 'Kaduna', 'Kano', 'Katsina', 'Kebbi', 'Kogi', 'Kwara',
+        'Lagos', 'Nasarawa', 'Niger', 'Ogun', 'Ondo', 'Osun', 'Oyo', 'Plateau',
+        'Rivers', 'Sokoto', 'Taraba', 'Yobe', 'Zamfara'
+    ];
+
+    // Blood Groups
+    const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+
+    // Genotypes
+    const genotypes = ['AA', 'AS', 'AC', 'SS', 'SC', 'CC'];
+
+    // Academic data
     const juniorGrades = [
         { value: 'jss1', label: 'JSS 1' },
         { value: 'jss2', label: 'JSS 2' },
@@ -51,8 +97,26 @@ function SignupStudent({ onBackClick, onSuccess, showMessage }) {
         { value: 'assistant_timekeeper', label: 'Assistant Timekeeper' }
     ];
 
+    const handleChange = (e) => {
+        const { name, value, type, checked } = e.target;
+        setValues(prev => ({
+            ...prev,
+            [name]: type === 'checkbox' ? checked : value
+        }));
+
+        // Clear error for this field when user starts typing
+        if (errors[name]) {
+            setErrors(prev => ({
+                ...prev,
+                [name]: ''
+            }));
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Validate all fields before submission
         const validationErrors = validateForm(values, 'student');
         setErrors(validationErrors);
 
@@ -61,14 +125,40 @@ function SignupStudent({ onBackClick, onSuccess, showMessage }) {
 
             try {
                 const studentData = {
+                    // Basic Information
                     name: values.name,
-                    age: values.age,
+                    age: parseInt(values.age),
                     email: values.email,
                     password: values.password,
+
+                    // Academic Information
                     studentType: values.studentType,
                     grade: values.grade,
                     department: values.studentType === 'senior' ? values.department : null,
-                    role: values.studentType === 'senior' ? values.role || null : null
+                    role: values.studentType === 'senior' ? values.role || null : null,
+
+                    // Personal Details
+                    dateOfBirth: values.dateOfBirth,
+                    stateOfOrigin: values.stateOfOrigin,
+                    sex: values.sex,
+                    previousAddress: values.previousAddress || null,
+                    currentAddress: values.currentAddress,
+
+                    // Medical Information
+                    bloodGroup: values.bloodGroup,
+                    genotype: values.genotype,
+                    height: parseFloat(values.height),
+                    weight: parseFloat(values.weight),
+                    disability: values.disability === 'none' ? null : values.disability,
+
+                    // Parent/Guardian Information
+                    parentGuardianType: values.parentGuardianType,
+                    parentGuardianPhone: values.parentGuardianPhone,
+                    parentGuardianEmail: values.parentGuardianEmail || null,
+                    parentGuardianAddress: values.parentGuardianAddressDifferent ? values.parentGuardianAddress : values.currentAddress,
+
+                    // Invitation Code
+                    invitationCode: values.invitationCode
                 };
 
                 const response = await fetch(`${import.meta.env.VITE_HOST}:${import.meta.env.VITE_PORT}/auth/signup/student`, {
@@ -98,36 +188,51 @@ function SignupStudent({ onBackClick, onSuccess, showMessage }) {
     };
 
     const nextStep = () => {
-        if (currentStep === 1) {
-            const validationErrors = validateForm({
-                name: values.name,
-                age: values.age,
-                email: values.email,
-                password: values.password,
-                confirmPassword: values.confirmPassword
-            }, 'student');
+        console.log('Next button clicked, current step:', currentStep);
 
-            if (Object.keys(validationErrors).length === 0) {
-                setCurrentStep(2);
-            } else {
-                setErrors(validationErrors);
-            }
+        // Validate current step before proceeding
+        const stepErrors = validateStep(currentStep, values);
+        console.log('Step errors:', stepErrors);
+
+        if (Object.keys(stepErrors).length === 0) {
+            const newStep = Math.min(currentStep + 1, totalSteps);
+            console.log('Moving to step:', newStep);
+            setCurrentStep(newStep);
+            setErrors({}); // Clear any previous errors
+        } else {
+            console.log('Validation failed, showing errors');
+            setErrors(stepErrors);
         }
     };
 
     const prevStep = () => {
-        setCurrentStep(1);
+        setCurrentStep(prev => Math.max(prev - 1, 1));
+        setErrors({}); // Clear errors when going back
     };
 
     const handleStudentTypeChange = (e) => {
-        handleChange(e);
-        // Reset grade and department when student type changes
-        handleChange({ target: { name: 'grade', value: '' } });
-        if (e.target.value === 'junior') {
-            handleChange({ target: { name: 'department', value: '' } });
-            handleChange({ target: { name: 'role', value: '' } });
-        }
+        const newStudentType = e.target.value;
+
+        setValues(prev => ({
+            ...prev,
+            studentType: newStudentType,
+            grade: '',
+            department: '',
+            role: ''
+        }));
     };
+
+    // Step indicator component
+    const StepIndicator = () => (
+        <div className="step-indicator">
+            {Array.from({ length: totalSteps }, (_, index) => (
+                <div
+                    key={index + 1}
+                    className={`step-dot ${currentStep === index + 1 ? 'active' : ''} ${currentStep > index + 1 ? 'completed' : ''}`}
+                />
+            ))}
+        </div>
+    );
 
     return (
         <div className="container">
@@ -144,6 +249,10 @@ function SignupStudent({ onBackClick, onSuccess, showMessage }) {
                     <div className="header-content">
                         <h1 className="card-title">Create Student Account</h1>
                         <p className="card-description">Join as a learner on vDeskconnect</p>
+                    </div>
+                    <StepIndicator />
+                    <div className="step-progress">
+                        Step {currentStep} of {totalSteps}
                     </div>
                 </div>
                 <div className="card-content">
@@ -175,8 +284,8 @@ function SignupStudent({ onBackClick, onSuccess, showMessage }) {
                                     value={values.age}
                                     onChange={handleChange}
                                     placeholder="Enter your age"
-                                    min="1"
-                                    max="120"
+                                    min="5"
+                                    max="25"
                                     required
                                 />
                                 {errors.age && <div className="error-message">{errors.age}</div>}
@@ -216,7 +325,7 @@ function SignupStudent({ onBackClick, onSuccess, showMessage }) {
                                         className="password-toggle"
                                         onClick={togglePassword}
                                     >
-                                        <IconPassword size={16} />
+                                        {passwordType === 'password' ? <Eye size={16} /> : <EyeOff size={16} />}
                                     </button>
                                 </div>
                                 {errors.password && <div className="error-message">{errors.password}</div>}
@@ -241,7 +350,7 @@ function SignupStudent({ onBackClick, onSuccess, showMessage }) {
                                         className="password-toggle"
                                         onClick={toggleConfirmPassword}
                                     >
-                                        <IconConfirmPassword size={16} />
+                                        {confirmPasswordType === 'password' ? <Eye size={16} /> : <EyeOff size={16} />}
                                     </button>
                                 </div>
                                 {errors.confirmPassword && (
@@ -250,12 +359,13 @@ function SignupStudent({ onBackClick, onSuccess, showMessage }) {
                             </div>
 
                             <div className="form-navigation">
+                                <div></div> {/* Empty div to push Next button to the right */}
                                 <button
                                     type="button"
-                                    className="btn btn-next"
+                                    className="btn btn-nav btn-next"
                                     onClick={nextStep}
                                 >
-                                    Next <ArrowRight size={16} />
+                                    Next <ArrowRight size={14} />
                                 </button>
                             </div>
                         </div>
@@ -343,10 +453,359 @@ function SignupStudent({ onBackClick, onSuccess, showMessage }) {
                             <div className="form-navigation">
                                 <button
                                     type="button"
-                                    className="btn btn-prev"
+                                    className="btn btn-nav btn-prev"
                                     onClick={prevStep}
                                 >
-                                    <ArrowLeft size={16} /> Previous
+                                    <ArrowLeft size={14} /> Previous
+                                </button>
+                                <button
+                                    type="button"
+                                    className="btn btn-nav btn-next"
+                                    onClick={nextStep}
+                                >
+                                    Next <ArrowRight size={14} />
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Step 3: Personal Details */}
+                        <div className={`form-step ${currentStep === 3 ? 'active' : 'inactive'}`}>
+                            <div className="form-group">
+                                <label htmlFor="dateOfBirth" className="label">Date of Birth</label>
+                                <input
+                                    type="date"
+                                    id="dateOfBirth"
+                                    name="dateOfBirth"
+                                    className={`input ${errors.dateOfBirth ? 'error' : ''}`}
+                                    value={values.dateOfBirth}
+                                    onChange={handleChange}
+                                    required
+                                />
+                                {errors.dateOfBirth && <div className="error-message">{errors.dateOfBirth}</div>}
+                            </div>
+
+                            <div className="form-group">
+                                <label htmlFor="sex" className="label">Sex</label>
+                                <select
+                                    id="sex"
+                                    name="sex"
+                                    className={`input ${errors.sex ? 'error' : ''}`}
+                                    value={values.sex}
+                                    onChange={handleChange}
+                                    required
+                                >
+                                    <option value="">Select your sex</option>
+                                    <option value="male">Male</option>
+                                    <option value="female">Female</option>
+                                </select>
+                                {errors.sex && <div className="error-message">{errors.sex}</div>}
+                            </div>
+
+                            <div className="form-group">
+                                <label htmlFor="stateOfOrigin" className="label">State of Origin</label>
+                                <select
+                                    id="stateOfOrigin"
+                                    name="stateOfOrigin"
+                                    className={`input ${errors.stateOfOrigin ? 'error' : ''}`}
+                                    value={values.stateOfOrigin}
+                                    onChange={handleChange}
+                                    required
+                                >
+                                    <option value="">Select your state of origin</option>
+                                    {nigerianStates.map(state => (
+                                        <option key={state} value={state}>{state}</option>
+                                    ))}
+                                </select>
+                                {errors.stateOfOrigin && <div className="error-message">{errors.stateOfOrigin}</div>}
+                            </div>
+
+                            <div className="form-group">
+                                <label htmlFor="currentAddress" className="label">Current Address</label>
+                                <textarea
+                                    id="currentAddress"
+                                    name="currentAddress"
+                                    className={`input ${errors.currentAddress ? 'error' : ''}`}
+                                    value={values.currentAddress}
+                                    onChange={handleChange}
+                                    placeholder="Enter your current address"
+                                    rows="3"
+                                    required
+                                />
+                                {errors.currentAddress && <div className="error-message">{errors.currentAddress}</div>}
+                            </div>
+
+                            <div className="form-group">
+                                <label htmlFor="previousAddress" className="label">Previous Address (Optional)</label>
+                                <textarea
+                                    id="previousAddress"
+                                    name="previousAddress"
+                                    className={`input ${errors.previousAddress ? 'error' : ''}`}
+                                    value={values.previousAddress}
+                                    onChange={handleChange}
+                                    placeholder="Enter your previous address"
+                                    rows="3"
+                                />
+                                {errors.previousAddress && <div className="error-message">{errors.previousAddress}</div>}
+                            </div>
+
+                            <div className="form-navigation">
+                                <button
+                                    type="button"
+                                    className="btn btn-nav btn-prev"
+                                    onClick={prevStep}
+                                >
+                                    <ArrowLeft size={14} /> Previous
+                                </button>
+                                <button
+                                    type="button"
+                                    className="btn btn-nav btn-next"
+                                    onClick={nextStep}
+                                >
+                                    Next <ArrowRight size={14} />
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Step 4: Medical Information */}
+                        <div className={`form-step ${currentStep === 4 ? 'active' : 'inactive'}`}>
+                            <div className="form-group">
+                                <label htmlFor="bloodGroup" className="label">Blood Group</label>
+                                <select
+                                    id="bloodGroup"
+                                    name="bloodGroup"
+                                    className={`input ${errors.bloodGroup ? 'error' : ''}`}
+                                    value={values.bloodGroup}
+                                    onChange={handleChange}
+                                    required
+                                >
+                                    <option value="">Select your blood group</option>
+                                    {bloodGroups.map(group => (
+                                        <option key={group} value={group}>{group}</option>
+                                    ))}
+                                </select>
+                                {errors.bloodGroup && <div className="error-message">{errors.bloodGroup}</div>}
+                            </div>
+
+                            <div className="form-group">
+                                <label htmlFor="genotype" className="label">Genotype</label>
+                                <select
+                                    id="genotype"
+                                    name="genotype"
+                                    className={`input ${errors.genotype ? 'error' : ''}`}
+                                    value={values.genotype}
+                                    onChange={handleChange}
+                                    required
+                                >
+                                    <option value="">Select your genotype</option>
+                                    {genotypes.map(type => (
+                                        <option key={type} value={type}>{type}</option>
+                                    ))}
+                                </select>
+                                {errors.genotype && <div className="error-message">{errors.genotype}</div>}
+                            </div>
+
+                            <div className="form-group">
+                                <label htmlFor="height" className="label">Height (cm)</label>
+                                <input
+                                    type="number"
+                                    id="height"
+                                    name="height"
+                                    className={`input ${errors.height ? 'error' : ''}`}
+                                    value={values.height}
+                                    onChange={handleChange}
+                                    placeholder="Enter your height in centimeters"
+                                    min="50"
+                                    max="250"
+                                    required
+                                />
+                                {errors.height && <div className="error-message">{errors.height}</div>}
+                            </div>
+
+                            <div className="form-group">
+                                <label htmlFor="weight" className="label">Weight (kg)</label>
+                                <input
+                                    type="number"
+                                    id="weight"
+                                    name="weight"
+                                    className={`input ${errors.weight ? 'error' : ''}`}
+                                    value={values.weight}
+                                    onChange={handleChange}
+                                    placeholder="Enter your weight in kilograms"
+                                    min="10"
+                                    max="200"
+                                    step="0.1"
+                                    required
+                                />
+                                {errors.weight && <div className="error-message">{errors.weight}</div>}
+                            </div>
+
+                            <div className="form-group">
+                                <label htmlFor="disability" className="label">Disability Status</label>
+                                <select
+                                    id="disability"
+                                    name="disability"
+                                    className={`input ${errors.disability ? 'error' : ''}`}
+                                    value={values.disability}
+                                    onChange={handleChange}
+                                >
+                                    <option value="none">None</option>
+                                    <option value="visual">Visual Impairment</option>
+                                    <option value="hearing">Hearing Impairment</option>
+                                    <option value="physical">Physical Disability</option>
+                                    <option value="learning">Learning Disability</option>
+                                    <option value="other">Other</option>
+                                </select>
+                                {errors.disability && <div className="error-message">{errors.disability}</div>}
+                            </div>
+
+                            <div className="form-navigation">
+                                <button
+                                    type="button"
+                                    className="btn btn-nav btn-prev"
+                                    onClick={prevStep}
+                                >
+                                    <ArrowLeft size={14} /> Previous
+                                </button>
+                                <button
+                                    type="button"
+                                    className="btn btn-nav btn-next"
+                                    onClick={nextStep}
+                                >
+                                    Next <ArrowRight size={14} />
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Step 5: Parent/Guardian Information */}
+                        <div className={`form-step ${currentStep === 5 ? 'active' : 'inactive'}`}>
+                            <div className="form-group">
+                                <label htmlFor="parentGuardianType" className="label">Parent/Guardian</label>
+                                <select
+                                    id="parentGuardianType"
+                                    name="parentGuardianType"
+                                    className={`input ${errors.parentGuardianType ? 'error' : ''}`}
+                                    value={values.parentGuardianType}
+                                    onChange={handleChange}
+                                    required
+                                >
+                                    <option value="parent">Parent</option>
+                                    <option value="guardian">Guardian</option>
+                                </select>
+                                {errors.parentGuardianType && <div className="error-message">{errors.parentGuardianType}</div>}
+                            </div>
+
+                            <div className="form-group">
+                                <label htmlFor="parentGuardianPhone" className="label">
+                                    {values.parentGuardianType === 'parent' ? 'Parent' : 'Guardian'} Phone Number
+                                </label>
+                                <input
+                                    type="tel"
+                                    id="parentGuardianPhone"
+                                    name="parentGuardianPhone"
+                                    className={`input ${errors.parentGuardianPhone ? 'error' : ''}`}
+                                    value={values.parentGuardianPhone}
+                                    onChange={handleChange}
+                                    placeholder="Enter phone number"
+                                    required
+                                />
+                                {errors.parentGuardianPhone && <div className="error-message">{errors.parentGuardianPhone}</div>}
+                            </div>
+
+                            <div className="form-group">
+                                <label htmlFor="parentGuardianEmail" className="label">
+                                    {values.parentGuardianType === 'parent' ? 'Parent' : 'Guardian'} Email (Optional)
+                                </label>
+                                <input
+                                    type="email"
+                                    id="parentGuardianEmail"
+                                    name="parentGuardianEmail"
+                                    className={`input ${errors.parentGuardianEmail ? 'error' : ''}`}
+                                    value={values.parentGuardianEmail}
+                                    onChange={handleChange}
+                                    placeholder="Enter email address"
+                                />
+                                {errors.parentGuardianEmail && <div className="error-message">{errors.parentGuardianEmail}</div>}
+                            </div>
+
+                            <div className="form-group">
+                                <div className="subject-option">
+                                    <input
+                                        type="checkbox"
+                                        id="parentGuardianAddressDifferent"
+                                        name="parentGuardianAddressDifferent"
+                                        checked={values.parentGuardianAddressDifferent}
+                                        onChange={handleChange}
+                                    />
+                                    <label htmlFor="parentGuardianAddressDifferent">
+                                        {values.parentGuardianType === 'parent' ? 'Parent' : 'Guardian'} address is different from student's address
+                                    </label>
+                                </div>
+                            </div>
+
+                            {values.parentGuardianAddressDifferent && (
+                                <div className="form-group">
+                                    <label htmlFor="parentGuardianAddress" className="label">
+                                        {values.parentGuardianType === 'parent' ? 'Parent' : 'Guardian'} Address
+                                    </label>
+                                    <textarea
+                                        id="parentGuardianAddress"
+                                        name="parentGuardianAddress"
+                                        className={`input ${errors.parentGuardianAddress ? 'error' : ''}`}
+                                        value={values.parentGuardianAddress}
+                                        onChange={handleChange}
+                                        placeholder="Enter address"
+                                        rows="3"
+                                        required
+                                    />
+                                    {errors.parentGuardianAddress && <div className="error-message">{errors.parentGuardianAddress}</div>}
+                                </div>
+                            )}
+
+                            <div className="form-navigation">
+                                <button
+                                    type="button"
+                                    className="btn btn-nav btn-prev"
+                                    onClick={prevStep}
+                                >
+                                    <ArrowLeft size={14} /> Previous
+                                </button>
+                                <button
+                                    type="button"
+                                    className="btn btn-nav btn-next"
+                                    onClick={nextStep}
+                                >
+                                    Next <ArrowRight size={14} />
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Step 6: Invitation Code */}
+                        <div className={`form-step ${currentStep === 6 ? 'active' : 'inactive'}`}>
+                            <div className="form-group">
+                                <label htmlFor="invitationCode" className="label">Invitation Code</label>
+                                <input
+                                    type="text"
+                                    id="invitationCode"
+                                    name="invitationCode"
+                                    className={`input ${errors.invitationCode ? 'error' : ''}`}
+                                    value={values.invitationCode}
+                                    onChange={handleChange}
+                                    placeholder="Enter the invitation code provided by your admin"
+                                    required
+                                />
+                                {errors.invitationCode && <div className="error-message">{errors.invitationCode}</div>}
+                                <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.5rem' }}>
+                                    This code is provided by your school administrator to verify your enrollment eligibility.
+                                </div>
+                            </div>
+
+                            <div className="form-navigation">
+                                <button
+                                    type="button"
+                                    className="btn btn-nav btn-prev"
+                                    onClick={prevStep}
+                                >
+                                    <ArrowLeft size={14} /> Previous
                                 </button>
                                 <button
                                     type="submit"
