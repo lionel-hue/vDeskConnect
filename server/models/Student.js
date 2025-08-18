@@ -13,8 +13,13 @@ const student = {
 
     auth: {
 
-        async add_new(id, name, email) {
-            return await pool.query(`INSERT INTO Public."Student"( "Stu_id", "Stu_name", "email") VALUES( '${id}', '${name}', '${email}')`)
+        async add_new(
+            id, name, email, password, student_type, role, dob, soo, sex, prev_addr, curr_addr, blood_g, geno, height, weight, disability, par_guard_type, par_guard_phone, par_guard_email, par_guard_addr
+        ) {
+
+            return await pool.query(
+                `INSERT INTO Public."Student"( "Stu_id", "Stu_name", "email", "password", "studenttype", "role", "dateofbirth", "stateoforigin", "sex", "previous_address", "current_address", "blood_group", "genotype", "height", "weight", "disability", "parent_guardian_type", "parent_guardian_phone", "parent_guardian_email", "parent_guardian_address") VALUES( '${id}', '${name}', '${email}', ${password}, ${student_type}, ${role}, ${dob}, ${soo}, ${sex}, ${prev_addr}, ${curr_addr}, ${blood_g}, ${geno}, ${height}, ${weight}, ${disability}, ${par_guard_type}, ${par_guard_phone}, ${par_guard_email}, ${par_guard_addr})`
+            )
         },
 
         junior: {
