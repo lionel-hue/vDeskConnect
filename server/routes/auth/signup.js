@@ -9,7 +9,7 @@ const signup_router = Router()
 
 signup_router.post("/signup/student/", async (req, res) => {
 
-    const id = generator()
+    const id = generator()  
     const hashed_password = await bcrypt.hash(req.body.password, 10)
 
     const grade_num = req.body.grade === "jss1" ? 1 :
@@ -25,23 +25,36 @@ signup_router.post("/signup/student/", async (req, res) => {
             "COM" : req.body.department === "ART" ?
                 "ART" : null
 
-    console.log("request: " + JSON.stringify(req.body,2) + "\n\nid: " + id)
-
     await student.auth.add_new(
-        id, req.body.name, req.body.email, `${hashed_password}`, req.body.studenttype, req.body.role, req.body.dateOfBirth, req.body.sateOfOrigin, req.body.sex, req.body.previousAddress, req.body.currentAddress, req.body.bloodGroup, req.body.genotype, req.body.height, req.body.weight, req.body.disability, req.body.parentGuardianType, req.body.parentGuardianPhone, req.body.parentGuardianEmail, req.body.parentGuardianAddress
+        id,
+        req.body.name,
+        req.body.email,
+        hashed_password,
+        req.body.dateOfBirth,
+        req.body.stateOfOrigin,
+        req.body.sex,
+        req.body.previousAddress,
+        req.body.currentAddress,
+        req.body.bloodGroup,
+        req.body.genotype,
+        req.body.height,
+        req.body.weight,
+        req.body.disability,
+        req.body.parentGuardianType,
+        req.body.parentGuardianPhone,
+        req.body.parentGuardianEmail,
+        req.body.parentGuardianAddress
     )
 
-    (req.body.studentType === "junior") ?
-    (await student.auth.junior.add_new(id, req.body.grade_num)) :
-    (await student.auth.senior.add_new(id, req.body.role, dep_code, grade_num))
+    await (req.body.studentType === "junior" ?
+        student.auth.junior.add_new(id, grade_num) :
+        student.auth.senior.add_new(id, req.body.role, dep_code, grade_num)
+    )
         
-    const accessToken = jwt.sign(
-        { id: id, email: req.body.email },
-        process.env.VITE_JWT_SECRET,
-        { expiresIn: '1h' })
-            
-    res.json(accessToken)
-    console.log(req.body)
+    res.status(201).json({ 
+        message: "Student registered successfully",
+        studentId: id 
+    })
 })
 
 export default signup_router
