@@ -592,3 +592,106 @@ textarea.input {
         grid-template-columns: 1fr;
     }
 }
+
+/* English Language Option Styles */
+.english-language-option {
+    margin-bottom: 0.5rem;
+}
+
+.english-language-option .subject-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.toggle-disciplines {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 0.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.toggle-disciplines:hover {
+    color: #e2e8f0;
+}
+
+.english-disciplines {
+    margin-left: 2rem;
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background-color: #374151;
+    border-radius: 0.375rem;
+    border: 1px solid #4b5563;
+}
+
+.discipline-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0.25rem 0;
+}
+
+.discipline-option input[type="checkbox"] {
+    appearance: none;
+    width: 1rem;
+    height: 1rem;
+    border: 1px solid #4b5563;
+    border-radius: 0.25rem;
+    background-color: #1f2937;
+    cursor: pointer;
+    position: relative;
+}
+
+.discipline-option input[type="checkbox"]:checked {
+    background-color: #8b5cf6;
+    border-color: #8b5cf6;
+}
+
+.discipline-option input[type="checkbox"]:checked::after {
+    content: '';
+    position: absolute;
+    left: 0.25rem;
+    top: 0.125rem;
+    width: 0.25rem;
+    height: 0.5rem;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.discipline-option label {
+    color: #e2e8f0;
+    font-size: 0.875rem;
+    cursor: pointer;
+}
+
+/* Animation for disciplines dropdown */
+.english-disciplines {
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    .english-disciplines {
+        margin-left: 1rem;
+    }
+    
+    .subject-options {
+        grid-template-columns: 1fr;
+    }
+}

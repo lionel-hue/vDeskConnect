@@ -10,7 +10,7 @@ const pool = new pg.Pool({
 
 const student = {
     auth: {
-        async add_new(
+        async add(
             id, name, email, password, dob, soo, sex, prev_addr, curr_addr, blood_g, geno, height, weight, disability, par_guard_type, par_guard_phone, par_guard_email, par_guard_addr
         ) {
             return await pool.query(
@@ -24,7 +24,7 @@ const student = {
         },
 
         junior: {
-            async add_new(id, grade_num) {
+            async add(id, grade_num) {
                 return await pool.query(
                     `INSERT INTO Public."Junior"( "Stu_id", "Grade_num") VALUES($1, $2)`,
                     [id, grade_num]
@@ -33,7 +33,7 @@ const student = {
         },
 
         senior: {
-            async add_new(id, role, dep_code, grade_num) {
+            async add(id, role, dep_code, grade_num) {
                 return await pool.query(
                     `INSERT INTO Public."Senior"( "Stu_id", "Role", "Dep_code", "Grade_num") VALUES($1, $2, $3, $4)`,
                     [id, role, dep_code, grade_num]

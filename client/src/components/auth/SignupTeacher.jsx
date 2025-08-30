@@ -1,15 +1,15 @@
 import { useState } from 'react';
 import { validateStep, validateForm } from '../../utils/validation';
 import { usePasswordToggle } from '../../hooks/usePasswordToggle';
-import { ArrowLeft, ArrowRight, BookOpen, Eye, EyeOff } from 'lucide-react';
+import { ArrowLeft, ArrowRight, BookOpen, Eye, EyeOff, ChevronDown, ChevronUp } from 'lucide-react';
 
 function SignupTeacher({ onBackClick, onSuccess, showMessage }) {
     // Enhanced form state with all new fields
     const [values, setValues] = useState({
         // Step 1: Basic Information
         name: '',
-        age: '',
         email: '',
+        telephone: '',
         password: '',
         confirmPassword: '',
 
@@ -17,24 +17,31 @@ function SignupTeacher({ onBackClick, onSuccess, showMessage }) {
         dateOfBirth: '',
         stateOfOrigin: '',
         sex: '',
-        previousAddress: '',
-        currentAddress: '',
         maritalStatus: 'single',
 
-        // Step 3: Medical Information
+        // Step 3: Address Information
+        currentAddress: '',
+        previousAddress: '',
+
+        // Step 4: Medical Information
         bloodGroup: '',
         genotype: '',
         height: '',
         weight: '',
         disability: 'none',
 
-        // Step 4: Professional Information
+        // Step 5: Professional Information
         qualification: '',
         // Modified: Separate subject tracking for JSS and SSS
         juniorSubjects: [],
         seniorSubjects: [],
+        // English language disciplines
+        englishDisciplines: {
+            junior: [],
+            senior: []
+        },
 
-        // Step 5: Invitation Code
+        // Step 6: Invitation Code
         invitationCode: ''
     });
 
@@ -43,7 +50,11 @@ function SignupTeacher({ onBackClick, onSuccess, showMessage }) {
     const [passwordType, IconPassword, togglePassword] = usePasswordToggle();
     const [confirmPasswordType, IconConfirmPassword, toggleConfirmPassword] = usePasswordToggle();
     const [currentStep, setCurrentStep] = useState(1);
-    const totalSteps = 5; // Updated for teacher form
+    const [showEnglishDisciplines, setShowEnglishDisciplines] = useState({
+        junior: false,
+        senior: false
+    });
+    const totalSteps = 6; // Updated for teacher form
 
     // Nigerian States
     const nigerianStates = [
@@ -63,10 +74,19 @@ function SignupTeacher({ onBackClick, onSuccess, showMessage }) {
     // Marital Status Options
     const maritalStatusOptions = ['single', 'married', 'divorced', 'widowed'];
 
-    // Subject lists
+    // English Language Disciplines
+    const englishDisciplines = [
+        'Structure',
+        'Comprehension',
+        'Composition',
+        'Register',
+        'Phonetics'
+    ];
+
+    // Subject lists (including English Language)
     const juniorSubjects = [
-        'Mathematics',
         'English Language',
+        'Mathematics',
         'French',
         'Yoruba',
         'Basic Technology',
@@ -84,8 +104,8 @@ function SignupTeacher({ onBackClick, onSuccess, showMessage }) {
     ];
 
     const seniorSubjects = [
-        'Mathematics',
         'English Language',
+        'Mathematics',
         'Civic Education',
         'Data Processing',
         'Physics',
@@ -108,10 +128,18 @@ function SignupTeacher({ onBackClick, onSuccess, showMessage }) {
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
-        setValues(prev => ({
-            ...prev,
-            [name]: type === 'checkbox' ? checked : value
-        }));
+
+        if (type === 'checkbox') {
+            setValues(prev => ({
+                ...prev,
+                [name]: checked
+            }));
+        } else {
+            setValues(prev => ({
+                ...prev,
+                [name]: value
+            }));
+        }
 
         // Clear error for this field when user starts typing
         if (errors[name]) {
@@ -122,11 +150,81 @@ function SignupTeacher({ onBackClick, onSuccess, showMessage }) {
         }
     };
 
+    const handleEnglishDisciplineChange = (discipline, level) => {
+        setValues(prev => {
+            const currentDisciplines = prev.englishDisciplines[level] || [];
+            const isCurrentlySelected = currentDisciplines.includes(discipline);
+
+            let updatedDisciplines;
+            if (isCurrentlySelected) {
+                updatedDisciplines = currentDisciplines.filter(d => d !== discipline);
+            } else {
+                updatedDisciplines = [...currentDisciplines, discipline];
+            }
+
+            return {
+                ...prev,
+                englishDisciplines: {
+                    ...prev.englishDisciplines,
+                    [level]: updatedDisciplines
+                }
+            };
+        });
+    };
+
+    const toggleEnglishDisciplines = (level) => {
+        setShowEnglishDisciplines(prev => ({
+            ...prev,
+            [level]: !prev[level]
+        }));
+    };
+
+    const handleSubjectChange = (subject, level) => {
+        const isJunior = level === 'junior';
+        const currentLevelSubjects = isJunior ? values.juniorSubjects : values.seniorSubjects;
+
+        // Check if subject is currently selected in this level
+        const isCurrentlySelected = currentLevelSubjects.includes(subject);
+
+        if (isCurrentlySelected) {
+            // Remove subject
+            const updatedCurrentLevel = currentLevelSubjects.filter(s => s !== subject);
+            setValues(prev => ({
+                ...prev,
+                [isJunior ? 'juniorSubjects' : 'seniorSubjects']: updatedCurrentLevel
+            }));
+
+            // If it's English Language, clear the disciplines
+            if (subject === 'English Language') {
+                setValues(prev => ({
+                    ...prev,
+                    englishDisciplines: {
+                        ...prev.englishDisciplines,
+                        [level]: []
+                    }
+                }));
+            }
+        } else {
+            // Add subject
+            const updatedCurrentLevel = [...currentLevelSubjects, subject];
+            setValues(prev => ({
+                ...prev,
+                [isJunior ? 'juniorSubjects' : 'seniorSubjects']: updatedCurrentLevel
+            }));
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Combine junior and senior subjects for validation and submission
-        const allSubjects = [...new Set([...values.juniorSubjects, ...values.seniorSubjects])];
+        // Combine subjects for validation and submission
+        const allSubjects = [
+            ...new Set([
+                ...values.juniorSubjects,
+                ...values.seniorSubjects
+            ])
+        ];
+
         const formDataForValidation = {
             ...values,
             subjects: allSubjects
@@ -143,17 +241,19 @@ function SignupTeacher({ onBackClick, onSuccess, showMessage }) {
                 const teacherData = {
                     // Basic Information
                     name: values.name,
-                    age: parseInt(values.age),
                     email: values.email,
+                    telephone: values.telephone,
                     password: values.password,
 
                     // Personal Details
                     dateOfBirth: values.dateOfBirth,
                     stateOfOrigin: values.stateOfOrigin,
                     sex: values.sex,
+                    maritalStatus: values.maritalStatus,
+
+                    // Address Information
                     previousAddress: values.previousAddress || null,
                     currentAddress: values.currentAddress,
-                    maritalStatus: values.maritalStatus,
 
                     // Medical Information
                     bloodGroup: values.bloodGroup,
@@ -168,6 +268,7 @@ function SignupTeacher({ onBackClick, onSuccess, showMessage }) {
                     subjects: allSubjects,
                     juniorSubjects: values.juniorSubjects,
                     seniorSubjects: values.seniorSubjects,
+                    englishDisciplines: values.englishDisciplines,
 
                     // Invitation Code
                     invitationCode: values.invitationCode
@@ -200,27 +301,27 @@ function SignupTeacher({ onBackClick, onSuccess, showMessage }) {
     };
 
     const nextStep = () => {
-        console.log('Next button clicked, current step:', currentStep);
-
-        // For step 4 (Professional Information), we need to validate subjects differently
+        // For step 5 (Professional Information), we need to validate subjects differently
         let formDataForValidation = { ...values };
-        if (currentStep === 4) {
+        if (currentStep === 5) {
             // Combine subjects for validation
-            const allSubjects = [...new Set([...values.juniorSubjects, ...values.seniorSubjects])];
+            const allSubjects = [
+                ...new Set([
+                    ...values.juniorSubjects,
+                    ...values.seniorSubjects
+                ])
+            ];
             formDataForValidation.subjects = allSubjects;
         }
 
         // Validate current step before proceeding - specify teacher type
         const stepErrors = validateStep(currentStep, formDataForValidation, 'teacher');
-        console.log('Step errors:', stepErrors);
 
         if (Object.keys(stepErrors).length === 0) {
             const newStep = Math.min(currentStep + 1, totalSteps);
-            console.log('Moving to step:', newStep);
             setCurrentStep(newStep);
             setErrors({}); // Clear any previous errors
         } else {
-            console.log('Validation failed, showing errors');
             setErrors(stepErrors);
         }
     };
@@ -228,50 +329,6 @@ function SignupTeacher({ onBackClick, onSuccess, showMessage }) {
     const prevStep = () => {
         setCurrentStep(prev => Math.max(prev - 1, 1));
         setErrors({}); // Clear errors when going back
-    };
-
-    // Enhanced subject change handler with new logic
-    const handleSubjectChange = (subject, level) => {
-        console.log(`Subject change: ${subject} in ${level}`);
-
-        const isJunior = level === 'junior';
-        const currentLevelSubjects = isJunior ? values.juniorSubjects : values.seniorSubjects;
-        const otherLevelSubjects = isJunior ? values.seniorSubjects : values.juniorSubjects;
-        const otherLevel = isJunior ? 'senior' : 'junior';
-        const otherLevelList = isJunior ? seniorSubjects : juniorSubjects;
-
-        // Check if subject is currently selected in this level
-        const isCurrentlySelected = currentLevelSubjects.includes(subject);
-
-        if (isCurrentlySelected) {
-            // UNTICKING: Only remove from current level, don't affect other level
-            const updatedCurrentLevel = currentLevelSubjects.filter(s => s !== subject);
-
-            setValues(prev => ({
-                ...prev,
-                [isJunior ? 'juniorSubjects' : 'seniorSubjects']: updatedCurrentLevel
-            }));
-
-            console.log(`Unticked ${subject} from ${level}. Other level (${otherLevel}) unchanged.`);
-        } else {
-            // TICKING: Add to current level AND automatically add to other level if subject exists there
-            const updatedCurrentLevel = [...currentLevelSubjects, subject];
-            let updatedOtherLevel = [...otherLevelSubjects];
-
-            // Check if the same subject exists in the other level's list
-            if (otherLevelList.includes(subject) && !otherLevelSubjects.includes(subject)) {
-                updatedOtherLevel.push(subject);
-                console.log(`Auto-ticked ${subject} in ${otherLevel} as well`);
-            }
-
-            setValues(prev => ({
-                ...prev,
-                [isJunior ? 'juniorSubjects' : 'seniorSubjects']: updatedCurrentLevel,
-                [isJunior ? 'seniorSubjects' : 'juniorSubjects']: updatedOtherLevel
-            }));
-
-            console.log(`Ticked ${subject} in ${level}`);
-        }
     };
 
     // Step indicator component
@@ -327,35 +384,33 @@ function SignupTeacher({ onBackClick, onSuccess, showMessage }) {
                             </div>
 
                             <div className="form-group">
-                                <label htmlFor="age" className="label">Age</label>
+                                <label htmlFor="email" className="label">Email Address</label>
                                 <input
-                                    type="number"
-                                    id="age"
-                                    name="age"
-                                    className={`input ${errors.age ? 'error' : ''}`}
-                                    value={values.age}
-                                    onChange={handleChange}
-                                    placeholder="Enter your age"
-                                    min="18"
-                                    max="70"
-                                    required
-                                />
-                                {errors.age && <div className="error-message">{errors.age}</div>}
-                            </div>
-
-                            <div className="form-group">
-                                <label htmlFor="email" className="label">Email or Phone</label>
-                                <input
-                                    type="text"
+                                    type="email"
                                     id="email"
                                     name="email"
                                     className={`input ${errors.email ? 'error' : ''}`}
                                     value={values.email}
                                     onChange={handleChange}
-                                    placeholder="Enter your email or phone number"
+                                    placeholder="Enter your email address"
                                     required
                                 />
                                 {errors.email && <div className="error-message">{errors.email}</div>}
+                            </div>
+
+                            <div className="form-group">
+                                <label htmlFor="telephone" className="label">Phone Number</label>
+                                <input
+                                    type="tel"
+                                    id="telephone"
+                                    name="telephone"
+                                    className={`input ${errors.telephone ? 'error' : ''}`}
+                                    value={values.telephone}
+                                    onChange={handleChange}
+                                    placeholder="Enter your phone number"
+                                    required
+                                />
+                                {errors.telephone && <div className="error-message">{errors.telephone}</div>}
                             </div>
 
                             <div className="form-group">
@@ -411,7 +466,7 @@ function SignupTeacher({ onBackClick, onSuccess, showMessage }) {
                             </div>
 
                             <div className="form-navigation">
-                                <div></div> {/* Empty div to push Next button to the right */}
+                                <div></div>
                                 <button
                                     type="button"
                                     className="btn btn-nav btn-next"
@@ -492,6 +547,26 @@ function SignupTeacher({ onBackClick, onSuccess, showMessage }) {
                                 {errors.maritalStatus && <div className="error-message">{errors.maritalStatus}</div>}
                             </div>
 
+                            <div className="form-navigation">
+                                <button
+                                    type="button"
+                                    className="btn btn-nav btn-prev"
+                                    onClick={prevStep}
+                                >
+                                    <ArrowLeft size={14} /> Previous
+                                </button>
+                                <button
+                                    type="button"
+                                    className="btn btn-nav btn-next"
+                                    onClick={nextStep}
+                                >
+                                    Next <ArrowRight size={14} />
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Step 3: Address Information */}
+                        <div className={`form-step ${currentStep === 3 ? 'active' : 'inactive'}`}>
                             <div className="form-group">
                                 <label htmlFor="currentAddress" className="label">Current Address</label>
                                 <textarea
@@ -539,8 +614,8 @@ function SignupTeacher({ onBackClick, onSuccess, showMessage }) {
                             </div>
                         </div>
 
-                        {/* Step 3: Medical Information */}
-                        <div className={`form-step ${currentStep === 3 ? 'active' : 'inactive'}`}>
+                        {/* Step 4: Medical Information */}
+                        <div className={`form-step ${currentStep === 4 ? 'active' : 'inactive'}`}>
                             <div className="form-group">
                                 <label htmlFor="bloodGroup" className="label">Blood Group</label>
                                 <select
@@ -625,152 +700,4 @@ function SignupTeacher({ onBackClick, onSuccess, showMessage }) {
                                     <option value="visual">Visual Impairment</option>
                                     <option value="hearing">Hearing Impairment</option>
                                     <option value="physical">Physical Disability</option>
-                                    <option value="learning">Learning Disability</option>
-                                    <option value="other">Other</option>
-                                </select>
-                                {errors.disability && <div className="error-message">{errors.disability}</div>}
-                            </div>
-
-                            <div className="form-navigation">
-                                <button
-                                    type="button"
-                                    className="btn btn-nav btn-prev"
-                                    onClick={prevStep}
-                                >
-                                    <ArrowLeft size={14} /> Previous
-                                </button>
-                                <button
-                                    type="button"
-                                    className="btn btn-nav btn-next"
-                                    onClick={nextStep}
-                                >
-                                    Next <ArrowRight size={14} />
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Step 4: Professional Information */}
-                        <div className={`form-step ${currentStep === 4 ? 'active' : 'inactive'}`}>
-                            <div className="form-group">
-                                <label htmlFor="qualification" className="label">Qualification</label>
-                                <input
-                                    type="text"
-                                    id="qualification"
-                                    name="qualification"
-                                    className={`input ${errors.qualification ? 'error' : ''}`}
-                                    value={values.qualification}
-                                    onChange={handleChange}
-                                    placeholder="Enter your qualification (e.g., B.Ed, M.Ed, PhD)"
-                                    required
-                                />
-                                {errors.qualification && <div className="error-message">{errors.qualification}</div>}
-                            </div>
-
-                            <div className="form-group">
-                                <label className="label">Subjects (Select all that apply)</label>
-                                <div className="subjects-container">
-                                    <h4 className="subject-category">Junior Secondary Subjects</h4>
-                                    <div className="subject-options">
-                                        {juniorSubjects.map(subject => (
-                                            <div key={`junior-${subject}`} className="subject-option">
-                                                <input
-                                                    type="checkbox"
-                                                    id={`junior-${subject}`}
-                                                    checked={values.juniorSubjects.includes(subject)}
-                                                    onChange={() => handleSubjectChange(subject, 'junior')}
-                                                />
-                                                <label htmlFor={`junior-${subject}`}>{subject}</label>
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    <h4 className="subject-category">Senior Secondary Subjects</h4>
-                                    <div className="subject-options">
-                                        {seniorSubjects.map(subject => (
-                                            <div key={`senior-${subject}`} className="subject-option">
-                                                <input
-                                                    type="checkbox"
-                                                    id={`senior-${subject}`}
-                                                    checked={values.seniorSubjects.includes(subject)}
-                                                    onChange={() => handleSubjectChange(subject, 'senior')}
-                                                />
-                                                <label htmlFor={`senior-${subject}`}>{subject}</label>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                                {errors.subjects && <div className="error-message">{errors.subjects}</div>}
-                            </div>
-
-                            <div className="form-navigation">
-                                <button
-                                    type="button"
-                                    className="btn btn-nav btn-prev"
-                                    onClick={prevStep}
-                                >
-                                    <ArrowLeft size={14} /> Previous
-                                </button>
-                                <button
-                                    type="button"
-                                    className="btn btn-nav btn-next"
-                                    onClick={nextStep}
-                                >
-                                    Next <ArrowRight size={14} />
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Step 5: Invitation Code */}
-                        <div className={`form-step ${currentStep === 5 ? 'active' : 'inactive'}`}>
-                            <div className="form-group">
-                                <label htmlFor="invitationCode" className="label">Invitation Code</label>
-                                <input
-                                    type="text"
-                                    id="invitationCode"
-                                    name="invitationCode"
-                                    className={`input ${errors.invitationCode ? 'error' : ''}`}
-                                    value={values.invitationCode}
-                                    onChange={handleChange}
-                                    placeholder="Enter the invitation code provided by your admin"
-                                    required
-                                />
-                                {errors.invitationCode && <div className="error-message">{errors.invitationCode}</div>}
-                                <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.5rem' }}>
-                                    This code is provided by your school administrator to verify your employment eligibility.
-                                </div>
-                            </div>
-
-                            <div className="form-navigation">
-                                <button
-                                    type="button"
-                                    className="btn btn-nav btn-prev"
-                                    onClick={prevStep}
-                                >
-                                    <ArrowLeft size={14} /> Previous
-                                </button>
-                                <button
-                                    type="submit"
-                                    className="btn btn-primary btn-teacher-gradient"
-                                    disabled={isSubmitting}
-                                >
-                                    {isSubmitting ? 'Creating Account...' : 'Create Account'}
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-
-                    <div className="footer-link">
-                        <button
-                            onClick={onBackClick}
-                            className="link-btn"
-                        >
-                            Already have an account? Login
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-}
-
-export default SignupTeacher;
+                                    <option value
