@@ -4,43 +4,32 @@ import { usePasswordToggle } from '../../hooks/usePasswordToggle';
 import { ArrowLeft, ArrowRight, GraduationCap, Eye, EyeOff } from 'lucide-react';
 
 function SignupStudent({ onBackClick, onSuccess, showMessage }) {
-    // Enhanced form state with all new fields including invitation code
     const [values, setValues] = useState({
-        // Step 1: Basic Information
         name: '',
         age: '',
         email: '',
+        telephone: '',
         password: '',
         confirmPassword: '',
-
-        // Step 2: Academic Information
         studentType: 'junior',
         grade: '',
         department: '',
         role: '',
-
-        // Step 3: Personal Details
         dateOfBirth: '',
         stateOfOrigin: '',
         sex: '',
         previousAddress: '',
         currentAddress: '',
-
-        // Step 4: Medical Information
         bloodGroup: '',
         genotype: '',
         height: '',
         weight: '',
         disability: 'none',
-
-        // Step 5: Parent/Guardian Information
         parentGuardianType: 'parent',
         parentGuardianPhone: '',
         parentGuardianEmail: '',
         parentGuardianAddress: '',
         parentGuardianAddressDifferent: false,
-
-        // Step 6: Invitation Code
         invitationCode: ''
     });
 
@@ -49,9 +38,8 @@ function SignupStudent({ onBackClick, onSuccess, showMessage }) {
     const [passwordType, IconPassword, togglePassword] = usePasswordToggle();
     const [confirmPasswordType, IconConfirmPassword, toggleConfirmPassword] = usePasswordToggle();
     const [currentStep, setCurrentStep] = useState(1);
-    const totalSteps = 6; // Updated to include invitation code step
+    const totalSteps = 6;
 
-    // Nigerian States
     const nigerianStates = [
         'Abia', 'Adamawa', 'Akwa Ibom', 'Anambra', 'Bauchi', 'Bayelsa', 'Benue', 'Borno',
         'Cross River', 'Delta', 'Ebonyi', 'Edo', 'Ekiti', 'Enugu', 'FCT', 'Gombe',
@@ -60,27 +48,19 @@ function SignupStudent({ onBackClick, onSuccess, showMessage }) {
         'Rivers', 'Sokoto', 'Taraba', 'Yobe', 'Zamfara'
     ];
 
-    // Blood Groups
     const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
-
-    // Genotypes
     const genotypes = ['AA', 'AS', 'AC', 'SS', 'SC', 'CC'];
-
-    // Academic data
     const juniorGrades = [
         { value: 'jss1', label: 'JSS 1' },
         { value: 'jss2', label: 'JSS 2' },
         { value: 'jss3', label: 'JSS 3' }
     ];
-
     const seniorGrades = [
         { value: 'sss1', label: 'SSS 1' },
         { value: 'sss2', label: 'SSS 2' },
         { value: 'sss3', label: 'SSS 3' }
     ];
-
     const departments = ['Science', 'Arts', 'Commercial'];
-
     const roles = [
         { value: '', label: 'No role' },
         { value: 'head_boy', label: 'Head Boy' },
@@ -103,8 +83,6 @@ function SignupStudent({ onBackClick, onSuccess, showMessage }) {
             ...prev,
             [name]: type === 'checkbox' ? checked : value
         }));
-
-        // Clear error for this field when user starts typing
         if (errors[name]) {
             setErrors(prev => ({
                 ...prev,
@@ -115,71 +93,53 @@ function SignupStudent({ onBackClick, onSuccess, showMessage }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
-        // Validate all fields before submission
         const validationErrors = validateForm(values, 'student');
         setErrors(validationErrors);
 
         if (Object.keys(validationErrors).length === 0) {
             setIsSubmitting(true);
-
             try {
                 const studentData = {
-                    // Basic Information
                     name: values.name,
                     age: parseInt(values.age),
                     email: values.email,
+                    telephone: values.telephone,
                     password: values.password,
-
-                    // Academic Information
                     studentType: values.studentType,
                     grade: values.grade,
                     department: values.studentType === 'senior' ? values.department : null,
                     role: values.studentType === 'senior' ? values.role || null : null,
-
-                    // Personal Details
                     dateOfBirth: values.dateOfBirth,
                     stateOfOrigin: values.stateOfOrigin,
                     sex: values.sex,
                     previousAddress: values.previousAddress || null,
                     currentAddress: values.currentAddress,
-
-                    // Medical Information
                     bloodGroup: values.bloodGroup,
                     genotype: values.genotype,
                     height: parseFloat(values.height),
                     weight: parseFloat(values.weight),
                     disability: values.disability === 'none' ? null : values.disability,
-
-                    // Parent/Guardian Information
                     parentGuardianType: values.parentGuardianType,
                     parentGuardianPhone: values.parentGuardianPhone,
                     parentGuardianEmail: values.parentGuardianEmail || null,
                     parentGuardianAddress: values.parentGuardianAddressDifferent ? values.parentGuardianAddress : values.currentAddress,
-
-                    // Invitation Code
                     invitationCode: values.invitationCode
                 };
 
                 const response = await fetch(`${import.meta.env.VITE_HOST}:${import.meta.env.VITE_PORT}/auth/signup/student`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(studentData),
                 });
 
                 const data = await response.json();
 
                 if (response.ok) {
-                    console.log('Student signed up successfully:', data);
                     onSuccess();
                 } else {
-                    console.error('Error signing up student:', data);
                     showMessage('error', data.message || 'Signup failed');
                 }
             } catch (error) {
-                console.error('Error signing up student:', error);
                 showMessage('error', error.message || 'Signup failed');
             } finally {
                 setIsSubmitting(false);
@@ -188,31 +148,22 @@ function SignupStudent({ onBackClick, onSuccess, showMessage }) {
     };
 
     const nextStep = () => {
-        console.log('Next button clicked, current step:', currentStep);
-
-        // Validate current step before proceeding
         const stepErrors = validateStep(currentStep, values);
-        console.log('Step errors:', stepErrors);
-
         if (Object.keys(stepErrors).length === 0) {
-            const newStep = Math.min(currentStep + 1, totalSteps);
-            console.log('Moving to step:', newStep);
-            setCurrentStep(newStep);
-            setErrors({}); // Clear any previous errors
+            setCurrentStep(Math.min(currentStep + 1, totalSteps));
+            setErrors({});
         } else {
-            console.log('Validation failed, showing errors');
             setErrors(stepErrors);
         }
     };
 
     const prevStep = () => {
         setCurrentStep(prev => Math.max(prev - 1, 1));
-        setErrors({}); // Clear errors when going back
+        setErrors({});
     };
 
     const handleStudentTypeChange = (e) => {
         const newStudentType = e.target.value;
-
         setValues(prev => ({
             ...prev,
             studentType: newStudentType,
@@ -222,7 +173,6 @@ function SignupStudent({ onBackClick, onSuccess, showMessage }) {
         }));
     };
 
-    // Step indicator component
     const StepIndicator = () => (
         <div className="step-indicator">
             {Array.from({ length: totalSteps }, (_, index) => (
@@ -273,7 +223,6 @@ function SignupStudent({ onBackClick, onSuccess, showMessage }) {
                                 />
                                 {errors.name && <div className="error-message">{errors.name}</div>}
                             </div>
-
                             <div className="form-group">
                                 <label htmlFor="age" className="label">Age</label>
                                 <input
@@ -290,22 +239,34 @@ function SignupStudent({ onBackClick, onSuccess, showMessage }) {
                                 />
                                 {errors.age && <div className="error-message">{errors.age}</div>}
                             </div>
-
                             <div className="form-group">
-                                <label htmlFor="email" className="label">Email or Phone</label>
+                                <label htmlFor="email" className="label">Email</label>
                                 <input
-                                    type="text"
+                                    type="email"
                                     id="email"
                                     name="email"
                                     className={`input ${errors.email ? 'error' : ''}`}
                                     value={values.email}
                                     onChange={handleChange}
-                                    placeholder="Enter your email or phone number"
+                                    placeholder="Enter your email address"
                                     required
                                 />
                                 {errors.email && <div className="error-message">{errors.email}</div>}
                             </div>
-
+                            <div className="form-group">
+                                <label htmlFor="telephone" className="label">Telephone</label>
+                                <input
+                                    type="tel"
+                                    id="telephone"
+                                    name="telephone"
+                                    className={`input ${errors.telephone ? 'error' : ''}`}
+                                    value={values.telephone}
+                                    onChange={handleChange}
+                                    placeholder="Enter your phone number"
+                                    required
+                                />
+                                {errors.telephone && <div className="error-message">{errors.telephone}</div>}
+                            </div>
                             <div className="form-group">
                                 <label htmlFor="password" className="label">Password</label>
                                 <div className="input-wrapper">
@@ -330,7 +291,6 @@ function SignupStudent({ onBackClick, onSuccess, showMessage }) {
                                 </div>
                                 {errors.password && <div className="error-message">{errors.password}</div>}
                             </div>
-
                             <div className="form-group">
                                 <label htmlFor="confirmPassword" className="label">Confirm Password</label>
                                 <div className="input-wrapper">
@@ -357,9 +317,8 @@ function SignupStudent({ onBackClick, onSuccess, showMessage }) {
                                     <div className="error-message">{errors.confirmPassword}</div>
                                 )}
                             </div>
-
                             <div className="form-navigation">
-                                <div></div> {/* Empty div to push Next button to the right */}
+                                <div></div>
                                 <button
                                     type="button"
                                     className="btn btn-nav btn-next"
@@ -369,7 +328,6 @@ function SignupStudent({ onBackClick, onSuccess, showMessage }) {
                                 </button>
                             </div>
                         </div>
-
                         {/* Step 2: Academic Information */}
                         <div className={`form-step ${currentStep === 2 ? 'active' : 'inactive'}`}>
                             <div className="form-group">
@@ -387,7 +345,6 @@ function SignupStudent({ onBackClick, onSuccess, showMessage }) {
                                 </select>
                                 {errors.studentType && <div className="error-message">{errors.studentType}</div>}
                             </div>
-
                             <div className="form-group">
                                 <label htmlFor="grade" className="label">Grade/Class</label>
                                 <select
@@ -411,7 +368,6 @@ function SignupStudent({ onBackClick, onSuccess, showMessage }) {
                                 </select>
                                 {errors.grade && <div className="error-message">{errors.grade}</div>}
                             </div>
-
                             {values.studentType === 'senior' && (
                                 <>
                                     <div className="form-group">
@@ -431,7 +387,6 @@ function SignupStudent({ onBackClick, onSuccess, showMessage }) {
                                         </select>
                                         {errors.department && <div className="error-message">{errors.department}</div>}
                                     </div>
-
                                     <div className="form-group">
                                         <label htmlFor="role" className="label">Student Role (Optional)</label>
                                         <select
@@ -449,7 +404,6 @@ function SignupStudent({ onBackClick, onSuccess, showMessage }) {
                                     </div>
                                 </>
                             )}
-
                             <div className="form-navigation">
                                 <button
                                     type="button"
@@ -467,7 +421,6 @@ function SignupStudent({ onBackClick, onSuccess, showMessage }) {
                                 </button>
                             </div>
                         </div>
-
                         {/* Step 3: Personal Details */}
                         <div className={`form-step ${currentStep === 3 ? 'active' : 'inactive'}`}>
                             <div className="form-group">
@@ -483,7 +436,6 @@ function SignupStudent({ onBackClick, onSuccess, showMessage }) {
                                 />
                                 {errors.dateOfBirth && <div className="error-message">{errors.dateOfBirth}</div>}
                             </div>
-
                             <div className="form-group">
                                 <label htmlFor="sex" className="label">Sex</label>
                                 <select
@@ -500,7 +452,6 @@ function SignupStudent({ onBackClick, onSuccess, showMessage }) {
                                 </select>
                                 {errors.sex && <div className="error-message">{errors.sex}</div>}
                             </div>
-
                             <div className="form-group">
                                 <label htmlFor="stateOfOrigin" className="label">State of Origin</label>
                                 <select
@@ -518,7 +469,6 @@ function SignupStudent({ onBackClick, onSuccess, showMessage }) {
                                 </select>
                                 {errors.stateOfOrigin && <div className="error-message">{errors.stateOfOrigin}</div>}
                             </div>
-
                             <div className="form-group">
                                 <label htmlFor="currentAddress" className="label">Current Address</label>
                                 <textarea
@@ -533,7 +483,6 @@ function SignupStudent({ onBackClick, onSuccess, showMessage }) {
                                 />
                                 {errors.currentAddress && <div className="error-message">{errors.currentAddress}</div>}
                             </div>
-
                             <div className="form-group">
                                 <label htmlFor="previousAddress" className="label">Previous Address (Optional)</label>
                                 <textarea
@@ -547,7 +496,6 @@ function SignupStudent({ onBackClick, onSuccess, showMessage }) {
                                 />
                                 {errors.previousAddress && <div className="error-message">{errors.previousAddress}</div>}
                             </div>
-
                             <div className="form-navigation">
                                 <button
                                     type="button"
@@ -565,7 +513,6 @@ function SignupStudent({ onBackClick, onSuccess, showMessage }) {
                                 </button>
                             </div>
                         </div>
-
                         {/* Step 4: Medical Information */}
                         <div className={`form-step ${currentStep === 4 ? 'active' : 'inactive'}`}>
                             <div className="form-group">
@@ -585,7 +532,6 @@ function SignupStudent({ onBackClick, onSuccess, showMessage }) {
                                 </select>
                                 {errors.bloodGroup && <div className="error-message">{errors.bloodGroup}</div>}
                             </div>
-
                             <div className="form-group">
                                 <label htmlFor="genotype" className="label">Genotype</label>
                                 <select
@@ -603,7 +549,6 @@ function SignupStudent({ onBackClick, onSuccess, showMessage }) {
                                 </select>
                                 {errors.genotype && <div className="error-message">{errors.genotype}</div>}
                             </div>
-
                             <div className="form-group">
                                 <label htmlFor="height" className="label">Height (cm)</label>
                                 <input
@@ -620,7 +565,6 @@ function SignupStudent({ onBackClick, onSuccess, showMessage }) {
                                 />
                                 {errors.height && <div className="error-message">{errors.height}</div>}
                             </div>
-
                             <div className="form-group">
                                 <label htmlFor="weight" className="label">Weight (kg)</label>
                                 <input
@@ -638,7 +582,6 @@ function SignupStudent({ onBackClick, onSuccess, showMessage }) {
                                 />
                                 {errors.weight && <div className="error-message">{errors.weight}</div>}
                             </div>
-
                             <div className="form-group">
                                 <label htmlFor="disability" className="label">Disability Status</label>
                                 <select
@@ -657,7 +600,6 @@ function SignupStudent({ onBackClick, onSuccess, showMessage }) {
                                 </select>
                                 {errors.disability && <div className="error-message">{errors.disability}</div>}
                             </div>
-
                             <div className="form-navigation">
                                 <button
                                     type="button"
@@ -675,7 +617,6 @@ function SignupStudent({ onBackClick, onSuccess, showMessage }) {
                                 </button>
                             </div>
                         </div>
-
                         {/* Step 5: Parent/Guardian Information */}
                         <div className={`form-step ${currentStep === 5 ? 'active' : 'inactive'}`}>
                             <div className="form-group">
@@ -693,7 +634,6 @@ function SignupStudent({ onBackClick, onSuccess, showMessage }) {
                                 </select>
                                 {errors.parentGuardianType && <div className="error-message">{errors.parentGuardianType}</div>}
                             </div>
-
                             <div className="form-group">
                                 <label htmlFor="parentGuardianPhone" className="label">
                                     {values.parentGuardianType === 'parent' ? 'Parent' : 'Guardian'} Phone Number
@@ -710,7 +650,6 @@ function SignupStudent({ onBackClick, onSuccess, showMessage }) {
                                 />
                                 {errors.parentGuardianPhone && <div className="error-message">{errors.parentGuardianPhone}</div>}
                             </div>
-
                             <div className="form-group">
                                 <label htmlFor="parentGuardianEmail" className="label">
                                     {values.parentGuardianType === 'parent' ? 'Parent' : 'Guardian'} Email (Optional)
@@ -726,7 +665,6 @@ function SignupStudent({ onBackClick, onSuccess, showMessage }) {
                                 />
                                 {errors.parentGuardianEmail && <div className="error-message">{errors.parentGuardianEmail}</div>}
                             </div>
-
                             <div className="form-group">
                                 <div className="subject-option">
                                     <input
@@ -741,7 +679,6 @@ function SignupStudent({ onBackClick, onSuccess, showMessage }) {
                                     </label>
                                 </div>
                             </div>
-
                             {values.parentGuardianAddressDifferent && (
                                 <div className="form-group">
                                     <label htmlFor="parentGuardianAddress" className="label">
@@ -760,7 +697,6 @@ function SignupStudent({ onBackClick, onSuccess, showMessage }) {
                                     {errors.parentGuardianAddress && <div className="error-message">{errors.parentGuardianAddress}</div>}
                                 </div>
                             )}
-
                             <div className="form-navigation">
                                 <button
                                     type="button"
@@ -778,7 +714,6 @@ function SignupStudent({ onBackClick, onSuccess, showMessage }) {
                                 </button>
                             </div>
                         </div>
-
                         {/* Step 6: Invitation Code */}
                         <div className={`form-step ${currentStep === 6 ? 'active' : 'inactive'}`}>
                             <div className="form-group">
@@ -798,7 +733,6 @@ function SignupStudent({ onBackClick, onSuccess, showMessage }) {
                                     This code is provided by your school administrator to verify your enrollment eligibility.
                                 </div>
                             </div>
-
                             <div className="form-navigation">
                                 <button
                                     type="button"
@@ -817,7 +751,6 @@ function SignupStudent({ onBackClick, onSuccess, showMessage }) {
                             </div>
                         </div>
                     </form>
-
                     <div className="footer-link">
                         <button
                             onClick={onBackClick}

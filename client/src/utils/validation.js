@@ -1,5 +1,3 @@
-// Enhanced validation function for both student and teacher signup forms
-
 export const validateForm = (values, type = 'student') => {
     const errors = {};
 
@@ -36,68 +34,38 @@ export const validateForm = (values, type = 'student') => {
         errors.confirmPassword = 'Passwords do not match';
     }
 
-    // Teacher-specific validation
-    if (type === 'teacher') {
-        // For teachers, we validate dateOfBirth instead of age
+    // Age validation differs for students and teachers
+    if (type === 'student') {
+        if (!values.age || values.age < 5 || values.age > 25) {
+            errors.age = 'Age must be between 5 and 25 years';
+        }
+    } else if (type === 'teacher') {
         if (values.dateOfBirth) {
             const birthDate = new Date(values.dateOfBirth);
             const today = new Date();
             const age = today.getFullYear() - birthDate.getFullYear();
-            
             if (age < 18 || age > 70) {
                 errors.dateOfBirth = 'Date of birth must correspond to age between 18 and 70 years';
             }
-            
             if (birthDate > today) {
                 errors.dateOfBirth = 'Date of birth cannot be in the future';
             }
         } else if (values.dateOfBirth !== undefined) {
             errors.dateOfBirth = 'Date of birth is required';
         }
-
-        // Professional Information Validation
-        if (!values.qualification || values.qualification.trim().length < 2) {
-            errors.qualification = 'Qualification is required';
-        }
-
-        // Combine subjects and english disciplines for validation
-        const allSubjects = [
-            ...new Set([
-                ...values.juniorSubjects || [], 
-                ...values.seniorSubjects || [],
-                ...(values.englishDisciplines && values.englishDisciplines.length > 0 ? ['English Language'] : [])
-            ])
-        ];
-        if (!allSubjects || allSubjects.length === 0) {
-            errors.subjects = 'Please select at least one subject';
-        }
-
-        // Marital Status Validation
-        if (values.maritalStatus !== undefined && !values.maritalStatus) {
-            errors.maritalStatus = 'Marital status is required';
-        }
     }
 
     // Student-specific validation
     if (type === 'student') {
-        if (!values.age || values.age < 5 || values.age > 25) {
-            errors.age = 'Age must be between 5 and 25 years';
-        }
-        
-        // Academic Information Validation
         if (!values.studentType) {
             errors.studentType = 'Student type is required';
         }
-
         if (!values.grade) {
             errors.grade = 'Grade/Class is required';
         }
-
         if (values.studentType === 'senior' && !values.department) {
             errors.department = 'Department is required for senior students';
         }
-
-        // Parent/Guardian Information Validation
         if (values.parentGuardianPhone !== undefined) {
             if (!values.parentGuardianPhone) {
                 errors.parentGuardianPhone = 'Parent/Guardian phone number is required';
@@ -108,18 +76,37 @@ export const validateForm = (values, type = 'student') => {
                 }
             }
         }
-
         if (values.parentGuardianEmail && values.parentGuardianEmail.trim().length > 0) {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(values.parentGuardianEmail)) {
                 errors.parentGuardianEmail = 'Please enter a valid email address';
             }
         }
-
         if (values.parentGuardianAddressDifferent && values.parentGuardianAddress !== undefined) {
             if (!values.parentGuardianAddress || values.parentGuardianAddress.trim().length < 10) {
                 errors.parentGuardianAddress = 'Parent/Guardian address must be at least 10 characters long';
             }
+        }
+    }
+
+    // Teacher-specific validation
+    if (type === 'teacher') {
+        if (!values.qualification || values.qualification.trim().length < 2) {
+            errors.qualification = 'Qualification is required';
+        }
+        const allSubjects = [
+            ...new Set([
+                ...values.juniorSubjects || [],
+                ...values.seniorSubjects || [],
+                ...(values.englishDisciplines && values.englishDisciplines.junior && values.englishDisciplines.junior.length > 0 ? ['English Language (JSS)'] : []),
+                ...(values.englishDisciplines && values.englishDisciplines.senior && values.englishDisciplines.senior.length > 0 ? ['English Language (SSS)'] : [])
+            ])
+        ];
+        if (!allSubjects || allSubjects.length === 0) {
+            errors.subjects = 'Please select at least one subject';
+        }
+        if (values.maritalStatus !== undefined && !values.maritalStatus) {
+            errors.maritalStatus = 'Marital status is required';
         }
     }
 
@@ -128,11 +115,9 @@ export const validateForm = (values, type = 'student') => {
         const birthDate = new Date(values.dateOfBirth);
         const today = new Date();
         const age = today.getFullYear() - birthDate.getFullYear();
-        
         if (age < 5 || age > 25) {
             errors.dateOfBirth = 'Date of birth must correspond to age between 5 and 25 years';
         }
-        
         if (birthDate > today) {
             errors.dateOfBirth = 'Date of birth cannot be in the future';
         }
@@ -143,17 +128,14 @@ export const validateForm = (values, type = 'student') => {
     if (values.sex !== undefined && !values.sex) {
         errors.sex = 'Sex is required';
     }
-
     if (values.stateOfOrigin !== undefined && !values.stateOfOrigin) {
         errors.stateOfOrigin = 'State of origin is required';
     }
-
     if (values.currentAddress !== undefined) {
         if (!values.currentAddress || values.currentAddress.trim().length < 10) {
             errors.currentAddress = 'Current address must be at least 10 characters long';
         }
     }
-
     if (values.previousAddress && values.previousAddress.trim().length > 0 && values.previousAddress.trim().length < 10) {
         errors.previousAddress = 'Previous address must be at least 10 characters long if provided';
     }
@@ -162,18 +144,15 @@ export const validateForm = (values, type = 'student') => {
     if (values.bloodGroup !== undefined && !values.bloodGroup) {
         errors.bloodGroup = 'Blood group is required';
     }
-
     if (values.genotype !== undefined && !values.genotype) {
         errors.genotype = 'Genotype is required';
     }
-
     if (values.height !== undefined) {
         const minHeight = type === 'student' ? 50 : 100;
         if (!values.height || values.height < minHeight || values.height > 250) {
             errors.height = `Height must be between ${minHeight} and 250 cm`;
         }
     }
-
     if (values.weight !== undefined) {
         const minWeight = type === 'student' ? 10 : 30;
         if (!values.weight || values.weight < minWeight || values.weight > 200) {
@@ -193,13 +172,10 @@ export const validateForm = (values, type = 'student') => {
     return errors;
 };
 
-// Helper function to validate specific steps for students
 export const validateStudentStep = (stepNumber, values) => {
     const errors = {};
-    
     switch (stepNumber) {
         case 1:
-            // Step 1: Basic Information
             if (!values.name || values.name.trim().length < 2) {
                 errors.name = 'Full name must be at least 2 characters long';
             }
@@ -229,9 +205,7 @@ export const validateStudentStep = (stepNumber, values) => {
                 errors.confirmPassword = 'Passwords do not match';
             }
             break;
-            
         case 2:
-            // Step 2: Academic Information
             if (!values.studentType) {
                 errors.studentType = 'Student type is required';
             }
@@ -242,9 +216,7 @@ export const validateStudentStep = (stepNumber, values) => {
                 errors.department = 'Department is required for senior students';
             }
             break;
-            
         case 3:
-            // Step 3: Personal Details
             if (!values.dateOfBirth) {
                 errors.dateOfBirth = 'Date of birth is required';
             } else {
@@ -271,9 +243,7 @@ export const validateStudentStep = (stepNumber, values) => {
                 errors.previousAddress = 'Previous address must be at least 10 characters long if provided';
             }
             break;
-            
         case 4:
-            // Step 4: Medical Information
             if (!values.bloodGroup) {
                 errors.bloodGroup = 'Blood group is required';
             }
@@ -287,9 +257,7 @@ export const validateStudentStep = (stepNumber, values) => {
                 errors.weight = 'Weight must be between 10 and 200 kg';
             }
             break;
-            
         case 5:
-            // Step 5: Parent/Guardian Information
             if (!values.parentGuardianPhone) {
                 errors.parentGuardianPhone = 'Parent/Guardian phone number is required';
             } else {
@@ -308,30 +276,23 @@ export const validateStudentStep = (stepNumber, values) => {
                 errors.parentGuardianAddress = 'Parent/Guardian address must be at least 10 characters long';
             }
             break;
-            
         case 6:
-            // Step 6: Invitation Code
             if (!values.invitationCode || values.invitationCode.trim().length === 0) {
                 errors.invitationCode = 'Invitation code is required';
             } else if (values.invitationCode.trim().length < 6) {
                 errors.invitationCode = 'Invitation code must be at least 6 characters long';
             }
             break;
-            
         default:
             return {};
     }
-    
     return errors;
 };
 
-// Helper function to validate specific steps for teachers
 export const validateTeacherStep = (stepNumber, values) => {
     const errors = {};
-    
     switch (stepNumber) {
         case 1:
-            // Step 1: Basic Information
             if (!values.name || values.name.trim().length < 2) {
                 errors.name = 'Full name must be at least 2 characters long';
             }
@@ -358,9 +319,7 @@ export const validateTeacherStep = (stepNumber, values) => {
                 errors.confirmPassword = 'Passwords do not match';
             }
             break;
-            
         case 2:
-            // Step 2: Personal Details
             if (!values.dateOfBirth) {
                 errors.dateOfBirth = 'Date of birth is required';
             } else {
@@ -384,9 +343,7 @@ export const validateTeacherStep = (stepNumber, values) => {
                 errors.maritalStatus = 'Marital status is required';
             }
             break;
-            
         case 3:
-            // Step 3: Address Information
             if (!values.currentAddress || values.currentAddress.trim().length < 10) {
                 errors.currentAddress = 'Current address must be at least 10 characters long';
             }
@@ -394,9 +351,7 @@ export const validateTeacherStep = (stepNumber, values) => {
                 errors.previousAddress = 'Previous address must be at least 10 characters long if provided';
             }
             break;
-            
         case 4:
-            // Step 4: Medical Information
             if (!values.bloodGroup) {
                 errors.bloodGroup = 'Blood group is required';
             }
@@ -410,42 +365,35 @@ export const validateTeacherStep = (stepNumber, values) => {
                 errors.weight = 'Weight must be between 30 and 200 kg';
             }
             break;
-            
         case 5:
-            // Step 5: Professional Information
             if (!values.qualification || values.qualification.trim().length < 2) {
                 errors.qualification = 'Qualification is required';
             }
-            // Combine subjects and english disciplines for validation
             const allSubjects = [
                 ...new Set([
-                    ...values.juniorSubjects || [], 
+                    ...values.juniorSubjects || [],
                     ...values.seniorSubjects || [],
-                    ...(values.englishDisciplines && values.englishDisciplines.length > 0 ? ['English Language'] : [])
+                    ...(values.englishDisciplines && values.englishDisciplines.junior && values.englishDisciplines.junior.length > 0 ? ['English Language (JSS)'] : []),
+                    ...(values.englishDisciplines && values.englishDisciplines.senior && values.englishDisciplines.senior.length > 0 ? ['English Language (SSS)'] : [])
                 ])
             ];
             if (!allSubjects || allSubjects.length === 0) {
                 errors.subjects = 'Please select at least one subject';
             }
             break;
-            
         case 6:
-            // Step 6: Invitation Code
             if (!values.invitationCode || values.invitationCode.trim().length === 0) {
                 errors.invitationCode = 'Invitation code is required';
             } else if (values.invitationCode.trim().length < 6) {
                 errors.invitationCode = 'Invitation code must be at least 6 characters long';
             }
             break;
-            
         default:
             return {};
     }
-    
     return errors;
 };
 
-// Generic step validation function that determines user type
 export const validateStep = (stepNumber, values, userType = 'student') => {
     if (userType === 'teacher') {
         return validateTeacherStep(stepNumber, values);
@@ -454,7 +402,6 @@ export const validateStep = (stepNumber, values, userType = 'student') => {
     }
 };
 
-// Additional validation helpers
 export const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
@@ -470,11 +417,9 @@ export const validateAge = (dateOfBirth, userType = 'student') => {
     const today = new Date();
     const age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
-    
     if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
         age--;
     }
-    
     if (userType === 'student') {
         return age >= 5 && age <= 25;
     } else {
@@ -482,7 +427,6 @@ export const validateAge = (dateOfBirth, userType = 'student') => {
     }
 };
 
-// Invitation code validation helper
 export const validateInvitationCode = (code) => {
     if (!code || code.trim().length === 0) {
         return 'Invitation code is required';
@@ -490,5 +434,5 @@ export const validateInvitationCode = (code) => {
     if (code.trim().length < 6) {
         return 'Invitation code must be at least 6 characters long';
     }
-    return null; // No error
+    return null;
 };
