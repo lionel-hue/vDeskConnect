@@ -1,18 +1,19 @@
 import { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
-import { 
-  ArrowLeft, 
-  ArrowRight, 
-  BookOpen, 
-  GraduationCap, 
-  Users, 
-  Eye, 
-  EyeOff 
+import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import {
+    ArrowLeft,
+    ArrowRight,
+    BookOpen,
+    GraduationCap,
+    Users,
+    Eye,
+    EyeOff
 } from 'lucide-react';
 import Login from './auth/Login';
 import SignupSelection from './auth/SignupSelection';
 import SignupTeacher from './auth/SignupTeacher';
 import SignupStudent from './auth/SignupStudent';
+import VerifyAccount from './auth/VerifyAccount';
 import '../style/auth.css';
 
 function App() {
@@ -43,6 +44,10 @@ function App() {
                     <Route
                         path="/signup-student"
                         element={<SignupStudentWrapper showMessage={showMessage} />}
+                    />
+                    <Route
+                        path="/verify-account"
+                        element={<VerifyAccountWrapper />}
                     />
                 </Routes>
             </div>
@@ -99,6 +104,27 @@ function SignupStudentWrapper({ showMessage }) {
                 setTimeout(() => navigate('/'), 2000);
             }}
             showMessage={showMessage}
+        />
+    );
+}
+
+
+
+
+function VerifyAccountWrapper() {
+    const navigate = useNavigate();
+    const location = useLocation();
+    // In a real app, you would get these values from your state management or context
+    const userType = 'student'; // or 'teacher'
+    const email = 'user@example.com';
+    const phone = '+1234567890';
+
+    return (
+        <VerifyAccount
+            userType={userType}
+            email={email}
+            phone={phone}
+            onBackClick={() => navigate('/signup-selection')}
         />
     );
 }

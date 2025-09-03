@@ -1,9 +1,11 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom'; // Add this import
 import { validateStep, validateForm } from '../../utils/validation';
 import { usePasswordToggle } from '../../hooks/usePasswordToggle';
 import { ArrowLeft, ArrowRight, GraduationCap, Eye, EyeOff } from 'lucide-react';
 
-function SignupStudent({ onBackClick, onSuccess, showMessage }) {
+function SignupStudent({ onBackClick, showMessage }) {
+    const navigate = useNavigate(); // Add this hook
     const [values, setValues] = useState({
         name: '',
         age: '',
@@ -135,7 +137,13 @@ function SignupStudent({ onBackClick, onSuccess, showMessage }) {
                 const data = await response.json();
 
                 if (response.ok) {
-                    onSuccess();
+                    navigate('/verify-account', {
+                        state: {
+                            userType: 'student', // Changed from 'teacher' to 'student'
+                            email: values.email,
+                            phone: values.telephone
+                        }
+                    });
                 } else {
                     showMessage('error', data.message || 'Signup failed');
                 }
