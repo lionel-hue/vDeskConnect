@@ -2,6 +2,7 @@ import { Router } from "express"
 import student from "../../models/Student.js"
 import teacher from "../../models/Teacher.js"
 import generator from "../../utils/id_generator.js"
+import send_mail from "../../utils/mailer.js"
 import bcrypt from "bcryptjs"
 
 
@@ -9,11 +10,13 @@ const signup_router = Router()
 
 signup_router.post("/signup/student/", async (req, res) => {
 
-    const id = generator()
+    const id = generator.id()
+    verification_code = generator.auth_code()
     const hashed_password = await bcrypt.hash(req.body.password, 10)
 
+    
     const grade_num = req.body.grade === "jss1" ? 1 :
-        req.body.grade === "jss2" ? 2 :
+    req.body.grade === "jss2" ? 2 :
             req.body.grade === "jss3" ? 3 :
                 req.body.grade === "sss1" ? 1 :
                     req.body.grade === "sss2" ? 2 :
@@ -53,15 +56,19 @@ signup_router.post("/signup/student/", async (req, res) => {
         student.auth.senior.add(id, req.body.role, dep_code, grade_num)
     )
 
+
+    send_mail.verfication_code( verification_code, req.body.email )
+
     res.status(201).json({
         message: "Student registered successfully",
-        studentId: id
+        studentId: id,
+        verification_code
     })
 })
 
 signup_router.post("/signup/teacher/", async (req, res) => {
     try {
-        const id = generator()
+        const id = generator.id()
         const hashed_password = await bcrypt.hash(req.body.password, 10)
 
         console.log(req.body)
