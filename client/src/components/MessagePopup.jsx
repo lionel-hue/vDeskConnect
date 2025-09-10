@@ -1,7 +1,8 @@
 // Updated MessagePopup.jsx with CSS classes
 import { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
-import "../style/general.css"
+import "../style/general.css";
+import '../style/auth.css';
 
 function MessagePopup({ message, onClose }) {
     const [isVisible, setIsVisible] = useState(false);
@@ -26,7 +27,7 @@ function MessagePopup({ message, onClose }) {
                 <span className="message-icon">
                     {message.type === 'error' && '❌'}
                     {message.type === 'success' && '✅'}
-                    {message.type === 'warning' && '⚠️'}import '../style/general.css';
+                    {message.type === 'warning' && '⚠️'}
                     {message.type === 'info' && 'ℹ️'}
                 </span>
                 <div className="message-text">

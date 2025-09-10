@@ -35,11 +35,11 @@ function App() {
         <Router>
             <div className="app">
                 {/* Add MessagePopup here */}
-                <MessagePopup 
-                    message={formMessage} 
-                    onClose={handleCloseMessage} 
+                <MessagePopup
+                    message={formMessage}
+                    onClose={handleCloseMessage}
                 />
-                
+
                 <Routes>
                     <Route
                         path="/"
@@ -124,14 +124,20 @@ function VerifyAccountWrapper() {
     const navigate = useNavigate();
     const location = useLocation();
     
-    // Get user data from navigation state or use defaults
-    const { userType = 'student', email = '', phone = '' } = location.state || {};
+    // Get user data from navigation state including verificationCode
+    const { 
+        userType = 'student', 
+        email = '', 
+        phone = '', 
+        verificationCode = '' 
+    } = location.state || {};
 
     return (
         <VerifyAccount
             userType={userType}
             email={email}
             phone={phone}
+            verificationCode={verificationCode} // Pass the actual code
             onBackClick={() => navigate('/signup-selection')}
         />
     );

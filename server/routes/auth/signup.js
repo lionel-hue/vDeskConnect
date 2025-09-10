@@ -16,6 +16,8 @@ signup_router.post("/signup/student/", async (req, res) => {
     const hashed_password = await bcrypt.hash(req.body.password, 10)
     const invitationCode = req.body.invitationCode
 
+    console.log(req.body)
+
     // In your student signup route, replace the invitation code verification section:
     try {
         const inviteResult = await general.auth.verify_invite(invitationCode);
@@ -48,7 +50,7 @@ signup_router.post("/signup/student/", async (req, res) => {
 
     const dep_code = req.body.department === "Science" ?
         "SCI" : req.body.department === "Commercial" ?
-            "COM" : req.body.department === "ART" ?
+            "COM" : req.body.department === "Arts" ?
                 "ART" : null
 
     await student.auth.add(
@@ -91,12 +93,35 @@ signup_router.post("/signup/student/", async (req, res) => {
     });
 })
 
+
 signup_router.post("/signup/teacher/", async (req, res) => {
+
     try {
         const id = generator.id()
+        const verification_code = generator.auth_code()
         const hashed_password = await bcrypt.hash(req.body.password, 10)
+        const invitationCode = req.body.invitationCode
 
-        console.log(req.body)
+        // In your teacher signup route, replace the invitation code verification section:
+        try {
+            const inviteResult = await general.auth.verify_invite(invitationCode);
+
+            if (inviteResult.rows.length === 0 || inviteResult.rows[0].code !== invitationCode) {
+                return res.status(400).json({
+                    status: "error",
+                    message: "Wrong invite code"
+                });
+            }
+
+            // Mark the invite code as used
+            //await general.auth.use_invite_code(invitationCode);
+        } catch (err) {
+            console.log("Verification error:", err);
+            return res.status(400).json({
+                status: "error",
+                message: "Invalid invitation code"
+            });
+        }
 
         await teacher.auth.add(
             id,
@@ -227,10 +252,15 @@ signup_router.post("/signup/teacher/", async (req, res) => {
 
         await processSubjects();
 
+        await send_mail.verification_code(verification_code, req.body.email)
+
         res.status(201).json({
-            message: "Teacher registered successfully",
-            teacherId: id
+            status: "success",
+            message: "Student registered successfully",
+            studentId: id,
+            verificationCode: verification_code // Changed from verification_code to verificationCode for consistency
         });
+
     } catch (error) {
         console.error("Error signing up teacher:", error);
         res.status(500).json({

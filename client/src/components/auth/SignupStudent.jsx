@@ -103,30 +103,30 @@ function SignupStudent({ onBackClick, showMessage }) {
             setIsSubmitting(true);
             try {
                 const studentData = {
-                        name: values.name,
-                        age: parseInt(values.age),
-                        email: values.email,
-                        telephone: values.telephone,
-                        password: values.password,
-                        studentType: values.studentType,
-                        grade: values.grade,
-                        department: values.studentType === 'senior' ? values.department : null,
-                        role: values.studentType === 'senior' ? values.role || null : null,
-                        dateOfBirth: values.dateOfBirth,
-                        stateOfOrigin: values.stateOfOrigin,
-                        sex: values.sex,
-                        previousAddress: values.previousAddress || null,
-                        currentAddress: values.currentAddress,
-                        bloodGroup: values.bloodGroup,
-                        genotype: values.genotype,
-                        height: parseFloat(values.height),
-                        weight: parseFloat(values.weight),
-                        disability: values.disability === 'none' ? null : values.disability,
-                        parentGuardianType: values.parentGuardianType,
-                        parentGuardianPhone: values.parentGuardianPhone,
-                        parentGuardianEmail: values.parentGuardianEmail || null,
-                        parentGuardianAddress: values.parentGuardianAddressDifferent ? values.parentGuardianAddress : values.currentAddress,
-                        invitationCode: values.invitationCode
+                    name: values.name,
+                    age: parseInt(values.age),
+                    email: values.email,
+                    telephone: values.telephone,
+                    password: values.password,
+                    studentType: values.studentType,
+                    grade: values.grade,
+                    department: values.studentType === 'senior' ? values.department : null,
+                    role: values.studentType === 'senior' ? values.role || null : null,
+                    dateOfBirth: values.dateOfBirth,
+                    stateOfOrigin: values.stateOfOrigin,
+                    sex: values.sex,
+                    previousAddress: values.previousAddress || null,
+                    currentAddress: values.currentAddress,
+                    bloodGroup: values.bloodGroup,
+                    genotype: values.genotype,
+                    height: parseFloat(values.height),
+                    weight: parseFloat(values.weight),
+                    disability: values.disability === 'none' ? null : values.disability,
+                    parentGuardianType: values.parentGuardianType,
+                    parentGuardianPhone: values.parentGuardianPhone,
+                    parentGuardianEmail: values.parentGuardianEmail || null,
+                    parentGuardianAddress: values.parentGuardianAddressDifferent ? values.parentGuardianAddress : values.currentAddress,
+                    invitationCode: values.invitationCode
                 };
 
                 const response = await fetch(`${import.meta.env.VITE_HOST}:${import.meta.env.VITE_PORT}/auth/signup/student`, {
@@ -138,16 +138,10 @@ function SignupStudent({ onBackClick, showMessage }) {
                 const data = await response.json();
 
                 if (!response.ok) {
-                    // Handle different error cases
-                    if (data.message && data.message.toLowerCase().includes('invite') ||
-                        data.message.toLowerCase().includes('invitation')) {
-                        // Show specific message for invitation code errors
+                    // Handle errors
+                    if (data.message && data.message.toLowerCase().includes('invite')) {
                         showMessage('error', data.message || 'Invalid invitation code');
-
-                        // Clear the invitation code field
                         setValues(prev => ({ ...prev, invitationCode: '' }));
-
-                        // Focus on the invitation code field
                         setTimeout(() => {
                             const inviteInput = document.getElementById('invitationCode');
                             if (inviteInput) inviteInput.focus();
@@ -160,13 +154,14 @@ function SignupStudent({ onBackClick, showMessage }) {
                     if (data.status === "success") {
                         showMessage('success', 'Account created successfully! Redirecting...');
 
-                        // Navigate after a brief delay to show the success message
+                        // Navigate with the verification code from server response
                         setTimeout(() => {
                             navigate('/verify-account', {
                                 state: {
                                     userType: 'student',
                                     email: values.email,
-                                    phone: values.telephone
+                                    phone: values.telephone,
+                                    verificationCode: data.verificationCode // This comes from server
                                 }
                             });
                         }, 1500);
@@ -174,6 +169,7 @@ function SignupStudent({ onBackClick, showMessage }) {
                         showMessage('error', data.message || 'Unexpected response from server');
                     }
                 }
+
             } catch (error) {
                 console.error('Signup error:', error);
                 showMessage('error', 'Network error. Please check your connection and try again.');

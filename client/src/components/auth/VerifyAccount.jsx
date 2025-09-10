@@ -3,17 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, CheckCircle, Clock, Mail, Smartphone } from 'lucide-react';
 import '../../style/auth.css';
 
-function VerifyAccount({ userType, email, phone, onBackClick }) {
-    const [verificationCode, setVerificationCode] = useState('');
+function VerifyAccount({ userType, email, phone, verificationCode, onBackClick }) {
+    const [enteredCode, setEnteredCode] = useState('');
     const [isVerified, setIsVerified] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errors, setErrors] = useState({});
-    const [remainingTime, setRemainingTime] = useState(60); // 60 seconds countdown
+    const [remainingTime, setRemainingTime] = useState(60);
     const [canResend, setCanResend] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
-        // Start countdown for resend code
         if (remainingTime > 0) {
             const timer = setTimeout(() => {
                 setRemainingTime(prev => prev - 1);
@@ -26,9 +25,8 @@ function VerifyAccount({ userType, email, phone, onBackClick }) {
 
     const handleChange = (e) => {
         const { value } = e.target;
-        // Only allow numbers and limit to 6 digits
         if (/^\d{0,6}$/.test(value)) {
-            setVerificationCode(value);
+            setEnteredCode(value);
             if (errors.verificationCode) {
                 setErrors(prev => ({ ...prev, verificationCode: '' }));
             }
@@ -39,7 +37,7 @@ function VerifyAccount({ userType, email, phone, onBackClick }) {
         e.preventDefault();
         
         // Validate code
-        if (!verificationCode || verificationCode.length !== 6) {
+        if (!enteredCode || enteredCode.length !== 6) {
             setErrors({ verificationCode: 'Please enter a valid 6-digit code' });
             return;
         }
@@ -47,16 +45,16 @@ function VerifyAccount({ userType, email, phone, onBackClick }) {
         setIsSubmitting(true);
         
         try {
-            // Simulate API call to verify code
-            // In a real application, you would call your backend API here
-            await new Promise(resolve => setTimeout(resolve, 1500));
+            // Simulate API call delay
+            await new Promise(resolve => setTimeout(resolve, 1000));
             
-            // For demo purposes, we'll assume the code is correct if it's 123456
-            if (verificationCode === '123456') {
+            // Compare the entered code with the code received from server
+            if (enteredCode === verificationCode) {
                 setIsVerified(true);
                 
-                // In a real app, you would update the user's verification status in your backend
-                // and potentially redirect after a delay
+                // In a real app, you might want to make an API call here
+                // to update the user's verification status in your backend
+                console.log('Verification successful for:', email);
             } else {
                 setErrors({ verificationCode: 'Invalid verification code. Please try again.' });
             }
@@ -69,10 +67,14 @@ function VerifyAccount({ userType, email, phone, onBackClick }) {
 
     const handleResendCode = () => {
         if (canResend) {
-            // Simulate resending code
+            // In a real app, you would call your backend API to resend the code
+            // For now, we'll just reset the timer
             setRemainingTime(60);
             setCanResend(false);
-            // In a real app, you would call your backend API to resend the code
+            setErrors({});
+            
+            // Show success message (you might want to integrate with your message system)
+            console.log('Verification code resent to:', email);
         }
     };
 
@@ -91,8 +93,8 @@ function VerifyAccount({ userType, email, phone, onBackClick }) {
                             </div>
                         </div>
                         <div className="header-content">
-                            <h1 className="card-title">Verification in Progress</h1>
-                            <p className="card-description">Your account is being verified</p>
+                            <h1 className="card-title">Verification Complete</h1>
+                            <p className="card-description">Your account has been verified successfully</p>
                         </div>
                     </div>
                     <div className="card-content">
@@ -101,11 +103,11 @@ function VerifyAccount({ userType, email, phone, onBackClick }) {
                                 <div className="pulse-ring"></div>
                                 <div className="pulse-ring delay-1"></div>
                                 <div className="pulse-ring delay-2"></div>
-                                <Clock size={48} className="clock-icon" />
+                                <CheckCircle size={48} className="clock-icon" color="#10b981" />
                             </div>
                             <div className="verification-message">
-                                <h3>Your account is being verified</h3>
-                                <p>Please come back later. You'll be able to access your account once verification is complete.</p>
+                                <h3>Your account is now verified!</h3>
+                                <p>You can now login and access your account.</p>
                             </div>
                             <button 
                                 onClick={handleGoToLogin}
@@ -146,7 +148,7 @@ function VerifyAccount({ userType, email, phone, onBackClick }) {
                                 id="verificationCode"
                                 name="verificationCode"
                                 className={`input ${errors.verificationCode ? 'error' : ''}`}
-                                value={verificationCode}
+                                value={enteredCode}
                                 onChange={handleChange}
                                 placeholder="Enter 6-digit code"
                                 maxLength={6}
@@ -178,7 +180,7 @@ function VerifyAccount({ userType, email, phone, onBackClick }) {
                         <button
                             type="submit"
                             className="btn btn-primary"
-                            disabled={isSubmitting || verificationCode.length !== 6}
+                            disabled={isSubmitting || enteredCode.length !== 6}
                         >
                             {isSubmitting ? 'Verifying...' : 'Verify Account'}
                         </button>
@@ -190,6 +192,7 @@ function VerifyAccount({ userType, email, phone, onBackClick }) {
                                     type="button"
                                     className="link-btn"
                                     onClick={handleResendCode}
+                                    disabled={isSubmitting}
                                 >
                                     Resend code
                                 </button>

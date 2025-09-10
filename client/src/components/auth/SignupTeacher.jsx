@@ -33,7 +33,7 @@ function SignupTeacher({ onBackClick, onSuccess, showMessage }) {
 
         // Step 5: Professional Information
         qualification: '',
-        // Modified: Separate subject tracking for JSS and SSS
+        // Mod  ified: Separate subject tracking for JSS and SSS
         juniorSubjects: [],
         seniorSubjects: [],
         // English language disciplines
@@ -285,21 +285,47 @@ function SignupTeacher({ onBackClick, onSuccess, showMessage }) {
 
                 const data = await response.json();
 
-                if (response.ok) {
-                    navigate('/verify-account', {
-                        state: {
-                            userType: 'teacher',
-                            email: values.email,
-                            phone: values.telephone
-                        }
-                    });
+                if (!response.ok) {
+                    // Handle different error cases
+                    if (data.message && data.message.toLowerCase().includes('invite') ||
+                        data.message.toLowerCase().includes('invitation')) {
+                        // Show specific message for invitation code errors
+                        showMessage('error', data.message || 'Invalid invitation code');
+
+                        // Clear the invitation code field
+                        setValues(prev => ({ ...prev, invitationCode: '' }));
+
+                        // Focus on the invitation code field
+                        setTimeout(() => {
+                            const inviteInput = document.getElementById('invitationCode');
+                            if (inviteInput) inviteInput.focus();
+                        }, 100);
+                    } else {
+                        showMessage('error', data.message || 'Signup failed');
+                    }
                 } else {
-                    console.error('Error signing up teacher:', data);
-                    showMessage('error', data.message || 'Signup failed');
+                    // Success case - navigate to verification page
+                    if (data.status === "success" || data.message.includes("success") || data.message.includes("registered")) {
+                        showMessage('success', 'Teacher account created successfully! Redirecting...');
+
+                        // Navigate after a brief delay to show the success message
+                        setTimeout(() => {
+                            navigate('/verify-account', {
+                                state: {
+                                    userType: 'teacher',
+                                    email: values.email,
+                                    phone: values.telephone,
+                                    verificationCode: data.verificationCode
+                                }   
+                            });
+                        }, 1500);
+                    } else {
+                        showMessage('error', data.message || 'Unexpected response from server');
+                    }
                 }
             } catch (error) {
-                console.error('Error signing up teacher:', error);
-                showMessage('error', error.message || 'Signup failed');
+                console.error('Signup error:', error);
+                showMessage('error', 'Network error. Please check your connection and try again.');
             } finally {
                 setIsSubmitting(false);
             }

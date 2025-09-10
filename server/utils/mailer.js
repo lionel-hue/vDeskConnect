@@ -13,7 +13,7 @@ const send_mail = {
     async verification_code(code, email) {
         try {
             const mailOptions = {
-                from: port.env.MAIL_USER,
+                from: process.env.MAIL_USER,
                 to: email,
                 subject: 'Your vDeskConnect Verification Code',
                 html: `
