@@ -4,7 +4,7 @@ import signup_router from "./routes/auth/signup.js"
 import login_router from "./routes/auth/login.js"
 
 
-const PORT = process.env.PORT || 8080
+const PORT = process.env.VITE_PORT || 8080
 
 const app = express()
 

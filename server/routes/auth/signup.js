@@ -3,6 +3,7 @@ import student from "../../models/Student.js"
 import teacher from "../../models/Teacher.js"
 import generator from "../../utils/id_generator.js"
 import send_mail from "../../utils/mailer.js"
+import general from "../../models/General.js"
 import bcrypt from "bcryptjs"
 
 
@@ -11,12 +12,34 @@ const signup_router = Router()
 signup_router.post("/signup/student/", async (req, res) => {
 
     const id = generator.id()
-    verification_code = generator.auth_code()
+    const verification_code = generator.auth_code()
     const hashed_password = await bcrypt.hash(req.body.password, 10)
+    const invitationCode = req.body.invitationCode
 
-    
+    // In your student signup route, replace the invitation code verification section:
+    try {
+        const inviteResult = await general.auth.verify_invite(invitationCode);
+
+        if (inviteResult.rows.length === 0 || inviteResult.rows[0].code !== invitationCode) {
+            return res.status(400).json({
+                status: "error",
+                message: "Wrong invite code"
+            });
+        }
+
+        // Mark the invite code as used
+        //await general.auth.use_invite_code(invitationCode);
+    } catch (err) {
+        console.log("Verification error:", err);
+        return res.status(400).json({
+            status: "error",
+            message: "Invalid invitation code"
+        });
+    }
+
+
     const grade_num = req.body.grade === "jss1" ? 1 :
-    req.body.grade === "jss2" ? 2 :
+        req.body.grade === "jss2" ? 2 :
             req.body.grade === "jss3" ? 3 :
                 req.body.grade === "sss1" ? 1 :
                     req.body.grade === "sss2" ? 2 :
@@ -57,13 +80,15 @@ signup_router.post("/signup/student/", async (req, res) => {
     )
 
 
-    send_mail.verfication_code( verification_code, req.body.email )
+    await send_mail.verification_code(verification_code, req.body.email)
 
+    // Later in the success response:
     res.status(201).json({
+        status: "success",
         message: "Student registered successfully",
         studentId: id,
-        verification_code
-    })
+        verificationCode: verification_code // Changed from verification_code to verificationCode for consistency
+    });
 })
 
 signup_router.post("/signup/teacher/", async (req, res) => {

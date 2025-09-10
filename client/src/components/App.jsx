@@ -14,20 +14,32 @@ import SignupSelection from './auth/SignupSelection';
 import SignupTeacher from './auth/SignupTeacher';
 import SignupStudent from './auth/SignupStudent';
 import VerifyAccount from './auth/VerifyAccount';
+import MessagePopup from './MessagePopup'; // Add this import
 import '../style/auth.css';
 
 function App() {
     const [formMessage, setFormMessage] = useState(null);
 
     // Function to show success/error messages
-    const showMessage = (type, text) => {
+    const showMessage = (type, text, duration = 5000) => {
         setFormMessage({ type, text });
-        setTimeout(() => setFormMessage(null), 5000);
+        // Auto-hide after duration
+        setTimeout(() => setFormMessage(null), duration);
+    };
+
+    const handleCloseMessage = () => {
+        setFormMessage(null);
     };
 
     return (
         <Router>
             <div className="app">
+                {/* Add MessagePopup here */}
+                <MessagePopup 
+                    message={formMessage} 
+                    onClose={handleCloseMessage} 
+                />
+                
                 <Routes>
                     <Route
                         path="/"
@@ -108,16 +120,12 @@ function SignupStudentWrapper({ showMessage }) {
     );
 }
 
-
-
-
 function VerifyAccountWrapper() {
     const navigate = useNavigate();
     const location = useLocation();
-    // In a real app, you would get these values from your state management or context
-    const userType = 'student'; // or 'teacher'
-    const email = 'user@example.com';
-    const phone = '+1234567890';
+    
+    // Get user data from navigation state or use defaults
+    const { userType = 'student', email = '', phone = '' } = location.state || {};
 
     return (
         <VerifyAccount

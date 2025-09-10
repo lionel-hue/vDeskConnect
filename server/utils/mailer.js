@@ -8,7 +8,7 @@ const transporter = nodemailer.createTransport({
     }
 }) 
 
-send_mail = {
+const send_mail = {
 
     async verification_code(code, email) {
         try {

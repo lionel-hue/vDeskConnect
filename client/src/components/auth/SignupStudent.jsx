@@ -10,7 +10,7 @@ function SignupStudent({ onBackClick, showMessage }) {
         name: '',
         age: '',
         email: '',
-        telephone: '',
+        telephstudentDataone: '',
         password: '',
         confirmPassword: '',
         studentType: 'junior',
@@ -93,6 +93,7 @@ function SignupStudent({ onBackClick, showMessage }) {
         }
     };
 
+    // Replace your handleSubmit function with this updated version:
     const handleSubmit = async (e) => {
         e.preventDefault();
         const validationErrors = validateForm(values, 'student');
@@ -102,30 +103,30 @@ function SignupStudent({ onBackClick, showMessage }) {
             setIsSubmitting(true);
             try {
                 const studentData = {
-                    name: values.name,
-                    age: parseInt(values.age),
-                    email: values.email,
-                    telephone: values.telephone,
-                    password: values.password,
-                    studentType: values.studentType,
-                    grade: values.grade,
-                    department: values.studentType === 'senior' ? values.department : null,
-                    role: values.studentType === 'senior' ? values.role || null : null,
-                    dateOfBirth: values.dateOfBirth,
-                    stateOfOrigin: values.stateOfOrigin,
-                    sex: values.sex,
-                    previousAddress: values.previousAddress || null,
-                    currentAddress: values.currentAddress,
-                    bloodGroup: values.bloodGroup,
-                    genotype: values.genotype,
-                    height: parseFloat(values.height),
-                    weight: parseFloat(values.weight),
-                    disability: values.disability === 'none' ? null : values.disability,
-                    parentGuardianType: values.parentGuardianType,
-                    parentGuardianPhone: values.parentGuardianPhone,
-                    parentGuardianEmail: values.parentGuardianEmail || null,
-                    parentGuardianAddress: values.parentGuardianAddressDifferent ? values.parentGuardianAddress : values.currentAddress,
-                    invitationCode: values.invitationCode
+                        name: values.name,
+                        age: parseInt(values.age),
+                        email: values.email,
+                        telephone: values.telephone,
+                        password: values.password,
+                        studentType: values.studentType,
+                        grade: values.grade,
+                        department: values.studentType === 'senior' ? values.department : null,
+                        role: values.studentType === 'senior' ? values.role || null : null,
+                        dateOfBirth: values.dateOfBirth,
+                        stateOfOrigin: values.stateOfOrigin,
+                        sex: values.sex,
+                        previousAddress: values.previousAddress || null,
+                        currentAddress: values.currentAddress,
+                        bloodGroup: values.bloodGroup,
+                        genotype: values.genotype,
+                        height: parseFloat(values.height),
+                        weight: parseFloat(values.weight),
+                        disability: values.disability === 'none' ? null : values.disability,
+                        parentGuardianType: values.parentGuardianType,
+                        parentGuardianPhone: values.parentGuardianPhone,
+                        parentGuardianEmail: values.parentGuardianEmail || null,
+                        parentGuardianAddress: values.parentGuardianAddressDifferent ? values.parentGuardianAddress : values.currentAddress,
+                        invitationCode: values.invitationCode
                 };
 
                 const response = await fetch(`${import.meta.env.VITE_HOST}:${import.meta.env.VITE_PORT}/auth/signup/student`, {
@@ -136,19 +137,46 @@ function SignupStudent({ onBackClick, showMessage }) {
 
                 const data = await response.json();
 
-                if (response.ok) {
-                    navigate('/verify-account', {
-                        state: {
-                            userType: 'student', // Changed from 'teacher' to 'student'
-                            email: values.email,
-                            phone: values.telephone
-                        }
-                    });
+                if (!response.ok) {
+                    // Handle different error cases
+                    if (data.message && data.message.toLowerCase().includes('invite') ||
+                        data.message.toLowerCase().includes('invitation')) {
+                        // Show specific message for invitation code errors
+                        showMessage('error', data.message || 'Invalid invitation code');
+
+                        // Clear the invitation code field
+                        setValues(prev => ({ ...prev, invitationCode: '' }));
+
+                        // Focus on the invitation code field
+                        setTimeout(() => {
+                            const inviteInput = document.getElementById('invitationCode');
+                            if (inviteInput) inviteInput.focus();
+                        }, 100);
+                    } else {
+                        showMessage('error', data.message || 'Signup failed');
+                    }
                 } else {
-                    showMessage('error', data.message || 'Signup failed');
+                    // Success case - navigate to verification page
+                    if (data.status === "success") {
+                        showMessage('success', 'Account created successfully! Redirecting...');
+
+                        // Navigate after a brief delay to show the success message
+                        setTimeout(() => {
+                            navigate('/verify-account', {
+                                state: {
+                                    userType: 'student',
+                                    email: values.email,
+                                    phone: values.telephone
+                                }
+                            });
+                        }, 1500);
+                    } else {
+                        showMessage('error', data.message || 'Unexpected response from server');
+                    }
                 }
             } catch (error) {
-                showMessage('error', error.message || 'Signup failed');
+                console.error('Signup error:', error);
+                showMessage('error', 'Network error. Please check your connection and try again.');
             } finally {
                 setIsSubmitting(false);
             }
