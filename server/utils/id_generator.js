@@ -10,7 +10,8 @@ const generator = {
     },
 
     auth_code() {
-        return Math.round(Math.random()*999999).toString()
+        const val = Math.round(Math.random()*999999).toString()
+        return  val <= 99999 ? this.auth_code() : val
     }
 };
 

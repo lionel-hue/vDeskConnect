@@ -8,8 +8,13 @@ const PORT = process.env.VITE_PORT || 8080
 
 const app = express()
 
-app.use( cors() )
-app.use( express.json() )
+// Explicit CORS config for frontend
+app.use(cors({
+  origin: "http://localhost:5173", // Update if your frontend runs elsewhere
+  credentials: true
+}))
+
+app.use(express.json())
 
 
 // --auth

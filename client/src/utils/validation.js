@@ -436,3 +436,25 @@ export const validateInvitationCode = (code) => {
     }
     return null;
 };
+
+
+export const validateLogin = (values) => {
+  const errors = {};
+
+  if (!values.email || values.email.trim().length === 0) {
+    errors.email = 'Email or phone is required';
+  } else {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const phoneRegex = /^[\+]?[0-9]{10,15}$/;
+
+    if (!emailRegex.test(values.email) && !phoneRegex.test(values.email.replace(/\s/g, ''))) {
+      errors.email = 'Please enter a valid email or phone number';
+    }
+  }
+
+  if (!values.password || values.password.length < 6) {
+    errors.password = 'Password must be at least 6 characters long';
+  }
+
+  return errors;
+};

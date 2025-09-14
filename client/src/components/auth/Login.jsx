@@ -1,5 +1,6 @@
 import { useForm } from '../../hooks/useForm'
 import { validateForm } from '../../utils/validation'
+import { validateLogin } from '../../utils/validation'
 import { usePasswordToggle } from '../../hooks/usePasswordToggle'
 
 function Login({ onSignupClick, formMessage, showMessage }) {
@@ -21,7 +22,7 @@ function Login({ onSignupClick, formMessage, showMessage }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    const validationErrors = validateForm(values, 'login')
+    const validationErrors = validateLogin(values)
     setErrors(validationErrors)
     
     if (Object.keys(validationErrors).length === 0) {

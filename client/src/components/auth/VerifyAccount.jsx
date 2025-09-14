@@ -93,8 +93,8 @@ function VerifyAccount({ userType, email, phone, verificationCode, onBackClick }
                             </div>
                         </div>
                         <div className="header-content">
-                            <h1 className="card-title">Verification Complete</h1>
-                            <p className="card-description">Your account has been verified successfully</p>
+                            <h1 className="card-title">Verification in progress</h1>
+                            <p className="card-description">Your account is being verified</p>
                         </div>
                     </div>
                     <div className="card-content">
@@ -106,8 +106,8 @@ function VerifyAccount({ userType, email, phone, verificationCode, onBackClick }
                                 <CheckCircle size={48} className="clock-icon" color="#10b981" />
                             </div>
                             <div className="verification-message">
-                                <h3>Your account is now verified!</h3>
-                                <p>You can now login and access your account.</p>
+                                <h3>your account is undergoing verification</h3>
+                                <p>come back later when the verification is complete!</p>
                             </div>
                             <button 
                                 onClick={handleGoToLogin}

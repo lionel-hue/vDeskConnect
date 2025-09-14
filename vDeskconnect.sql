@@ -2,8 +2,10 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 14.18 (Ubuntu 14.18-0ubuntu0.22.04.1)
--- Dumped by pg_dump version 14.18 (Ubuntu 14.18-0ubuntu0.22.04.1)
+\restrict HBzTJRuhpPznwz3VFqJyW9wuN0HRHEaGcc11Li2ufWb2YTMzE0zggg1jo5A0N1w
+
+-- Dumped from database version 14.19 (Ubuntu 14.19-0ubuntu0.22.04.1)
+-- Dumped by pg_dump version 14.19 (Ubuntu 14.19-0ubuntu0.22.04.1)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -107,8 +109,8 @@ CREATE TABLE public."Inviter" (
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
     expires_at timestamp without time zone NOT NULL,
     used boolean DEFAULT false,
-    used_by text,
-    used_at timestamp without time zone,
+    used_by text NOT NULL,
+    used_at timestamp without time zone NOT NULL,
     admin_id text NOT NULL,
     CONSTRAINT "Inviter_user_type_check" CHECK (((user_type = 'teacher'::text) OR (user_type = 'student'::text)))
 );
@@ -396,6 +398,7 @@ CREATE TABLE public."Student" (
     parent_guardian_phone character varying(20) NOT NULL,
     parent_guardian_email text,
     parent_guardian_address text NOT NULL,
+    verified boolean DEFAULT false NOT NULL,
     CONSTRAINT "Student_parent_guardian_type_check" CHECK (((parent_guardian_type = 'parent'::text) OR (parent_guardian_type = 'guardian'::text))),
     CONSTRAINT "Student_sex_check" CHECK (((sex = 'male'::text) OR (sex = 'female'::text)))
 );
@@ -554,8 +557,9 @@ CREATE TABLE public."Teacher" (
     genotype text NOT NULL,
     height integer NOT NULL,
     weight integer NOT NULL,
-    disability text NOT NULL,
-    qualification text NOT NULL
+    disability text,
+    qualification text NOT NULL,
+    verified boolean DEFAULT false NOT NULL
 );
 
 
@@ -1434,4 +1438,6 @@ ALTER TABLE ONLY public."Video"
 --
 -- PostgreSQL database dump complete
 --
+
+\unrestrict HBzTJRuhpPznwz3VFqJyW9wuN0HRHEaGcc11Li2ufWb2YTMzE0zggg1jo5A0N1w
 
