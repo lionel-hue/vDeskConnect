@@ -137,6 +137,14 @@ body {
     gap: 0.5rem;
 }
 
+/* Added for Forgot Password Link */
+.form-options {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: -0.5rem; /* Adjust spacing */
+    margin-bottom: 1rem;
+}
+
 .label {
     color: #e2e8f0;
     font-size: 0.875rem;

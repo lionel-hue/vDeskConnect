@@ -14,6 +14,7 @@ import SignupSelection from './auth/SignupSelection';
 import SignupTeacher from './auth/SignupTeacher';
 import SignupStudent from './auth/SignupStudent';
 import VerifyAccount from './auth/VerifyAccount';
+import ForgotPassword from './auth/ForgotPassword'; // Import the new component
 import '../style/auth.css';
 
 function App() {
@@ -41,13 +42,19 @@ function App() {
                         path="/verify-account"
                         element={<VerifyAccountWrapper />}
                     />
+                    {/* Updated route for the forgot password page */}
+                    <Route
+                        path="/forgot-password"
+                        element={<ForgotPasswordWrapper />}
+                    />
                 </Routes>
             </div>
         </Router>
     );
 }
 
-// Wrapper components to use useNavigate
+// ... other wrapper components (LoginWrapper, SignupSelectionWrapper, etc.) ...
+
 function LoginWrapper() {
     const navigate = useNavigate();
     return (
@@ -115,6 +122,13 @@ function VerifyAccountWrapper() {
             onBackClick={() => navigate('/')} // Go back to login, not signup-selection
         />
     );
+}
+
+
+// Wrapper for the ForgotPassword component
+function ForgotPasswordWrapper() {
+    // This wrapper pattern is useful if you need to pass hooks like useNavigate
+    return <ForgotPassword />;
 }
 
 export default App;

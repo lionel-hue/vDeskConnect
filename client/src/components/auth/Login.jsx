@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom'; // Import Link
 import { useForm } from '../../hooks/useForm'
 import { validateLogin } from '../../utils/validation'
 import { usePasswordToggle } from '../../hooks/usePasswordToggle'
@@ -147,6 +147,13 @@ function Login({ onSignupClick }) {
                   </button>
                 </div>
                 {errors.password && <div className="error-message">{errors.password}</div>}
+              </div>
+
+              {/* Forgot Password Link */}
+              <div className="form-options">
+                <Link to="/forgot-password" className="link-btn">
+                  Forgot password?
+                </Link>
               </div>
 
               <button

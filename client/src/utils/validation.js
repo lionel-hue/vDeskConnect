@@ -458,3 +458,14 @@ export const validateLogin = (values) => {
 
   return errors;
 };
+
+// ## Added this new function for the forgot password form ##
+export const validateForgotPassword = (values) => {
+    const errors = {};
+    if (!values.email) {
+        errors.email = 'Email address is required.';
+    } else if (!/\S+@\S+\.\S+/.test(values.email)) {
+        errors.email = 'Email address is invalid.';
+    }
+    return errors;
+};
