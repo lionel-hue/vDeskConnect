@@ -36,6 +36,7 @@ function SignupStudent({ onBackClick, showMessage }) {
     });
 
     const [errors, setErrors] = useState({});
+    const [serverError, setServerError] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [passwordType, IconPassword, togglePassword] = usePasswordToggle();
     const [confirmPasswordType, IconConfirmPassword, toggleConfirmPassword] = usePasswordToggle();
@@ -140,19 +141,20 @@ function SignupStudent({ onBackClick, showMessage }) {
                 if (!response.ok) {
                     // Handle errors
                     if (data.message && data.message.toLowerCase().includes('invite')) {
-                        showMessage('error', data.message || 'Invalid invitation code');
+                        setServerError(data.message || 'Invalid invitation code');
                         setValues(prev => ({ ...prev, invitationCode: '' }));
+                        // Focus logic...
                         setTimeout(() => {
                             const inviteInput = document.getElementById('invitationCode');
                             if (inviteInput) inviteInput.focus();
                         }, 100);
                     } else {
-                        showMessage('error', data.message || 'Signup failed');
+                        setServerError(data.message || 'Signup failed');
                     }
+
                 } else {
                     // Success case - navigate to verification page
                     if (data.status === "success") {
-                        showMessage('success', 'Account created successfully! Redirecting...');
 
                         // Navigate with the verification code from server response
                         setTimeout(() => {
@@ -166,13 +168,13 @@ function SignupStudent({ onBackClick, showMessage }) {
                             });
                         }, 1500);
                     } else {
-                        showMessage('error', data.message || 'Unexpected response from server');
+                        setServerError(data.message || 'Unexpected response from server');
                     }
                 }
 
             } catch (error) {
                 console.error('Signup error:', error);
-                showMessage('error', 'Network error. Please check your connection and try again.');
+                setServerError('Network error. Please check your connection and try again.');
             } finally {
                 setIsSubmitting(false);
             }
@@ -765,6 +767,21 @@ function SignupStudent({ onBackClick, showMessage }) {
                                     This code is provided by your school administrator to verify your enrollment eligibility.
                                 </div>
                             </div>
+
+                            {/* Add server error display here */}
+                            {serverError && (
+                                <div className="error-message server-error">
+                                    {serverError}
+                                </div>
+                            )}
+
+                            {/* Success message display */}
+                            {isSuccess && (
+                                <div className="success-message">
+                                    Account created successfully! Redirecting...
+                                </div>
+                            )}
+
                             <div className="form-navigation">
                                 <button
                                     type="button"
@@ -778,7 +795,14 @@ function SignupStudent({ onBackClick, showMessage }) {
                                     className="btn btn-primary btn-student-gradient"
                                     disabled={isSubmitting}
                                 >
-                                    {isSubmitting ? 'Creating Account...' : 'Create Account'}
+                                    {isSubmitting ? (
+                                        <>
+                                            <span className="loading-spinner"></span>
+                                            Creating Account...
+                                        </>
+                                    ) : (
+                                        'Create Account'
+                                    )}
                                 </button>
                             </div>
                         </div>

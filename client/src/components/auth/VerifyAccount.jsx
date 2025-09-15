@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, CheckCircle, Clock, Mail, Smartphone } from 'lucide-react';
 import '../../style/auth.css';
 
@@ -10,7 +10,18 @@ function VerifyAccount({ userType, email, phone, verificationCode, onBackClick }
     const [errors, setErrors] = useState({});
     const [remainingTime, setRemainingTime] = useState(60);
     const [canResend, setCanResend] = useState(false);
+    const [showCodeInput, setShowCodeInput] = useState(true); // Control which section to show
     const navigate = useNavigate();
+    const location = useLocation();
+
+    // Check if we're coming from login (should skip code input)
+    useEffect(() => {
+        // Check if we have a flag indicating this is from login
+        const fromLogin = location.state?.fromLogin;
+        if (fromLogin) {
+            setShowCodeInput(false); // Skip code input for login flow
+        }
+    }, [location]);
 
     useEffect(() => {
         if (remainingTime > 0) {
@@ -35,7 +46,7 @@ function VerifyAccount({ userType, email, phone, verificationCode, onBackClick }
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+
         // Validate code
         if (!enteredCode || enteredCode.length !== 6) {
             setErrors({ verificationCode: 'Please enter a valid 6-digit code' });
@@ -43,15 +54,16 @@ function VerifyAccount({ userType, email, phone, verificationCode, onBackClick }
         }
 
         setIsSubmitting(true);
-        
+
         try {
             // Simulate API call delay
             await new Promise(resolve => setTimeout(resolve, 1000));
-            
+
             // Compare the entered code with the code received from server
             if (enteredCode === verificationCode) {
                 setIsVerified(true);
-                
+                setShowCodeInput(false); // Hide code input after successful verification
+
                 // In a real app, you might want to make an API call here
                 // to update the user's verification status in your backend
                 console.log('Verification successful for:', email);
@@ -72,7 +84,7 @@ function VerifyAccount({ userType, email, phone, verificationCode, onBackClick }
             setRemainingTime(60);
             setCanResend(false);
             setErrors({});
-            
+
             // Show success message (you might want to integrate with your message system)
             console.log('Verification code resent to:', email);
         }
@@ -82,18 +94,22 @@ function VerifyAccount({ userType, email, phone, verificationCode, onBackClick }
         navigate('/');
     };
 
-    if (isVerified) {
+    // Show verification in progress (for both login flow and after code verification)
+    if (!showCodeInput) {
         return (
             <div className="container">
                 <div className="card">
                     <div className="card-header">
                         <div className="header-nav">
-                            <div className="role-icon verified-icon">
+                            <button onClick={onBackClick} className="back-btn">
+                                <ArrowLeft size={20} />
+                            </button>
+                            <div className="role-icon">
                                 <CheckCircle size={20} />
                             </div>
                         </div>
                         <div className="header-content">
-                            <h1 className="card-title">Verification in progress</h1>
+                            <h1 className="card-title">Account Verification</h1>
                             <p className="card-description">Your account is being verified</p>
                         </div>
                     </div>
@@ -103,17 +119,17 @@ function VerifyAccount({ userType, email, phone, verificationCode, onBackClick }
                                 <div className="pulse-ring"></div>
                                 <div className="pulse-ring delay-1"></div>
                                 <div className="pulse-ring delay-2"></div>
-                                <CheckCircle size={48} className="clock-icon" color="#10b981" />
+                                <Clock size={48} className="clock-icon" />
                             </div>
                             <div className="verification-message">
-                                <h3>your account is undergoing verification</h3>
-                                <p>come back later when the verification is complete!</p>
+                                <h3>Your account is undergoing verification</h3>
+                                <p>Please come back later when the verification is complete!</p>
                             </div>
-                            <button 
+                            <button
                                 onClick={handleGoToLogin}
                                 className="btn btn-primary"
                             >
-                                Go to Login
+                                Back to Login
                             </button>
                         </div>
                     </div>
@@ -122,6 +138,7 @@ function VerifyAccount({ userType, email, phone, verificationCode, onBackClick }
         );
     }
 
+    // Show code input (only for signup flow)
     return (
         <div className="container">
             <div className="card">

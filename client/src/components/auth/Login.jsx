@@ -1,15 +1,17 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useForm } from '../../hooks/useForm'
-import { validateForm } from '../../utils/validation'
 import { validateLogin } from '../../utils/validation'
 import { usePasswordToggle } from '../../hooks/usePasswordToggle'
 
-function Login({ onSignupClick, formMessage, showMessage }) {
+function Login({ onSignupClick }) {
   const { values, errors, isSubmitting, handleChange, setErrors, setIsSubmitting } = useForm({
     email: '',
     password: '',
-    role: 'student' // Default role
+    role: 'junior-student' // Default role
   })
 
+  const navigate = useNavigate();
   const [passwordType, passwordIcon, togglePassword] = usePasswordToggle()
 
   // Role options
@@ -17,17 +19,17 @@ function Login({ onSignupClick, formMessage, showMessage }) {
     { value: 'junior-student', label: 'Junior Student' },
     { value: 'senior-student', label: 'Senior Student' },
     { value: 'teacher', label: 'Teacher' },
-    { value: 'administrator', label: 'Administrator' }
+    { value: 'admin', label: 'Administrator' }
   ]
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     const validationErrors = validateLogin(values)
     setErrors(validationErrors)
-    
+
     if (Object.keys(validationErrors).length === 0) {
       setIsSubmitting(true)
-      
+
       try {
         const userData = {
           email: values.email,
@@ -45,17 +47,28 @@ function Login({ onSignupClick, formMessage, showMessage }) {
 
         const data = await response.json()
 
-        if (response.ok) {
-          console.log('User logged in successfully:', data)
-        } else {
-          console.error('Error logging in user:', data)
-          showMessage('error', data.message || 'Login failed')
+        // Handle 403 status (unverified account) specifically
+        if (response.status === 403 && data.message.includes('not verified')) {
+          // Account is not verified - navigate to verification page
+          navigate('/verify-account', {
+            state: {
+              fromLogin: true,
+              email: values.email,
+              role: values.role,
+            }
+          });
         }
-        await new Promise(resolve => setTimeout(resolve, 1500))
-        console.log('Login submitted:', values)
-        showMessage('success', 'Login successful!')
+        // Handle successful login
+        else if (response.ok) {
+          console.log('User logged in successfully:', data)
+          // Here you would typically set authentication state and redirect
+        }
+        // Handle other errors
+        else {
+          console.error('Error logging in user:', data)
+        }
       } catch (error) {
-        showMessage('error', error.message || 'Login failed')
+        console.error('Network error:', error)
       } finally {
         setIsSubmitting(false)
       }
@@ -76,12 +89,6 @@ function Login({ onSignupClick, formMessage, showMessage }) {
             </div>
           </div>
           <div className="card-content">
-            {formMessage && (
-              <div className={`${formMessage.type}-message`}>
-                {formMessage.text}
-              </div>
-            )}
-            
             <form onSubmit={handleSubmit} className="form">
               {/* Role Selection Dropdown */}
               <div className="form-group">
@@ -102,7 +109,7 @@ function Login({ onSignupClick, formMessage, showMessage }) {
                 </select>
                 {errors.role && <div className="error-message">{errors.role}</div>}
               </div>
-              
+
               <div className="form-group">
                 <label htmlFor="email" className="label">Email or Phone</label>
                 <input
@@ -117,7 +124,7 @@ function Login({ onSignupClick, formMessage, showMessage }) {
                 />
                 {errors.email && <div className="error-message">{errors.email}</div>}
               </div>
-              
+
               <div className="form-group">
                 <label htmlFor="password" className="label">Password</label>
                 <div className="input-wrapper">
@@ -141,7 +148,7 @@ function Login({ onSignupClick, formMessage, showMessage }) {
                 </div>
                 {errors.password && <div className="error-message">{errors.password}</div>}
               </div>
-              
+
               <button
                 type="submit"
                 className="btn btn-primary"
@@ -150,9 +157,9 @@ function Login({ onSignupClick, formMessage, showMessage }) {
                 {isSubmitting ? 'Signing In...' : 'Sign In'}
               </button>
             </form>
-            
+
             <div className="footer-link">
-              <button 
+              <button
                 onClick={onSignupClick}
                 className="link-btn"
               >

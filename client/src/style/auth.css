@@ -830,3 +830,26 @@ textarea.input {
         max-width: 250px;
     }
 }
+
+
+.server-error {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+}
+
+
+.loading-spinner {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid #f3f4f6;
+    border-top: 2px solid #3b82f6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-right: 0.5rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

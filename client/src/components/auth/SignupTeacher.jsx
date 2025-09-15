@@ -47,7 +47,9 @@ function SignupTeacher({ onBackClick, onSuccess, showMessage }) {
     });
 
     const [errors, setErrors] = useState({});
+    const [serverError, setServerError] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isSuccess, setIsSuccess] = useState(false);
     const [passwordType, IconPassword, togglePassword] = usePasswordToggle();
     const [confirmPasswordType, IconConfirmPassword, toggleConfirmPassword] = usePasswordToggle();
     const [currentStep, setCurrentStep] = useState(1);
@@ -289,8 +291,6 @@ function SignupTeacher({ onBackClick, onSuccess, showMessage }) {
                     // Handle different error cases
                     if (data.message && data.message.toLowerCase().includes('invite') ||
                         data.message.toLowerCase().includes('invitation')) {
-                        // Show specific message for invitation code errors
-                        showMessage('error', data.message || 'Invalid invitation code');
 
                         // Clear the invitation code field
                         setValues(prev => ({ ...prev, invitationCode: '' }));
@@ -300,15 +300,13 @@ function SignupTeacher({ onBackClick, onSuccess, showMessage }) {
                             const inviteInput = document.getElementById('invitationCode');
                             if (inviteInput) inviteInput.focus();
                         }, 100);
-                    } else {
-                        showMessage('error', data.message || 'Signup failed');
-                    }
+                    } else setServerError(data.message || 'Signup failed');
                 } else {
                     // Success case - navigate to verification page
                     if (data.status === "success" || data.message.includes("success") || data.message.includes("registered")) {
-                        showMessage('success', 'Teacher account created successfully! Redirecting...');
 
                         // Navigate after a brief delay to show the success message
+                        setIsSuccess(true)
                         setTimeout(() => {
                             navigate('/verify-account', {
                                 state: {
@@ -316,16 +314,16 @@ function SignupTeacher({ onBackClick, onSuccess, showMessage }) {
                                     email: values.email,
                                     phone: values.telephone,
                                     verificationCode: data.verificationCode
-                                }   
+                                }
                             });
                         }, 1500);
                     } else {
-                        showMessage('error', data.message || 'Unexpected response from server');
+                        setServerError(data.message || 'Unexpected response from server');
                     }
                 }
             } catch (error) {
                 console.error('Signup error:', error);
-                showMessage('error', 'Network error. Please check your connection and try again.');
+                setServerError('Network error. Please check your connection and try again.');
             } finally {
                 setIsSubmitting(false);
             }
@@ -923,6 +921,20 @@ function SignupTeacher({ onBackClick, onSuccess, showMessage }) {
                                 </div>
                             </div>
 
+                            {/* Add server error display here */}
+                            {serverError && (
+                                <div className="error-message server-error">
+                                    {serverError}
+                                </div>
+                            )}
+
+                            {/* Success message display */}
+                            {isSuccess && (
+                                <div className="success-message">
+                                    Account created successfully! Redirecting...
+                                </div>
+                            )}
+
                             <div className="form-navigation">
                                 <button
                                     type="button"
@@ -933,10 +945,17 @@ function SignupTeacher({ onBackClick, onSuccess, showMessage }) {
                                 </button>
                                 <button
                                     type="submit"
-                                    className="btn btn-primary btn-teacher-gradient"
+                                    className="btn btn-primary btn-student-gradient"
                                     disabled={isSubmitting}
                                 >
-                                    {isSubmitting ? 'Creating Account...' : 'Create Account'}
+                                    {isSubmitting ? (
+                                        <>
+                                            <span className="loading-spinner"></span>
+                                            Creating Account...
+                                        </>
+                                    ) : (
+                                        'Create Account'
+                                    )}
                                 </button>
                             </div>
                         </div>

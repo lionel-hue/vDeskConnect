@@ -14,48 +14,28 @@ import SignupSelection from './auth/SignupSelection';
 import SignupTeacher from './auth/SignupTeacher';
 import SignupStudent from './auth/SignupStudent';
 import VerifyAccount from './auth/VerifyAccount';
-import MessagePopup from './MessagePopup'; // Add this import
 import '../style/auth.css';
 
 function App() {
-    const [formMessage, setFormMessage] = useState(null);
-
-    // Function to show success/error messages
-    const showMessage = (type, text, duration = 5000) => {
-        setFormMessage({ type, text });
-        // Auto-hide after duration
-        setTimeout(() => setFormMessage(null), duration);
-    };
-
-    const handleCloseMessage = () => {
-        setFormMessage(null);
-    };
-
     return (
         <Router>
             <div className="app">
-                {/* Add MessagePopup here */}
-                <MessagePopup
-                    message={formMessage}
-                    onClose={handleCloseMessage}
-                />
-
                 <Routes>
                     <Route
                         path="/"
-                        element={<LoginWrapper formMessage={formMessage} showMessage={showMessage} />}
+                        element={<LoginWrapper />}
                     />
                     <Route
                         path="/signup-selection"
-                        element={<SignupSelectionWrapper formMessage={formMessage} showMessage={showMessage} />}
+                        element={<SignupSelectionWrapper />}
                     />
                     <Route
                         path="/signup-teacher"
-                        element={<SignupTeacherWrapper showMessage={showMessage} />}
+                        element={<SignupTeacherWrapper />}
                     />
                     <Route
                         path="/signup-student"
-                        element={<SignupStudentWrapper showMessage={showMessage} />}
+                        element={<SignupStudentWrapper />}
                     />
                     <Route
                         path="/verify-account"
@@ -68,54 +48,46 @@ function App() {
 }
 
 // Wrapper components to use useNavigate
-function LoginWrapper({ formMessage, showMessage }) {
+function LoginWrapper() {
     const navigate = useNavigate();
     return (
         <Login
             onSignupClick={() => navigate('/signup-selection')}
-            formMessage={formMessage}
-            showMessage={showMessage}
         />
     );
 }
 
-function SignupSelectionWrapper({ formMessage, showMessage }) {
+function SignupSelectionWrapper() {
     const navigate = useNavigate();
     return (
         <SignupSelection
             onTeacherSignup={() => navigate('/signup-teacher')}
             onStudentSignup={() => navigate('/signup-student')}
             onLoginClick={() => navigate('/')}
-            formMessage={formMessage}
-            showMessage={showMessage}
         />
     );
 }
 
-function SignupTeacherWrapper({ showMessage }) {
+function SignupTeacherWrapper() {
     const navigate = useNavigate();
     return (
         <SignupTeacher
             onBackClick={() => navigate('/signup-selection')}
             onSuccess={() => {
-                showMessage('success', 'Teacher account created successfully!');
                 setTimeout(() => navigate('/'), 2000);
             }}
-            showMessage={showMessage}
         />
     );
 }
 
-function SignupStudentWrapper({ showMessage }) {
+function SignupStudentWrapper() {
     const navigate = useNavigate();
     return (
         <SignupStudent
             onBackClick={() => navigate('/signup-selection')}
             onSuccess={() => {
-                showMessage('success', 'Student account created successfully!');
                 setTimeout(() => navigate('/'), 2000);
             }}
-            showMessage={showMessage}
         />
     );
 }
@@ -123,13 +95,14 @@ function SignupStudentWrapper({ showMessage }) {
 function VerifyAccountWrapper() {
     const navigate = useNavigate();
     const location = useLocation();
-    
-    // Get user data from navigation state including verificationCode
-    const { 
-        userType = 'student', 
-        email = '', 
-        phone = '', 
-        verificationCode = '' 
+
+    // Get user data from navigation state including verificationCode and fromLogin flag
+    const {
+        userType = 'student',
+        email = '',
+        phone = '',
+        verificationCode = '',
+        fromLogin = false // Default to false
     } = location.state || {};
 
     return (
@@ -137,8 +110,9 @@ function VerifyAccountWrapper() {
             userType={userType}
             email={email}
             phone={phone}
-            verificationCode={verificationCode} // Pass the actual code
-            onBackClick={() => navigate('/signup-selection')}
+            verificationCode={verificationCode}
+            fromLogin={fromLogin} // Pass the fromLogin flag
+            onBackClick={() => navigate('/')} // Go back to login, not signup-selection
         />
     );
 }

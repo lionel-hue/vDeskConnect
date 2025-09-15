@@ -15,7 +15,7 @@ const teacher = {
         async add(id, name, email, tel, pwd, dob, soo, sex, prevAddr, currAddr, ms, bg, geno, height, weight, disability, qualification){
                       
             return await pool.query(`
-                INSERT INTO Public."Teacher"("T_name", "email", "tel", "password", "date_of_birth", "state_of_origin", "sex", "previous_address", "current_address", "marital_status", "bloodgroup", "genotype", "height", "weight", "disability", "qualification") Values($1, $2,$3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17 )
+                INSERT INTO Public."Teacher"("T_id", "T_name", "email", "tel", "password", "date_of_birth", "state_of_origin", "sex", "previous_address", "current_address", "marital_status", "bloodgroup", "genotype", "height", "weight", "disability", "qualification") Values($1, $2,$3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17 )
                 `,[id, name, email, tel, pwd, dob, soo, sex, prevAddr, currAddr, ms, bg, geno, height, weight, disability, qualification])  
         },
 
