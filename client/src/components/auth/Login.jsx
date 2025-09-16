@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom'; // Import Link
+import { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from '../../hooks/useForm'
 import { validateLogin } from '../../utils/validation'
 import { usePasswordToggle } from '../../hooks/usePasswordToggle'
@@ -13,6 +13,7 @@ function Login({ onSignupClick }) {
 
   const navigate = useNavigate();
   const [passwordType, passwordIcon, togglePassword] = usePasswordToggle()
+  const [visibleErrors, setVisibleErrors] = useState({});
 
   // Role options
   const roleOptions = [
@@ -21,6 +22,20 @@ function Login({ onSignupClick }) {
     { value: 'teacher', label: 'Teacher' },
     { value: 'admin', label: 'Administrator' }
   ]
+
+  // Auto-dismiss errors after 5 seconds
+  useEffect(() => {
+    if (Object.keys(errors).length > 0) {
+      setVisibleErrors(errors);
+      
+      const timer = setTimeout(() => {
+        setVisibleErrors({});
+        setErrors({});
+      }, 5000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [errors, setErrors]);
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -66,9 +81,12 @@ function Login({ onSignupClick }) {
         // Handle other errors
         else {
           console.error('Error logging in user:', data)
+          // Set server error that will also auto-dismiss
+          setErrors({ server: data.message || 'Login failed. Please try again.' });
         }
       } catch (error) {
         console.error('Network error:', error)
+        setErrors({ server: 'Network error. Please check your connection.' });
       } finally {
         setIsSubmitting(false)
       }
@@ -90,13 +108,20 @@ function Login({ onSignupClick }) {
           </div>
           <div className="card-content">
             <form onSubmit={handleSubmit} className="form">
+              {/* Server error message */}
+              {visibleErrors.server && (
+                <div className="error-message login-style" style={{ display: 'block' }}>
+                  {visibleErrors.server}
+                </div>
+              )}
+
               {/* Role Selection Dropdown */}
               <div className="form-group">
                 <label htmlFor="role" className="label">I am a</label>
                 <select
                   id="role"
                   name="role"
-                  className={`input ${errors.role ? 'error' : ''}`}
+                  className={`input ${visibleErrors.role ? 'error' : ''}`}
                   value={values.role}
                   onChange={handleChange}
                   required
@@ -107,7 +132,11 @@ function Login({ onSignupClick }) {
                     </option>
                   ))}
                 </select>
-                {errors.role && <div className="error-message">{errors.role}</div>}
+                {visibleErrors.role && (
+                  <div className="error-message login-style" style={{ display: 'block' }}>
+                    {visibleErrors.role}
+                  </div>
+                )}
               </div>
 
               <div className="form-group">
@@ -116,13 +145,17 @@ function Login({ onSignupClick }) {
                   type="text"
                   id="email"
                   name="email"
-                  className={`input ${errors.email ? 'error' : ''}`}
+                  className={`input ${visibleErrors.email ? 'error' : ''}`}
                   value={values.email}
                   onChange={handleChange}
                   placeholder="Enter your email or phone number"
                   required
                 />
-                {errors.email && <div className="error-message">{errors.email}</div>}
+                {visibleErrors.email && (
+                  <div className="error-message login-style" style={{ display: 'block' }}>
+                    {visibleErrors.email}
+                  </div>
+                )}
               </div>
 
               <div className="form-group">
@@ -132,7 +165,7 @@ function Login({ onSignupClick }) {
                     type={passwordType}
                     id="password"
                     name="password"
-                    className={`input password-input ${errors.password ? 'error' : ''}`}
+                    className={`input password-input ${visibleErrors.password ? 'error' : ''}`}
                     value={values.password}
                     onChange={handleChange}
                     placeholder="Enter your password"
@@ -146,7 +179,11 @@ function Login({ onSignupClick }) {
                     <i data-lucide={passwordIcon}></i>
                   </button>
                 </div>
-                {errors.password && <div className="error-message">{errors.password}</div>}
+                {visibleErrors.password && (
+                  <div className="error-message login-style" style={{ display: 'block' }}>
+                    {visibleErrors.password}
+                  </div>
+                )}
               </div>
 
               {/* Forgot Password Link */}

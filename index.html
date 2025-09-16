@@ -3,383 +3,196 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reset Your Password - vDeskconnect</title>
+    <title>Account Verified - vDeskconnect</title>
     <style>
-        /* General Styles & Utilities */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
+        
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
             background-color: #0f172a;
             color: #f8fafc;
-            line-height: 1.5;
-            padding: 1rem;
-            display: flex; /* Centers the content vertically and horizontally */
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
+            line-height: 1.6;
+            padding: 20px;
         }
-
+        
         .container {
-            max-width: 28rem;
-            width: 100%;
-        }
-
-        /* Card Component */
-        .card {
+            max-width: 600px;
+            margin: 0 auto;
             background-color: #1e293b;
             border: 1px solid #374151;
-            border-radius: 0.5rem;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
             overflow: hidden;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
         }
-
-        .card-header {
-            padding: 1.5rem;
+        
+        .header {
+            background: linear-gradient(135deg, #10b981, #059669);
+            padding: 30px;
             text-align: center;
-            background: linear-gradient(135deg, #8b5cf6, #3b82f6);
         }
-
+        
         .logo {
-            width: 4rem;
-            height: 4rem;
+            width: 70px;
+            height: 70px;
             background: rgba(255, 255, 255, 0.2);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 1rem;
+            margin: 0 auto 20px;
             font-weight: bold;
-            font-size: 1.25rem;
+            font-size: 24px;
             color: white;
             backdrop-filter: blur(10px);
         }
-
-        .card-title {
-            font-size: 1.5rem;
+        
+        .title {
+            font-size: 28px;
             font-weight: bold;
             color: #f8fafc;
-            margin-bottom: 0.5rem;
+            margin-bottom: 10px;
         }
-
-        .card-description {
-            color: #e2e8f0;
-            font-size: 0.875rem;
-        }
-
-        .card-content {
-            padding: 1.5rem;
-        }
-
-        /* Form Layout */
-        .form {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem; /* Creates the space between the fields */
-        }
-
-        /*
-        To fix the password fields from appearing side-by-side,
-        we need to give them a container that forces a vertical layout.
-        The `form-group` class is already designed for this.
-        */
-        .form-row {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .label {
-            color: #e2e8f0;
-            font-size: 0.875rem;
-            font-weight: 500;
-        }
-
-        .input {
-            background-color: #374151;
-            border: 1px solid #4b5563;
-            border-radius: 0.375rem;
-            padding: 0.625rem 0.75rem;
-            color: #f8fafc;
-            font-size: 0.875rem;
-            transition: border-color 0.2s, box-shadow 0.2s;
-            width: 100%;
-        }
-
-        .input:focus {
-            outline: none;
-            border-color: #8b5cf6;
-            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
-        }
-
-        .input.error {
-            border-color: #ef4444;
-        }
-
-        .btn {
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.375rem;
-            border: none;
-            font-weight: 600;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.2s;
+        
+        .content {
+            padding: 30px;
             text-align: center;
-            text-decoration: none;
-            color: white;
-            background: linear-gradient(135deg, #8b5cf6, #3b82f6);
-            width: 100%; /* Make the button full-width */
         }
-
-        .btn:hover {
-            background: linear-gradient(135deg, #7c3aed, #2563eb);
+        
+        .success-icon {
+            font-size: 64px;
+            color: #10b981;
+            margin: 20px 0;
+            text-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
         }
-
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
+        
+        .message {
+            margin-bottom: 20px;
+            font-size: 16px;
+            color: #e2e8f0;
+            line-height: 1.6;
         }
-
-        /* Message Styling */
-        .error-message {
-            color: #dc2626;
-            font-size: 0.875rem;
-            margin-top: 0.25rem;
-            padding: 0.5rem;
-            background-color: #fef2f2;
-            border-radius: 0.375rem;
-            border-left: 3px solid #dc2626;
-            display: none;
-        }
-
-        .success-message {
-            display: flex;
-            align-items: flex-start;
-            gap: 1rem;
-            padding: 1rem;
-            background-color: #065f46;
-            border: 1px solid #059669;
-            border-radius: 0.5rem;
-            margin-bottom: 1rem;
-            color: #d1fae5;
-            display: none;
-        }
-
-        .loading-spinner {
+        
+        .cta-button {
             display: inline-block;
-            width: 1rem;
-            height: 1rem;
-            border: 2px solid #f3f4f6;
-            border-top: 2px solid #3b82f6;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-right: 0.5rem;
+            padding: 14px 28px;
+            background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 16px;
+            margin: 25px 0;
+            transition: all 0.3s ease;
         }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        
+        .cta-button:hover {
+            background: linear-gradient(135deg, #7c3aed, #2563eb);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(139, 92, 246, 0.3);
         }
-
-        /* Footer & Security Note */
+        
+        .features {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin: 30px 0;
+        }
+        
+        .feature {
+            background-color: #374151;
+            padding: 15px;
+            border-radius: 8px;
+            flex: 1;
+            min-width: 150px;
+            text-align: center;
+        }
+        
+        .feature-icon {
+            color: #8b5cf6;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        
         .footer {
             text-align: center;
-            margin-top: 1.5rem;
-            padding-top: 1rem;
+            margin-top: 30px;
+            padding-top: 20px;
             border-top: 1px solid #374151;
             color: #94a3b8;
-            font-size: 0.75rem;
+            font-size: 14px;
         }
-
-        .security-note {
-            background-color: #374151;
-            padding: 0.75rem;
-            border-radius: 0.375rem;
-            margin-top: 1rem;
-            font-size: 0.75rem;
-            color: #94a3b8;
-        }
-
-        /* Responsive Design */
+        
         @media (max-width: 640px) {
             body {
-                padding: 0.5rem;
+                padding: 10px;
             }
             
-            .card-header,
-            .card-content {
-                padding: 1rem;
+            .header, .content {
+                padding: 20px;
+            }
+            
+            .title {
+                font-size: 24px;
+            }
+            
+            .features {
+                flex-direction: column;
+            }
+            
+            .success-icon {
+                font-size: 48px;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="card">
-            <div class="card-header">
-                <div class="logo">
-                    <span>vD</span>
+        <div class="header">
+            <div class="logo">
+                <span>vD</span>
+            </div>
+            <h1 class="title">Account Verified Successfully!</h1>
+        </div>
+        
+        <div class="content">
+            <div class="success-icon">✓</div>
+            
+            <p class="message">Congratulations! Your vDeskconnect account has been successfully verified.</p>
+            <p class="message">You now have full access to all features and can start using vDeskconnect to enhance your productivity.</p>
+            
+            <a href="{{app_link}}" class="cta-button">Access vDeskconnect Now</a>
+            
+            <div class="features">
+                <div class="feature">
+                    <div class="feature-icon">🚀</div>
+                    <h3>Fast & Secure</h3>
+                    <p>Experience blazing fast performance with enterprise-grade security</p>
                 </div>
-                <h1 class="card-title">Reset Your Password</h1>
-                <p class="card-description">Create a new password for your vDeskconnect account</p>
+                <div class="feature">
+                    <div class="feature-icon">💼</div>
+                    <h3>All Features Unlocked</h3>
+                    <p>Access all premium features with your verified account</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🔒</div>
+                    <h3>Full Protection</h3>
+                    <p>Your data is encrypted and protected at all times</p>
+                </div>
             </div>
             
-            <div class="card-content">
-                <div id="successMessage" class="success-message">
-                    ✓ Password reset successfully! Redirecting to login...
-                </div>
-
-                <div id="errorMessage" class="error-message"></div>
-
-                <form id="resetForm" class="form">
-                    <input type="hidden" id="email" value="USER_EMAIL">
-                    <input type="hidden" id="token" value="RESET_TOKEN">
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="newPassword" class="label">New Password</label>
-                            <input 
-                                type="password" 
-                                id="newPassword" 
-                                class="input" 
-                                placeholder="Enter your new password" 
-                                minlength="6"
-                                required
-                            >
-                        </div>
-
-                        <div class="form-group">
-                            <label for="confirmPassword" class="label">Confirm New Password</label>
-                            <input 
-                                type="password" 
-                                id="confirmPassword" 
-                                class="input" 
-                                placeholder="Confirm your new password" 
-                                minlength="6"
-                                required
-                            >
-                        </div>
-                    </div>
-
-                    <button type="submit" class="btn" id="submitBtn">
-                        Reset Password
-                    </button>
-                </form>
-
-                <div class="security-note">
-                    <strong>Security Note:</strong> This link will expire in 1 hour for your security. 
-                    If you didn't request this reset, please ignore this email.
-                </div>
-
-                <div class="footer">
-                    <p>vDeskconnect &copy; 2024. All rights reserved.</p>
-                </div>
+            <p class="message">If you have any questions or need assistance, please don't hesitate to contact our support team.</p>
+            
+            <div class="footer">
+                <p>Welcome to vDeskconnect! We're excited to have you on board.</p>
+                <p>vDeskconnect Team &copy; 2024</p>
             </div>
         </div>
     </div>
-
-    <script>
-        document.getElementById('resetForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const submitBtn = document.getElementById('submitBtn');
-            const errorDiv = document.getElementById('errorMessage');
-            const successDiv = document.getElementById('successMessage');
-            const newPassword = document.getElementById('newPassword');
-            const confirmPassword = document.getElementById('confirmPassword');
-            
-            // Clear previous errors
-            errorDiv.style.display = 'none';
-            errorDiv.textContent = '';
-            newPassword.classList.remove('error');
-            confirmPassword.classList.remove('error');
-            
-            // Validate passwords
-            if (newPassword.value.length < 6) {
-                showError('Password must be at least 6 characters long', newPassword);
-                return;
-            }
-            
-            if (newPassword.value !== confirmPassword.value) {
-                showError('Passwords do not match', confirmPassword);
-                return;
-            }
-            
-            // Show loading state
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="loading-spinner"></span> Resetting...';
-            
-            try {
-                const response = await fetch(`${process.env.VITE_HOST}:${process.env.VITE_PORT}/auth/reset-password/`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        email: document.getElementById('email').value,
-                        token: document.getElementById('token').value,
-                        newPassword: newPassword.value
-                    }),
-                });
-                
-                const data = await response.json();
-                
-                if (response.ok) {
-                    // Show success message
-                    successDiv.style.display = 'flex';
-                    
-                    // Redirect to login after 2 seconds
-                    setTimeout(() => {
-                        window.location.href = 'http://localhost:3000/';
-                    }, 2000);
-                } else {
-                    showError(data.message || 'Failed to reset password. Please try again.');
-                }
-            } catch (error) {
-                showError('Network error. Please check your connection and try again.');
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Reset Password';
-            }
-        });
-        
-        function showError(message, inputField = null) {
-            const errorDiv = document.getElementById('errorMessage');
-            errorDiv.textContent = message;
-            errorDiv.style.display = 'block';
-            
-            if (inputField) {
-                inputField.classList.add('error');
-                inputField.focus();
-            }
-            
-            // Auto-dismiss error after 5 seconds
-            setTimeout(() => {
-                errorDiv.style.display = 'none';
-            }, 5000);
-        }
-        
-        // Validate passwords in real-time
-        document.getElementById('confirmPassword').addEventListener('input', function() {
-            const newPassword = document.getElementById('newPassword');
-            const confirmPassword = this;
-            
-            if (newPassword.value !== confirmPassword.value && confirmPassword.value.length > 0) {
-                confirmPassword.classList.add('error');
-            } else {
-                confirmPassword.classList.remove('error');
-            }
-        });
-    </script>
 </body>
 </html>

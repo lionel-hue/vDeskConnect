@@ -25,6 +25,8 @@ const student = {
 
         async getByEmail(email){ return await pool.query( `SELECT * FROM Public."Student" WHERE email = $1`, [email])},
 
+        async getById(id){ return await pool.query( `SELECT * FROM Public."Student" WHERE "Stu_id = $1`, [id])},
+
         async getAllEmails(){ return await pool.query(` SELECT email FROM Public."Student" `)},
 
         junior: {

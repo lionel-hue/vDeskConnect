@@ -1,20 +1,11 @@
-import { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import {
-    ArrowLeft,
-    ArrowRight,
-    BookOpen,
-    GraduationCap,
-    Users,
-    Eye,
-    EyeOff
-} from 'lucide-react';
 import Login from './auth/Login';
 import SignupSelection from './auth/SignupSelection';
 import SignupTeacher from './auth/SignupTeacher';
 import SignupStudent from './auth/SignupStudent';
 import VerifyAccount from './auth/VerifyAccount';
-import ForgotPassword from './auth/ForgotPassword'; // Import the new component
+import ForgotPassword from './auth/ForgotPassword';
+import ResetPassword from './auth/ResetPassword'; // Import the ResetPassword component
 import '../style/auth.css';
 
 function App() {
@@ -42,10 +33,14 @@ function App() {
                         path="/verify-account"
                         element={<VerifyAccountWrapper />}
                     />
-                    {/* Updated route for the forgot password page */}
                     <Route
                         path="/forgot-password"
-                        element={<ForgotPasswordWrapper />}
+                        element={<ForgotPassword />} // No wrapper needed since it uses Link
+                    />
+                    {/* Add route for ResetPassword */}
+                    <Route
+                        path="/reset-password"
+                        element={<ResetPassword />} // No wrapper needed
                     />
                 </Routes>
             </div>
@@ -53,8 +48,7 @@ function App() {
     );
 }
 
-// ... other wrapper components (LoginWrapper, SignupSelectionWrapper, etc.) ...
-
+// Wrapper components (only for components that need navigation functions)
 function LoginWrapper() {
     const navigate = useNavigate();
     return (
@@ -103,13 +97,12 @@ function VerifyAccountWrapper() {
     const navigate = useNavigate();
     const location = useLocation();
 
-    // Get user data from navigation state including verificationCode and fromLogin flag
     const {
         userType = 'student',
         email = '',
         phone = '',
         verificationCode = '',
-        fromLogin = false // Default to false
+        fromLogin = false
     } = location.state || {};
 
     return (
@@ -118,17 +111,10 @@ function VerifyAccountWrapper() {
             email={email}
             phone={phone}
             verificationCode={verificationCode}
-            fromLogin={fromLogin} // Pass the fromLogin flag
-            onBackClick={() => navigate('/')} // Go back to login, not signup-selection
+            fromLogin={fromLogin}
+            onBackClick={() => navigate('/')}
         />
     );
-}
-
-
-// Wrapper for the ForgotPassword component
-function ForgotPasswordWrapper() {
-    // This wrapper pattern is useful if you need to pass hooks like useNavigate
-    return <ForgotPassword />;
 }
 
 export default App;

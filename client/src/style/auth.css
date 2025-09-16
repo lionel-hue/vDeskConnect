@@ -1097,3 +1097,39 @@
         padding: 1rem;
     }
 }
+
+
+/* Add these styles to your auth.css file */
+
+/* Login-style error messages */
+.error-message.login-style {
+    color: #ef4444;
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+    padding: 0;
+    background-color: transparent;
+    border: none;
+    border-radius: 0;
+    display: block;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Input error state */
+.input.error {
+    border-color: #ef4444;
+}
+
+.input.error:focus {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+/* Fade animation for auto-dismiss */
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+.error-message.login-style.fade-out {
+    animation: fadeOut 0.5s ease-in-out forwards;
+}
