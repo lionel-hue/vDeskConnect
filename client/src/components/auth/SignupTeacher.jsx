@@ -5,7 +5,7 @@ import { usePasswordToggle } from '../../hooks/usePasswordToggle';
 import { ArrowLeft, ArrowRight, BookOpen, Eye, EyeOff, ChevronDown, ChevronUp } from 'lucide-react';
 
 function SignupTeacher({ onBackClick, onSuccess, showMessage }) {
-    const navigate = useNavigate(); // Add this hook
+    const navigate = useNavigate();
     const [values, setValues] = useState({
         // Step 1: Basic Information
         name: '',
@@ -33,10 +33,8 @@ function SignupTeacher({ onBackClick, onSuccess, showMessage }) {
 
         // Step 5: Professional Information
         qualification: '',
-        // Mod  ified: Separate subject tracking for JSS and SSS
         juniorSubjects: [],
         seniorSubjects: [],
-        // English language disciplines
         englishDisciplines: {
             junior: [],
             senior: []
@@ -57,9 +55,10 @@ function SignupTeacher({ onBackClick, onSuccess, showMessage }) {
         junior: false,
         senior: false
     });
-    const totalSteps = 6; // Updated for teacher form
+    const totalSteps = 6;
 
-    // Nigerian States
+    // ... (your existing arrays: nigerianStates, bloodGroups, etc.)
+// Nigerian States
     const nigerianStates = [
         'Abia', 'Adamawa', 'Akwa Ibom', 'Anambra', 'Bauchi', 'Bayelsa', 'Benue', 'Borno',
         'Cross River', 'Delta', 'Ebonyi', 'Edo', 'Ekiti', 'Enugu', 'FCT', 'Gombe',
@@ -129,22 +128,15 @@ function SignupTeacher({ onBackClick, onSuccess, showMessage }) {
         'French'
     ];
 
+
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
 
-        if (type === 'checkbox') {
-            setValues(prev => ({
-                ...prev,
-                [name]: checked
-            }));
-        } else {
-            setValues(prev => ({
-                ...prev,
-                [name]: value
-            }));
-        }
+        setValues(prev => ({
+            ...prev,
+            [name]: type === 'checkbox' ? checked : value
+        }));
 
-        // Clear error for this field when user starts typing
         if (errors[name]) {
             setErrors(prev => ({
                 ...prev,
@@ -220,7 +212,7 @@ function SignupTeacher({ onBackClick, onSuccess, showMessage }) {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Combine subjects for validation and submission
+        // Combine subjects for validation
         const allSubjects = [
             ...new Set([
                 ...values.juniorSubjects,
@@ -233,12 +225,13 @@ function SignupTeacher({ onBackClick, onSuccess, showMessage }) {
             subjects: allSubjects
         };
 
-        // Validate all fields before submission
+        // Validate all fields before submission - FIXED: Pass userType as second parameter
         const validationErrors = validateForm(formDataForValidation, 'teacher');
         setErrors(validationErrors);
 
         if (Object.keys(validationErrors).length === 0) {
             setIsSubmitting(true);
+            setServerError('');
 
             try {
                 const teacherData = {
@@ -267,7 +260,6 @@ function SignupTeacher({ onBackClick, onSuccess, showMessage }) {
 
                     // Professional Information
                     qualification: values.qualification,
-                    // Send detailed subject information
                     subjects: allSubjects,
                     juniorSubjects: values.juniorSubjects,
                     seniorSubjects: values.seniorSubjects,
@@ -288,32 +280,40 @@ function SignupTeacher({ onBackClick, onSuccess, showMessage }) {
                 const data = await response.json();
 
                 if (!response.ok) {
-                    // Handle different error cases
-                    if (data.message && data.message.toLowerCase().includes('invite') ||
-                        data.message.toLowerCase().includes('invitation')) {
-
-                        // Clear the invitation code field
+                    // FIXED: Proper error handling
+                    const errorMessage = data.message || 'Signup failed';
+                    
+                    if (errorMessage.toLowerCase().includes('invite') || 
+                        errorMessage.toLowerCase().includes('invitation')) {
+                        
                         setValues(prev => ({ ...prev, invitationCode: '' }));
-
-                        // Focus on the invitation code field
+                        
                         setTimeout(() => {
                             const inviteInput = document.getElementById('invitationCode');
                             if (inviteInput) inviteInput.focus();
                         }, 100);
-                    } else setServerError(data.message || 'Signup failed');
+                        
+                        setServerError(errorMessage);
+                    } else {
+                        setServerError(errorMessage);
+                    }
                 } else {
-                    // Success case - navigate to verification page
-                    if (data.status === "success" || data.message.includes("success") || data.message.includes("registered")) {
-
-                        // Navigate after a brief delay to show the success message
-                        setIsSuccess(true)
+                    // FIXED: More robust success detection
+                    if (data.status === "success" || 
+                        (data.message && (
+                            data.message.toLowerCase().includes("success") || 
+                            data.message.toLowerCase().includes("registered")
+                        ))) {
+                        
+                        setIsSuccess(true);
+                        
                         setTimeout(() => {
                             navigate('/verify-account', {
                                 state: {
                                     userType: 'teacher',
                                     email: values.email,
                                     phone: values.telephone,
-                                    verificationCode: data.verificationCode
+                                    verificationCode: data.verificationCode || data.code
                                 }
                             });
                         }, 1500);
@@ -331,10 +331,9 @@ function SignupTeacher({ onBackClick, onSuccess, showMessage }) {
     };
 
     const nextStep = () => {
-        // For step 5 (Professional Information), we need to validate subjects differently
+        // Combine subjects for step 5 validation
         let formDataForValidation = { ...values };
         if (currentStep === 5) {
-            // Combine subjects for validation
             const allSubjects = [
                 ...new Set([
                     ...values.juniorSubjects,
@@ -344,13 +343,12 @@ function SignupTeacher({ onBackClick, onSuccess, showMessage }) {
             formDataForValidation.subjects = allSubjects;
         }
 
-        // Validate current step before proceeding - specify teacher type
+        // FIXED: Pass userType as third parameter
         const stepErrors = validateStep(currentStep, formDataForValidation, 'teacher');
 
         if (Object.keys(stepErrors).length === 0) {
-            const newStep = Math.min(currentStep + 1, totalSteps);
-            setCurrentStep(newStep);
-            setErrors({}); // Clear any previous errors
+            setCurrentStep(prev => Math.min(prev + 1, totalSteps));
+            setErrors({});
         } else {
             setErrors(stepErrors);
         }
@@ -358,7 +356,7 @@ function SignupTeacher({ onBackClick, onSuccess, showMessage }) {
 
     const prevStep = () => {
         setCurrentStep(prev => Math.max(prev - 1, 1));
-        setErrors({}); // Clear errors when going back
+        setErrors({});
     };
 
     // Step indicator component

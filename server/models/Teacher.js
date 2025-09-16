@@ -21,6 +21,8 @@ const teacher = {
 
         async getByEmail(email){ return await pool.query( `SELECT * FROM Public."Teacher" WHERE email = $1`, [email])},
 
+        async getAllEmails(){ return await pool.query(` SELECT email FROM Public."Teacher" `)},
+
         async add_teach_subject_grade(sub_code, grade_num, t_id){
             return await pool.query(`
                 INSERT INTO Public."Teach_Subject_Grade" Values($1, $2, $3)`, [sub_code, grade_num, t_id])

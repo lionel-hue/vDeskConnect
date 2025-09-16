@@ -10,7 +10,7 @@ function SignupStudent({ onBackClick, showMessage }) {
         name: '',
         age: '',
         email: '',
-        telephstudentDataone: '',
+        telephone: '',
         password: '',
         confirmPassword: '',
         studentType: 'junior',
@@ -38,6 +38,7 @@ function SignupStudent({ onBackClick, showMessage }) {
     const [errors, setErrors] = useState({});
     const [serverError, setServerError] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isSuccess, setIsSuccess] = useState(false);
     const [passwordType, IconPassword, togglePassword] = usePasswordToggle();
     const [confirmPasswordType, IconConfirmPassword, toggleConfirmPassword] = usePasswordToggle();
     const [currentStep, setCurrentStep] = useState(1);
@@ -156,6 +157,7 @@ function SignupStudent({ onBackClick, showMessage }) {
                     // Success case - navigate to verification page
                     if (data.status === "success") {
 
+                        setIsSuccess(true)
                         // Navigate with the verification code from server response
                         setTimeout(() => {
                             navigate('/verify-account', {

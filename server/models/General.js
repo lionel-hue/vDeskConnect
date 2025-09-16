@@ -12,11 +12,19 @@ const general = {
     auth : {
         
         async verify_invite(code){
-            return pool.query(`SELECT * FROM Public."Inviter" WHERE code = $1 AND NOT used  AND expires_at > NOW();`,[code])
+            return pool.query(`SELECT * FROM Public."InviteCode" WHERE code = $1 AND NOT used  AND expires_at > NOW();`,[code])
         },
 
         async use_invite_code(code){
-            return pool.query(`UPDATE Public."Inviter" SET used = TRUE WHERE code = $1`, [code])
+            return pool.query(`UPDATE Public."InviteCode" SET used = TRUE WHERE code = $1`, [code])
+        },
+
+        async verify_token(code){
+            return pool.query(`SELECT * FROM Public."Token" WHERE code = $1 AND NOT used  AND expires_at > NOW();`,[code])
+        },
+
+        async use_token(code){
+            return pool.query(`UPDATE Public."Token" SET used = TRUE WHERE code = $1`, [code])
         }
     }
 }

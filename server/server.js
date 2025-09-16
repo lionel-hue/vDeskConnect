@@ -2,6 +2,7 @@ import express from "express"
 import cors from "cors"
 import signup_router from "./routes/auth/signup.js"
 import login_router from "./routes/auth/login.js"
+import forgot_password from "./routes/auth/forgot_password.js"
 
 
 const PORT = process.env.VITE_PORT || 8080
@@ -20,5 +21,5 @@ app.use(express.json())
 // --auth
 app.use("/auth/", signup_router )
 app.use("/auth/", login_router )
-
+app.use("/auth/", forgot_password )
 app.listen(PORT, ()=> { console.log(`server started on port ${PORT}!`)})
