@@ -1,10 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useForm } from '../../hooks/useForm';
-import { validateForgotPassword } from '../../utils/validation'; // Updated Import
+import { validateForgotPassword } from '../../utils/validation';
 import { Mail } from 'lucide-react';
-
-// The inline validation function has been removed from here.
 
 function ForgotPassword() {
     const { values, errors, isSubmitting, handleChange, setErrors, setIsSubmitting } = useForm({
@@ -13,13 +11,41 @@ function ForgotPassword() {
 
     const [messageSent, setMessageSent] = useState(false);
     const [serverError, setServerError] = useState('');
+    const [fieldErrors, setFieldErrors] = useState({});
+
+    useEffect(() => {
+        // Update field errors when errors change
+        setFieldErrors(errors);
+    }, [errors]);
+
+    useEffect(() => {
+        // Auto-dismiss server errors after 5 seconds
+        if (serverError) {
+            const timer = setTimeout(() => {
+                setServerError('');
+            }, 5000);
+
+            return () => clearTimeout(timer);
+        }
+    }, [serverError]);
+
+    useEffect(() => {
+        // Auto-dismiss field errors after 3 seconds when user starts typing
+        if (Object.keys(fieldErrors).length > 0) {
+            const timer = setTimeout(() => {
+                setFieldErrors({});
+            }, 3000);
+
+            return () => clearTimeout(timer);
+        }
+    }, [fieldErrors]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setServerError('');
-        // Now using the imported validation function
         const validationErrors = validateForgotPassword(values);
         setErrors(validationErrors);
+        setFieldErrors(validationErrors);
 
         if (Object.keys(validationErrors).length === 0) {
             setIsSubmitting(true);
@@ -45,6 +71,17 @@ function ForgotPassword() {
         }
     };
 
+    const handleInputChange = (e) => {
+        handleChange(e);
+        // Clear specific field error when user starts typing
+        if (fieldErrors[e.target.name]) {
+            setFieldErrors(prev => ({
+                ...prev,
+                [e.target.name]: ''
+            }));
+        }
+    };
+
     return (
         <div className="app">
             <div className="container">
@@ -56,21 +93,33 @@ function ForgotPassword() {
                         <div className="header-content">
                             <h1 className="card-title">Forgot Password</h1>
                             <p className="card-description">
-                                {messageSent 
+                                {messageSent
                                     ? "Check your inbox for a reset link."
                                     : "Enter your email to receive a password reset link."}
                             </p>
                         </div>
                     </div>
                     <div className="card-content">
+                        {/* Server error message - auto dismisses after 5 seconds */}
+                        {serverError && (
+                            <div className="error-message server-error">
+                                {serverError}
+                            </div>
+                        )}
+
                         {messageSent ? (
-                            <div className="success-message-container">
-                                <div className="role-icon" style={{ background: 'linear-gradient(135deg, #10b981, #059669)', margin: '0 auto 1rem' }}>
-                                     <Mail size={24} />
+                            <div className="success-message">
+                                <div className="success-icon">
+                                    <Mail size={24} />
                                 </div>
-                                <p className="card-description" style={{ textAlign: 'center' }}>
-                                    If an account with the email <strong>{values.email}</strong> exists, a password reset link has been sent. Please check your spam folder if you don't see it.
-                                </p>
+                                <div className="success-content">
+                                    <h3>Reset Link Sent</h3>
+                                    <p>
+                                        If an account with the email <strong>{values.email}</strong> exists,
+                                        a password reset link has been sent. Please check your spam folder
+                                        if you don't see it.
+                                    </p>
+                                </div>
                             </div>
                         ) : (
                             <form onSubmit={handleSubmit} className="form">
@@ -80,16 +129,19 @@ function ForgotPassword() {
                                         type="email"
                                         id="email"
                                         name="email"
-                                        className={`input ${errors.email ? 'error' : ''}`}
+                                        className={`input ${fieldErrors.email ? 'error' : ''}`}
                                         value={values.email}
-                                        onChange={handleChange}
+                                        onChange={handleInputChange}
                                         placeholder="Enter your registered email"
                                         required
                                     />
-                                    {errors.email && <div className="error-message">{errors.email}</div>}
+                                    {/* Inline error message - auto dismisses after 3 seconds */}
+                                    {fieldErrors.email && (
+                                        <div className="error-message">
+                                            {fieldErrors.email}
+                                        </div>
+                                    )}
                                 </div>
-
-                                {serverError && <div className="error-message server-error">{serverError}</div>}
 
                                 <button
                                     type="submit"
