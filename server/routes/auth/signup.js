@@ -18,9 +18,9 @@ signup_router.post("/signup/student/", async (req, res) => {
 
         console.log(req.body)
 
-        // In your student signup route, replace the invitation code verification section:
+        // In your student signup route, replaceinvit the invitation code verification section:
         try {
-            const inviteResult = await general.auth.verify_invite(invitationCode);
+            const inviteResult = await general.auth.invite.verify_invite(invitationCode);
 
             if (inviteResult.rows.length === 0 || inviteResult.rows[0].code !== invitationCode) {
                 return res.status(400).json({
@@ -112,7 +112,7 @@ signup_router.post("/signup/teacher/", async (req, res) => {
 
         // In your teacher signup route, replace the invitation code verification section:
         try {
-            const inviteResult = await general.auth.verify_invite(invitationCode);
+            const inviteResult = await general.auth.invite.verify_invite(invitationCode);
 
             if (inviteResult.rows.length === 0 || inviteResult.rows[0].code !== invitationCode) {
                 return res.status(400).json({

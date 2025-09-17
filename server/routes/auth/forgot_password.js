@@ -24,27 +24,32 @@ forgot_password.post("/forgot-password", async (req, res) => {
 
         let tokenHash
 
-        //check where the email belongs... to the table Student or Teacher
-        // not found ? email doesn't exist.. found ??? success !
-        if (students.find(elem => elem === req.body.email) != '') {
+        try {
+            //check where the email belongs... to the table Student or Teacher
+            // not found ? email doesn't exist.. found ??? success !
+            if (students.find(elem => elem === req.body.email) != '') {
 
-            user.id = (await student.auth.getByEmail(req.body.email)).rows[0].Stu_id
-            user.type = "student"
+                user.id = (await student.auth.getByEmail(req.body.email)).rows[0].Stu_id
+                user.type = "student"
 
-            // generate database token for the user..
-            tokenHash = await bcrypt.hash(generator.id(), 10)
-            await general.auth.token.build_token(generator.id(), tokenHash, "student", new Date(Date.now() + 10 * 60 * 1000), user.id)
+                // generate database token for the user..
+                tokenHash = await bcrypt.hash(generator.id(), 10)
+                await general.auth.token.build_token(generator.id(), tokenHash, "student", new Date(Date.now() + 10 * 60 * 1000), user.id)
 
-        } else if (teachers.find((elem => elem === req.body.email)) != '') {
+            } else if (teachers.find((elem => elem === req.body.email)) != '') {
 
-            user.id = (await teacher.auth.getByEmail(email)).rows[0].T_id
-            user.type = "teacher"
+                user.id = (await teacher.auth.getByEmail(email)).rows[0].T_id
+                user.type = "teacher"
 
-            // generate database token for the user..
-            tokenHash = await bcrypt.hash(generator.id(), 10)
-            await general.auth.token.build_token(generator.id(), tokenHash, "teacher", new Date(Date.now() + 10 * 60 * 1000), user.id)
+                // generate database token for the user..
+                tokenHash = await bcrypt.hash(generator.id(), 10)
+                await general.auth.token.build_token(generator.id(), tokenHash, "teacher", new Date(Date.now() + 10 * 60 * 1000), user.id)
 
-        } else {
+            }
+
+        } catch (error) {
+            console.log("An unexpected error occured : ", error.message)
+
             return res.status(400).json({
                 "success": false,
                 "message": "Email doesn't exists"
@@ -56,7 +61,7 @@ forgot_password.post("/forgot-password", async (req, res) => {
             jwt.sign(
                 user,
                 process.env.JWT_SECRET,
-                { expiresIn: '1h' }
+                { expiresIn: '10m' }
             )
 
         const passwordRestLink = `${process.env.VITE_FRONT}/reset-password?token=${jwt_token}`

@@ -29,7 +29,7 @@ const student = {
 
         async getAllEmails(){ return await pool.query(` SELECT email FROM Public."Student" `)},
 
-        async changePassword(id, password){ return await pool.query( `UPDATE public."Student", SET password = $2 WHERE Stu_id = $1`, [id, password] )},
+        async changePassword(id, password){ return await pool.query( `UPDATE public."Student" SET password = $2 WHERE "Stu_id" = $1`, [id, password] )},
 
         junior: {
             async add(id, grade_num) {

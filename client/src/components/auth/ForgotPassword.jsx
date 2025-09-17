@@ -64,7 +64,7 @@ function ForgotPassword() {
                 }
             } catch (error) {
                 console.error('Network error:', error);
-                setServerError('Could not connect to the server. Please check your network.');
+                setServerError('Server temporarily down, Please try again later.');
             } finally {
                 setIsSubmitting(false);
             }

@@ -12,7 +12,7 @@ const app = express()
 
 // Explicit CORS config for frontend
 app.use(cors({
-  origin: "http://localhost:5173", // Update if your frontend runs elsewhere
+  origin: [`${process.env.VITE_HOST}`,`${process.env.VITE_FRONT}`, 'http://localhost:5173'],
   credentials: true
 }))
 
