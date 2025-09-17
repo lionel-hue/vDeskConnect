@@ -16,7 +16,7 @@ function ResetPassword() {
     const token = searchParams.get('token');
 
     useEffect(() => {
-        // Validate that we have both email and token
+        // Validate that we have token
         if (!token) {
             setServerError('Invalid reset link. Please check your email for the correct link.');
         }
@@ -64,7 +64,6 @@ function ResetPassword() {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    email,
                     token,
                     newPassword
                 }),

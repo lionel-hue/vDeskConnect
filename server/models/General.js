@@ -24,12 +24,12 @@ const general = {
 
         token: {
 
-            async verify_token(token) {
-                return pool.query(`SELECT * FROM Public."Token" WHERE code = $1 AND NOT used  AND expires_at > NOW();`, [token])
+            async get_token(used_by) {
+                return pool.query(`SELECT * FROM Public."Token" WHERE used_by = $1 AND NOT used  AND expires_at > NOW();`, [used_by])
             },
 
-            async use_token(token, used_at) {
-                return pool.query(`UPDATE Public."Token" SET used = TRUE and used_at = $1 WHERE token = $2`, [used_at, token])
+            async use_token(user_id, used_at) {
+                return pool.query(`UPDATE Public."Token" SET used = TRUE, used_at = $1 WHERE used_by = $2`, [used_at, user_id])
             },
 
             async build_token(id, token, user_type, exipres_at, used_by) {

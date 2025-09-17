@@ -30,7 +30,6 @@ forgot_password.post("/forgot-password", async (req, res) => {
 
             user.id = (await student.auth.getByEmail(req.body.email)).rows[0].Stu_id
             user.type = "student"
-            console.log(user.id)
 
             // generate database token for the user..
             tokenHash = await bcrypt.hash(generator.id(), 10)
