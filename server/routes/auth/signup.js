@@ -95,8 +95,10 @@ signup_router.post("/signup/student/", async (req, res) => {
         console.log(error)
         res.status(500).json({
             "status": "error",
-            "message": "an unexpected problem occured"
+            "message": error.message === `duplicate key value violates unique constraint "unique_emails"` ?
+            "Eamil already Taken":"Error registering student"
         })
+
     }
 
 })
@@ -272,8 +274,9 @@ signup_router.post("/signup/teacher/", async (req, res) => {
     } catch (error) {
         console.error("Error signing up teacher:", error);
         res.status(500).json({
-            message: "Error registering teacher",
-            error: error.message
+            error: error.message,
+            "message": error.message === `duplicate key value violates unique constraint "unique_emails"` ?
+            "Eamil already Taken":"Error registering student"
         });
     }
 });
