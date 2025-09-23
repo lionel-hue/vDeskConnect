@@ -6,13 +6,13 @@ import forgot_password from "./routes/auth/forgot_password.js"
 import reset_password from "./routes/auth/reset_password.js"
 
 
-const PORT = process.env.VITE_PORT || 8080
+const PORT = process.env.PORT || 8080
 
 const app = express()
 
 // Explicit CORS config for frontend
 app.use(cors({
-  origin: [`${process.env.VITE_HOST}`,`${process.env.VITE_FRONT}`, 'http://localhost:5173'],
+  origin: [`${process.env.HOST}`,`${process.env.FRONT}`, 'http://localhost:5173'],
   credentials: true
 }))
 
