@@ -1,973 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>vDeskconnect - Admin Dashboard</title>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", sans-serif;
-            background-color: #0f172a;
-            color: #f8fafc;
-            line-height: 1.5;
-            overflow-x: hidden;
-        }
-
-        /* Sidebar Styles */
-        .sidebar-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 998;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-        }
-
-        .sidebar-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .sidebar {
-            position: fixed;
-            top: 0;
-            left: -320px;
-            width: 320px;
-            height: 100vh;
-            background-color: #1e293b;
-            border-right: 1px solid #374151;
-            z-index: 999;
-            transition: left 0.3s ease;
-            overflow-y: auto;
-        }
-
-        .sidebar.active {
-            left: 0;
-            animation: slideIn 0.3s ease;
-        }
-
-        .sidebar-header {
-            display: flex;
-            align-items: center;
-            padding: 1rem;
-            border-bottom: 1px solid #374151;
-            gap: 1rem;
-        }
-
-        .sidebar-menu-btn {
-            background: none;
-            border: none;
-            color: #94a3b8;
-            cursor: pointer;
-            padding: 0.5rem;
-            border-radius: 0.375rem;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 2.5rem;
-            min-height: 2.5rem;
-        }
-
-        .sidebar-menu-btn:hover {
-            color: #e2e8f0;
-            background-color: #374151;
-            transform: scale(1.05);
-        }
-
-        .sidebar-menu-btn:active {
-            transform: scale(0.95);
-        }
-
-        .sidebar-menu-btn i {
-            width: 1.25rem;
-            height: 1.25rem;
-            stroke-width: 2;
-        }
-
-        .sidebar-title {
-            flex: 1;
-            text-align: center;
-            font-weight: 600;
-            font-size: 1.125rem;
-            color: #f8fafc;
-        }
-
-        .search-btn {
-            background: none;
-            border: none;
-            color: #94a3b8;
-            cursor: pointer;
-            padding: 0.5rem;
-            border-radius: 0.375rem;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .search-btn:hover {
-            color: #e2e8f0;
-            background-color: #374151;
-        }
-
-        .search-container {
-            position: absolute;
-            left: 3rem;
-            right: 1rem;
-            top: 1rem;
-            transition: all 0.3s ease;
-        }
-
-        .search-container.hidden {
-            opacity: 0;
-            visibility: hidden;
-            transform: translateX(-10px);
-        }
-
-        .search-input {
-            width: 100%;
-            background-color: #374151;
-            border: 1px solid #4b5563;
-            border-radius: 0.375rem;
-            padding: 0.5rem 0.75rem;
-            color: #f8fafc;
-            font-size: 0.875rem;
-            transition: border-color 0.2s;
-        }
-
-        .search-input:focus {
-            outline: none;
-            border-color: #8b5cf6;
-            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
-        }
-
-        .search-input::placeholder {
-            color: #9ca3af;
-        }
-
-        .sidebar-divider {
-            height: 1px;
-            background-color: #374151;
-            margin: 0;
-        }
-
-        .sidebar-content {
-            padding: 1rem 0;
-        }
-
-        .sidebar-item {
-            margin-bottom: 0.5rem;
-            padding: 0 1rem;
-        }
-
-        .sidebar-item.hidden {
-            display: none;
-        }
-
-        .profile-section {
-            margin-bottom: 1rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid #374151;
-        }
-
-        .profile-container {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .profile-image {
-            width: 2.5rem;
-            height: 2.5rem;
-            background: linear-gradient(135deg, #8b5cf6, #3b82f6);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            flex-shrink: 0;
-        }
-
-        .sidebar-item-container {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .sidebar-icon {
-            width: 1.25rem;
-            height: 1.25rem;
-            color: #94a3b8;
-            flex-shrink: 0;
-        }
-
-        .sidebar-select {
-            background-color: #374151;
-            border: 1px solid #4b5563;
-            border-radius: 0.375rem;
-            padding: 0.5rem 0.75rem;
-            color: #f8fafc;
-            font-size: 0.875rem;
-            cursor: pointer;
-            flex: 1;
-            appearance: none;
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-            background-repeat: no-repeat;
-            background-position: right 0.75rem center;
-            background-size: 1rem;
-            padding-right: 2.5rem;
-            transition: all 0.2s;
-            max-width: 200px;
-        }
-
-        .sidebar-select:hover {
-            background-color: #475569;
-        }
-
-        .sidebar-select:focus {
-            outline: none;
-            border-color: #8b5cf6;
-            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
-        }
-
-        .profile-select {
-            font-weight: 500;
-        }
-
-        /* Main Content Styles */
-        .main-content {
-            min-height: 100vh;
-            transition: margin-left 0.3s ease;
-        }
-
-        .header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 1rem;
-            background-color: #1e293b;
-            border-bottom: 1px solid #374151;
-            position: relative;
-            z-index: 10;
-            gap: 1rem;
-            flex-wrap: wrap;
-        }
-
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            flex-shrink: 0;
-        }
-
-        .header-center {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            min-width: 200px;
-        }
-
-        .header-search-container {
-            position: relative;
-            width: 100%;
-            max-width: 400px;
-        }
-
-        .header-search-btn {
-            background: none;
-            border: none;
-            color: #94a3b8;
-            cursor: pointer;
-            padding: 0.5rem;
-            border-radius: 0.375rem;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 2.5rem;
-            min-height: 2.5rem;
-        }
-
-        .header-search-btn:hover {
-            color: #e2e8f0;
-            background-color: #374151;
-        }
-
-        .header-search-input {
-            width: 100%;
-            background-color: #374151;
-            border: 1px solid #4b5563;
-            border-radius: 0.375rem;
-            padding: 0.5rem 0.75rem;
-            color: #f8fafc;
-            font-size: 0.875rem;
-            transition: all 0.2s;
-            opacity: 0;
-            visibility: hidden;
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-        }
-
-        .header-search-input.active {
-            opacity: 1;
-            visibility: visible;
-            position: relative;
-        }
-
-        .header-search-input:focus {
-            outline: none;
-            border-color: #8b5cf6;
-            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
-        }
-
-        .header-search-input::placeholder {
-            color: #9ca3af;
-        }
-
-        .header-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: #f8fafc;
-            margin: 0;
-            white-space: nowrap;
-        }
-
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            flex-shrink: 0;
-        }
-
-        .admin-label {
-            color: #94a3b8;
-            font-size: 0.875rem;
-            font-weight: 500;
-            white-space: nowrap;
-        }
-
-        .admin-select {
-            background-color: #374151;
-            border: 1px solid #4b5563;
-            border-radius: 0.375rem;
-            padding: 0.5rem 0.75rem;
-            color: #f8fafc;
-            font-size: 0.875rem;
-            cursor: pointer;
-            appearance: none;
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-            background-repeat: no-repeat;
-            background-position: right 0.5rem center;
-            background-size: 0.875rem;
-            padding-right: 2rem;
-            transition: all 0.2s;
-            min-width: 100px;
-        }
-
-        .admin-select:hover {
-            background-color: #475569;
-        }
-
-        .admin-select:focus {
-            outline: none;
-            border-color: #8b5cf6;
-            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
-        }
-
-        .header-divider {
-            height: 1px;
-            background-color: #374151;
-        }
-
-        /* Dashboard Content */
-        .dashboard-content {
-            padding: 1rem;
-        }
-
-        .stats-container {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .stat-card {
-            background-color: #1e293b;
-            border: 1px solid #374151;
-            border-radius: 0.5rem;
-            padding: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 1.5rem;
-            transition: all 0.2s;
-            min-height: 100px;
-        }
-
-        .stat-card:hover {
-            border-color: #4b5563;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-
-        .stat-icon {
-            width: 4rem;
-            height: 4rem;
-            background: linear-gradient(135deg, #8b5cf6, #3b82f6);
-            border-radius: 0.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            flex-shrink: 0;
-        }
-
-        .stat-divider {
-            width: 1px;
-            height: 3rem;
-            background-color: #374151;
-            flex-shrink: 0;
-        }
-
-        .stat-content {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .stat-label {
-            color: #94a3b8;
-            font-size: 1rem;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-        }
-
-        .stat-number {
-            color: #f8fafc;
-            font-size: 2rem;
-            font-weight: 600;
-            line-height: 1;
-        }
-
-        .content-divider {
-            height: 1px;
-            background-color: #374151;
-            margin: 2rem 0;
-        }
-
-        /* Search Results */
-        .no-results {
-            text-align: center;
-            padding: 3rem 1rem;
-            color: #94a3b8;
-        }
-
-        .no-results h3 {
-            font-size: 1.25rem;
-            margin-bottom: 0.5rem;
-            color: #f8fafc;
-        }
-
-        .no-results p {
-            font-size: 0.875rem;
-        }
-
-        /* Hidden class for search filtering */
-        .search-hidden {
-            display: none !important;
-        }
-
-        /* Overview Section */
-        .section-title {
-            font-size: 1.75rem;
-            font-weight: 600;
-            color: #f8fafc;
-            margin-bottom: 2rem;
-            text-align: center;
-        }
-
-        .overview-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 2rem;
-            margin-bottom: 2rem;
-        }
-
-        .overview-card {
-            background-color: #1e293b;
-            border: 1px solid #374151;
-            border-radius: 0.5rem;
-            padding: 2rem;
-            transition: all 0.2s;
-            min-height: 300px;
-        }
-
-        .overview-card:hover {
-            border-color: #4b5563;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 2rem;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-
-        .card-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: #f8fafc;
-        }
-
-        .card-filters {
-            display: flex;
-            gap: 0.75rem;
-            flex-wrap: wrap;
-        }
-
-        .filter-select {
-            background-color: #374151;
-            border: 1px solid #4b5563;
-            border-radius: 0.375rem;
-            padding: 0.5rem 0.75rem;
-            color: #f8fafc;
-            font-size: 0.875rem;
-            cursor: pointer;
-            appearance: none;
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-            background-repeat: no-repeat;
-            background-position: right 0.5rem center;
-            background-size: 0.75rem;
-            padding-right: 2rem;
-            transition: all 0.2s;
-            min-width: 100px;
-        }
-
-        .filter-select:hover {
-            background-color: #475569;
-        }
-
-        .filter-select:focus {
-            outline: none;
-            border-color: #8b5cf6;
-            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
-        }
-
-        /* Pie Chart Container */
-        .pie-chart-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1.5rem;
-        }
-
-        .chart-wrapper {
-            position: relative;
-            width: 200px;
-            height: 200px;
-        }
-
-        .chart-legend {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-            max-width: 350px;
-            gap: 1.5rem;
-        }
-
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            flex: 1;
-        }
-
-        .legend-color {
-            width: 1.25rem;
-            height: 1.25rem;
-            border-radius: 0.25rem;
-            flex-shrink: 0;
-        }
-
-        .legend-label {
-            color: #94a3b8;
-            font-size: 0.875rem;
-            font-weight: 500;
-        }
-
-        .legend-value {
-            color: #f8fafc;
-            font-weight: 600;
-            font-size: 1rem;
-            margin-left: auto;
-        }
-
-        .chart-center-text {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            color: #f8fafc;
-            font-weight: 600;
-            font-size: 1.5rem;
-        }
-
-        /* Teacher Table */
-        .teacher-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 1rem;
-        }
-
-        .teacher-table th,
-        .teacher-table td {
-            padding: 1rem 0.75rem;
-            text-align: left;
-            border-bottom: 1px solid #374151;
-        }
-
-        .teacher-table th {
-            background-color: #374151;
-            color: #e2e8f0;
-            font-weight: 600;
-            font-size: 0.875rem;
-        }
-
-        .teacher-table td {
-            color: #f8fafc;
-            font-size: 0.875rem;
-        }
-
-        .teacher-table tr:hover {
-            background-color: #374151;
-        }
-
-        .action-btn {
-            background: none;
-            border: none;
-            color: #94a3b8;
-            cursor: pointer;
-            padding: 0.5rem;
-            border-radius: 0.25rem;
-            transition: all 0.2s;
-        }
-
-        .action-btn:hover {
-            color: #e2e8f0;
-            background-color: #4b5563;
-        }
-
-        /* Chart Container */
-        .chart-container {
-            margin-top: 1.5rem;
-        }
-
-        .chart-keys {
-            display: flex;
-            justify-content: center;
-            gap: 2rem;
-            margin-bottom: 1.5rem;
-            flex-wrap: wrap;
-        }
-
-        .chart-key {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .key-color {
-            width: 1.25rem;
-            height: 1.25rem;
-            border-radius: 0.25rem;
-        }
-
-        .key-label {
-            color: #94a3b8;
-            font-size: 0.875rem;
-            font-weight: 500;
-        }
-
-        .chart-canvas {
-            background-color: #374151;
-            border-radius: 0.375rem;
-            padding: 1.5rem;
-        }
-
-        /* Activity Section */
-        .activity-section {
-            margin-top: 2rem;
-        }
-
-        /* Mobile Responsive Design */
-        @media (max-width: 640px) {
-            .header {
-                padding: 0.75rem;
-                gap: 0.75rem;
-            }
-
-            .header-center {
-                order: 3;
-                width: 100%;
-                margin-top: 0.75rem;
-            }
-
-            .header-search-input {
-                display: none;
-            }
-
-            .header-search-btn {
-                min-width: 2.25rem;
-                min-height: 2.25rem;
-                padding: 0.5rem;
-            }
-
-            .header-title {
-                font-size: 1.125rem;
-            }
-
-            .admin-label {
-                display: none;
-            }
-
-            .dashboard-content {
-                padding: 0.75rem;
-            }
-
-            .stats-container {
-                gap: 1rem;
-            }
-
-            .stat-card {
-                padding: 1rem;
-                gap: 1rem;
-                min-height: 80px;
-            }
-
-            .stat-icon {
-                width: 3rem;
-                height: 3rem;
-            }
-
-            .stat-divider {
-                height: 2.5rem;
-            }
-
-            .stat-label {
-                font-size: 0.875rem;
-            }
-
-            .stat-number {
-                font-size: 1.5rem;
-            }
-
-            .section-title {
-                font-size: 1.5rem;
-                margin-bottom: 1.5rem;
-            }
-
-            .overview-grid {
-                gap: 1.5rem;
-            }
-
-            .overview-card {
-                padding: 1.5rem;
-                min-height: auto;
-            }
-
-            .card-header {
-                margin-bottom: 1.5rem;
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 1rem;
-            }
-
-            .card-title {
-                font-size: 1.125rem;
-            }
-
-            .card-filters {
-                gap: 0.5rem;
-                width: 100%;
-            }
-
-            .filter-select {
-                flex: 1;
-                min-width: 80px;
-                font-size: 0.75rem;
-                padding: 0.375rem 0.5rem;
-                padding-right: 1.75rem;
-            }
-
-            .chart-wrapper {
-                width: 150px;
-                height: 150px;
-                margin: 0 auto;
-            }
-
-            .chart-center-text {
-                font-size: 1.1rem;
-            }
-
-            .chart-legend {
-                gap: 1rem;
-                flex-direction: column;
-                max-width: 280px;
-                margin: 0 auto;
-            }
-
-            .legend-item {
-                gap: 0.5rem;
-            }
-
-            .teacher-table {
-                font-size: 0.75rem;
-                display: block;
-                overflow-x: auto;
-            }
-
-            .teacher-table th,
-            .teacher-table td {
-                padding: 0.75rem 0.5rem;
-                white-space: nowrap;
-            }
-
-            .teacher-table th:nth-child(3),
-            .teacher-table td:nth-child(3) {
-                display: none;
-            }
-
-            .chart-keys {
-                gap: 1rem;
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .chart-canvas {
-                padding: 1rem;
-                max-width: 100%;
-                overflow: hidden;
-            }
-
-            canvas {
-                max-width: 100% !important;
-                height: auto !important;
-            }
-
-            .pie-chart-container {
-                gap: 1rem;
-            }
-        }
-
-        @media (min-width: 641px) and (max-width: 768px) {
-            .stats-container {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .overview-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .header-search-input {
-                display: block;
-            }
-
-            .header-search-btn {
-                display: none;
-            }
-
-            .chart-wrapper {
-                width: 180px;
-                height: 180px;
-            }
-        }
-
-        @media (min-width: 769px) {
-            .stats-container {
-                grid-template-columns: repeat(3, 1fr);
-            }
-
-            .overview-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .header-search-input {
-                display: block;
-            }
-
-            .header-search-btn {
-                display: none;
-            }
-        }
-
-        @media (min-width: 1024px) {
-            .stats-container {
-                grid-template-columns: repeat(5, 1fr);
-            }
-
-            .overview-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .sidebar {
-                width: 280px;
-                left: -280px;
-            }
-        }
-
-        /* Animation for smooth transitions */
-        @keyframes slideIn {
-            from {
-                transform: translateX(-100%);
-            }
-
-            to {
-                transform: translateX(0);
-            }
-        }
-
-        /* Custom scrollbar for sidebar */
-        .sidebar::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .sidebar::-webkit-scrollbar-track {
-            background: #1e293b;
-        }
-
-        .sidebar::-webkit-scrollbar-thumb {
-            background: #374151;
-            border-radius: 3px;
-        }
-
-        .sidebar::-webkit-scrollbar-thumb:hover {
-            background: #4b5563;
-        }
-    </style>
+    <link rel="stylesheet" href="client/src/style/dashboard.css">
 </head>
-
-<body>
-    <!-- Sidebar Overlay -->
+<body> 
     <div id="sidebar-overlay" class="sidebar-overlay"></div>
-
-    <!-- Sidebar Menu -->
     <div id="sidebar" class="sidebar">
         <div class="sidebar-header">
             <button id="sidebar-close" class="sidebar-menu-btn">
@@ -982,9 +24,8 @@
             </div>
         </div>
         <div class="sidebar-divider"></div>
-
         <div class="sidebar-content">
-            <!-- Profile Section -->
+        
             <div class="sidebar-item profile-section">
                 <div class="profile-container">
                     <div class="profile-image">
@@ -998,8 +39,7 @@
                     </select>
                 </div>
             </div>
-
-            <!-- Analytics -->
+             
             <div class="sidebar-item">
                 <div class="sidebar-item-container">
                     <i data-lucide="bar-chart-3" class="sidebar-icon"></i>
@@ -1010,8 +50,7 @@
                     </select>
                 </div>
             </div>
-
-            <!-- Dashboard -->
+      
             <div class="sidebar-item">
                 <div class="sidebar-item-container">
                     <i data-lucide="layout-dashboard" class="sidebar-icon"></i>
@@ -1022,8 +61,6 @@
                     </select>
                 </div>
             </div>
-
-            <!-- Grades -->
             <div class="sidebar-item">
                 <div class="sidebar-item-container">
                     <i data-lucide="graduation-cap" class="sidebar-icon"></i>
@@ -1034,8 +71,6 @@
                     </select>
                 </div>
             </div>
-
-            <!-- Invite Manager -->
             <div class="sidebar-item">
                 <div class="sidebar-item-container">
                     <i data-lucide="user-plus" class="sidebar-icon"></i>
@@ -1047,8 +82,6 @@
                     </select>
                 </div>
             </div>
-
-            <!-- Lectures -->
             <div class="sidebar-item">
                 <div class="sidebar-item-container">
                     <i data-lucide="book-open" class="sidebar-icon"></i>
@@ -1059,8 +92,6 @@
                     </select>
                 </div>
             </div>
-
-            <!-- Subjects -->
             <div class="sidebar-item">
                 <div class="sidebar-item-container">
                     <i data-lucide="book" class="sidebar-icon"></i>
@@ -1071,8 +102,6 @@
                     </select>
                 </div>
             </div>
-
-            <!-- User Management -->
             <div class="sidebar-item">
                 <div class="sidebar-item-container">
                     <i data-lucide="users" class="sidebar-icon"></i>
@@ -1091,10 +120,7 @@
             </div>
         </div>
     </div>
-
-    <!-- Main Content -->
     <div class="main-content">
-        <!-- Header -->
         <header class="header">
             <div class="header-left">
                 <button id="sidebar-toggle" class="sidebar-menu-btn">
@@ -1120,12 +146,8 @@
                 </select>
             </div>
         </header>
-
         <div class="header-divider"></div>
-
-        <!-- Dashboard Content -->
         <main class="dashboard-content">
-            <!-- Statistics Cards -->
             <div class="stats-container">
                 <div class="stat-card" data-search-terms="students total students no of students">
                     <div class="stat-icon">
@@ -1137,7 +159,6 @@
                         <div class="stat-number">1,247</div>
                     </div>
                 </div>
-
                 <div class="stat-card" data-search-terms="teachers total teachers no of teachers">
                     <div class="stat-icon">
                         <i data-lucide="graduation-cap"></i>
@@ -1148,7 +169,6 @@
                         <div class="stat-number">89</div>
                     </div>
                 </div>
-
                 <div class="stat-card" data-search-terms="classes total classes no of classes">
                     <div class="stat-icon">
                         <i data-lucide="book-open"></i>
@@ -1159,7 +179,6 @@
                         <div class="stat-number">156</div>
                     </div>
                 </div>
-
                 <div class="stat-card" data-search-terms="admins total admins no of admins">
                     <div class="stat-icon">
                         <i data-lucide="shield-check"></i>
@@ -1170,7 +189,6 @@
                         <div class="stat-number">5</div>
                     </div>
                 </div>
-
                 <div class="stat-card" data-search-terms="population total population">
                     <div class="stat-icon">
                         <i data-lucide="users-2"></i>
@@ -1182,15 +200,10 @@
                     </div>
                 </div>
             </div>
-
             <div class="content-divider"></div>
-
-            <!-- Overview Section -->
             <div class="overview-section">
                 <h2 class="section-title">Overview</h2>
-
-                <div class="overview-grid">
-                    <!-- Students Card -->
+                <div class="overview-grid"> 
                     <div class="overview-card" data-search-terms="students boys girls gender">
                         <div class="card-header">
                             <h3 class="card-title">Students</h3>
@@ -1225,8 +238,6 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- Lectures Card -->
                     <div class="overview-card" data-search-terms="lectures completed pending">
                         <div class="card-header">
                             <h3 class="card-title">Lectures</h3>
@@ -1267,8 +278,6 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- Teacher List Card -->
                     <div class="overview-card" data-search-terms="teacher list teachers">
                         <div class="card-header">
                             <h3 class="card-title">Teacher List</h3>
@@ -1337,8 +346,6 @@
                             </tbody>
                         </table>
                     </div>
-
-                    <!-- Attendance Card -->
                     <div class="overview-card" data-search-terms="attendance present absent">
                         <div class="card-header">
                             <h3 class="card-title">Attendance</h3>
@@ -1389,16 +396,60 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Activity Section -->
             <div class="activity-section" data-search-terms="activity">
                 <div class="content-divider"></div>
                 <h2 class="section-title">Activity</h2>
-                <!-- Activity content will be added here -->
+                <div class="activity-list">
+                    <div class="activity-item">
+                        <div class="activity-icon">
+                            <i data-lucide="book-open"></i>
+                        </div>
+                        <div class="activity-content">
+                            <p><strong>Teacher X</strong> has started a lecture with the <strong>SS2 students</strong>.
+                            </p>
+                            <span class="activity-time">2 mins ago</span>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon">
+                            <i data-lucide="user-minus"></i>
+                        </div>
+                        <div class="activity-content">
+                            <p><strong>Teacher A</strong> has gone offline.</p>
+                            <span class="activity-time">10 mins ago</span>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon">
+                            <i data-lucide="file-text"></i>
+                        </div>
+                        <div class="activity-content">
+                            <p><strong>JSS1 students' assignment</strong> is due for submission!</p>
+                            <span class="activity-time">1 hour ago</span>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon">
+                            <i data-lucide="check-circle"></i>
+                        </div>
+                        <div class="activity-content">
+                            <p><strong>New student registrations</strong> for SSS3 completed.</p>
+                            <span class="activity-time">3 hours ago</span>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon">
+                            <i data-lucide="alert-triangle"></i>
+                        </div>
+                        <div class="activity-content">
+                            <p><strong>Low attendance alert</strong> for JSS2 today.</p>
+                            <span class="activity-time">5 hours ago</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
-
     <script>
         // Initialize the dashboard
         document.addEventListener("DOMContentLoaded", () => {
@@ -1408,99 +459,92 @@
             }
             initializeDashboard();
             initializeCharts();
+            
+            // Initialize header search functionality
+            setupHeaderSearch();
         });
-
         // Global variables
         let sidebarOpen = false;
         let searchActive = false;
         let headerSearchActive = false;
-
+        
         // Initialize dashboard functionality
         function initializeDashboard() {
             setupSidebarToggle();
             setupSearch();
-            setupHeaderSearch();
             setupSelectHandlers();
             setupClickOutside();
         }
-
+        
         // Header search functionality
         function setupHeaderSearch() {
             const headerSearchBtn = document.getElementById("header-search-btn");
             const headerSearchInput = document.getElementById("header-search-input");
-
-            // Mobile: Button click opens search modal
+            
+            // Mobile: Button click toggles search bar visibility
             if (headerSearchBtn) {
                 headerSearchBtn.addEventListener("click", () => {
                     if (window.innerWidth <= 640) {
-                        openMobileSearch();
+                        toggleMobileSearch();
                     } else {
-                        openHeaderSearch();
+                        // Desktop: Focus on search input
+                        headerSearchInput.focus();
                     }
                 });
             }
-
-            // Desktop: Direct input
+            
+            // Search input functionality
             if (headerSearchInput) {
                 headerSearchInput.addEventListener("keydown", (e) => {
                     if (e.key === "Escape") {
-                        closeHeaderSearch();
+                        if (window.innerWidth <= 640) {
+                            closeMobileSearch();
+                        }
                     }
                 });
-
+                
                 headerSearchInput.addEventListener("input", function () {
                     performDashboardSearch(this.value);
                 });
             }
         }
-
-        function openMobileSearch() {
-            const searchTerm = prompt("Search dashboard content:");
-            if (searchTerm) {
-                performDashboardSearch(searchTerm);
-            }
-        }
-
-        function openHeaderSearch() {
-            const headerSearchBtn = document.getElementById("header-search-btn");
+        
+        function toggleMobileSearch() {
             const headerSearchInput = document.getElementById("header-search-input");
-
-            if (window.innerWidth > 640) {
-                headerSearchInput.classList.add("active");
-                headerSearchBtn.style.display = "none";
+            const headerSearchBtn = document.getElementById("header-search-btn");
+            
+            if (headerSearchInput.classList.contains("mobile-visible")) {
+                closeMobileSearch();
+            } else {
+                headerSearchInput.classList.add("mobile-visible");
                 headerSearchInput.focus();
                 headerSearchActive = true;
             }
         }
-
-        function closeHeaderSearch() {
-            const headerSearchBtn = document.getElementById("header-search-btn");
+        
+        function closeMobileSearch() {
             const headerSearchInput = document.getElementById("header-search-input");
-
-            headerSearchInput.classList.remove("active");
-            headerSearchBtn.style.display = "flex";
+            headerSearchInput.classList.remove("mobile-visible");
             headerSearchInput.value = "";
             headerSearchActive = false;
-
             // Clear search results
             clearSearchResults();
         }
-
+        
         // Dashboard search functionality
         function performDashboardSearch(searchTerm) {
             const term = searchTerm.toLowerCase().trim();
-
             if (!term) {
                 clearSearchResults();
                 return;
             }
-
+            
             // Hide all searchable elements first
             const allElements = document.querySelectorAll('.stat-card, .overview-card, .overview-section, .activity-section, .stats-container');
             allElements.forEach(el => el.classList.add('search-hidden'));
-
+            
             let hasResults = false;
-
+            
             // Search through elements with data-search-terms attribute
             const searchableElements = document.querySelectorAll('[data-search-terms]');
             searchableElements.forEach(el => {
@@ -1508,13 +552,13 @@
                 if (searchTerms.includes(term) || term.includes(searchTerms)) {
                     el.classList.remove('search-hidden');
                     hasResults = true;
-
+                    
                     // Show parent sections
                     const parentSection = el.closest('.overview-section, .activity-section');
                     if (parentSection) {
                         parentSection.classList.remove('search-hidden');
                     }
-
+                    
                     // Show stats container if stat card is matched
                     if (el.classList.contains('stat-card')) {
                         const statsContainer = el.closest('.stats-container');
@@ -1524,7 +568,7 @@
                     }
                 }
             });
-
+            
             // Also search in text content as fallback
             allElements.forEach(el => {
                 const textContent = el.textContent.toLowerCase();
@@ -1533,18 +577,18 @@
                     hasResults = true;
                 }
             });
-
+            
             // Show no results message if nothing found
             showSearchResults(hasResults, term);
         }
-
+        
         function showSearchResults(hasResults, searchTerm) {
             // Remove existing no-results message
             const existingNoResults = document.querySelector('.no-results');
             if (existingNoResults) {
                 existingNoResults.remove();
             }
-
+            
             if (!hasResults) {
                 const noResultsDiv = document.createElement('div');
                 noResultsDiv.className = 'no-results';
@@ -1553,75 +597,72 @@
                     <p>No content matches "${searchTerm}". Try searching for:</p>
                     <p><strong>students, teachers, classes, attendance, lectures, charts</strong></p>
                 `;
-
                 const dashboardContent = document.querySelector('.dashboard-content');
                 dashboardContent.appendChild(noResultsDiv);
             }
         }
-
+        
         function clearSearchResults() {
             // Show all elements
             const hiddenElements = document.querySelectorAll('.search-hidden');
             hiddenElements.forEach(el => el.classList.remove('search-hidden'));
-
+            
             // Remove no-results message
             const noResults = document.querySelector('.no-results');
             if (noResults) {
                 noResults.remove();
             }
         }
-
+        
         // Sidebar toggle functionality
         function setupSidebarToggle() {
             const sidebarToggle = document.getElementById("sidebar-toggle");
             const sidebarClose = document.getElementById("sidebar-close");
             const sidebar = document.getElementById("sidebar");
             const overlay = document.getElementById("sidebar-overlay");
-
+            
             sidebarToggle.addEventListener("click", () => {
                 openSidebar();
             });
-
+            
             sidebarClose.addEventListener("click", () => {
                 closeSidebar();
             });
-
+            
             overlay.addEventListener("click", () => {
                 closeSidebar();
             });
         }
-
+        
         function openSidebar() {
             const sidebar = document.getElementById("sidebar");
             const overlay = document.getElementById("sidebar-overlay");
-
             sidebar.classList.add("active");
             overlay.classList.add("active");
             sidebarOpen = true;
             document.body.style.overflow = "hidden";
         }
-
+        
         function closeSidebar() {
             const sidebar = document.getElementById("sidebar");
             const overlay = document.getElementById("sidebar-overlay");
-
             sidebar.classList.remove("active");
             overlay.classList.remove("active");
             sidebarOpen = false;
             document.body.style.overflow = "";
-
+            
             if (searchActive) {
                 closeSearch();
             }
         }
-
+        
         // Search functionality
         function setupSearch() {
             const searchBtn = document.getElementById("search-btn");
             const searchContainer = document.getElementById("search-container");
             const searchInput = document.getElementById("search-input");
             const sidebarTitle = document.getElementById("sidebar-title");
-
+            
             searchBtn.addEventListener("click", () => {
                 if (searchActive) {
                     closeSearch();
@@ -1629,29 +670,29 @@
                     openSearch();
                 }
             });
-
+            
             searchInput.addEventListener("input", function () {
                 filterSidebarItems(this.value);
             });
-
+            
             searchInput.addEventListener("keydown", (e) => {
                 if (e.key === "Escape") {
                     closeSearch();
                 }
             });
         }
-
+        
         function openSearch() {
             const searchContainer = document.getElementById("search-container");
             const searchInput = document.getElementById("search-input");
             const sidebarTitle = document.getElementById("sidebar-title");
             const searchBtn = document.getElementById("search-btn");
-
+            
             searchContainer.classList.remove("hidden");
             sidebarTitle.style.opacity = "0";
             searchInput.focus();
             searchActive = true;
-
+            
             const searchIcon = searchBtn.querySelector("i");
             if (searchIcon) {
                 searchIcon.setAttribute("data-lucide", "x");
@@ -1660,18 +701,18 @@
                 }
             }
         }
-
+        
         function closeSearch() {
             const searchContainer = document.getElementById("search-container");
             const searchInput = document.getElementById("search-input");
             const sidebarTitle = document.getElementById("sidebar-title");
             const searchBtn = document.getElementById("search-btn");
-
+            
             searchContainer.classList.add("hidden");
             sidebarTitle.style.opacity = "1";
             searchInput.value = "";
             searchActive = false;
-
+            
             const searchIcon = searchBtn.querySelector("i");
             if (searchIcon) {
                 searchIcon.setAttribute("data-lucide", "search");
@@ -1679,29 +720,29 @@
                     lucide.createIcons();
                 }
             }
-
+            
             filterSidebarItems("");
         }
-
+        
         function filterSidebarItems(searchTerm) {
             const sidebarItems = document.querySelectorAll(".sidebar-item");
             const searchLower = searchTerm.toLowerCase();
-
+            
             sidebarItems.forEach((item) => {
                 if (item.classList.contains("profile-section")) {
                     return;
                 }
-
+                
                 const select = item.querySelector(".sidebar-select");
                 const options = select.querySelectorAll("option");
                 let hasMatch = false;
-
+                
                 options.forEach((option) => {
                     if (option.textContent.toLowerCase().includes(searchLower)) {
                         hasMatch = true;
                     }
                 });
-
+                
                 if (hasMatch || searchTerm === "") {
                     item.classList.remove("hidden");
                 } else {
@@ -1709,38 +750,37 @@
                 }
             });
         }
-
+        
         // Setup select handlers
         function setupSelectHandlers() {
             const selects = document.querySelectorAll(".sidebar-select, .admin-select, .filter-select");
-
             selects.forEach((select) => {
                 select.addEventListener("change", function () {
                     handleSelectChange(this);
                 });
             });
         }
-
+        
         function handleSelectChange(select) {
             const value = select.value;
-
+            
             if (select.classList.contains("admin-select")) {
                 handleAdminAction(value);
                 return;
             }
-
+            
             if (select.classList.contains("filter-select")) {
                 handleFilterChange(select);
                 return;
             }
-
+            
             console.log("Navigating to:", value);
-
+            
             if (window.innerWidth < 1024) {
                 closeSidebar();
             }
         }
-
+        
         function handleAdminAction(action) {
             switch (action) {
                 case "change-password":
@@ -1756,7 +796,7 @@
                 default:
                     console.log("Admin action:", action);
             }
-
+            
             setTimeout(() => {
                 const adminSelect = document.querySelector(".admin-select");
                 if (adminSelect) {
@@ -1764,48 +804,57 @@
                 }
             }, 100);
         }
-
+        
         function handleFilterChange(select) {
             console.log("Filter changed:", select.id, select.value);
             updateCharts();
         }
-
+        
         // Setup click outside to close sidebar
         function setupClickOutside() {
             document.addEventListener("click", (e) => {
                 const sidebar = document.getElementById("sidebar");
                 const sidebarToggle = document.getElementById("sidebar-toggle");
                 const headerSearchContainer = document.querySelector(".header-search-container");
-
+                
                 if (sidebarOpen && !sidebar.contains(e.target) && !sidebarToggle.contains(e.target)) {
                     closeSidebar();
                 }
-
-                if (headerSearchActive && !headerSearchContainer.contains(e.target)) {
-                    closeHeaderSearch();
+                
+                if (headerSearchActive && window.innerWidth <= 640 && !headerSearchContainer.contains(e.target)) {
+                    closeMobileSearch();
                 }
             });
         }
-
+        
         // Handle window resize
         window.addEventListener("resize", () => {
             if (window.innerWidth < 1024 && sidebarOpen) {
                 closeSidebar();
             }
-
+            
             // Handle search input visibility on resize
             const headerSearchBtn = document.getElementById("header-search-btn");
             const headerSearchInput = document.getElementById("header-search-input");
-
+            
             if (window.innerWidth <= 640) {
+                // Mobile: Hide search input by default, show button
                 headerSearchInput.style.display = 'none';
                 headerSearchBtn.style.display = 'flex';
+                
+                // If search was active, close it
+                if (headerSearchActive) {
+                    closeMobileSearch();
+                }
             } else {
+                // Desktop/Tablet: Always show search input, hide button
                 headerSearchInput.style.display = 'block';
+                headerSearchInput.classList.remove('mobile-visible');
                 headerSearchBtn.style.display = 'none';
+                headerSearchActive = false;
             }
         });
-
+        
         // Keyboard shortcuts
         document.addEventListener("keydown", (e) => {
             if ((e.ctrlKey || e.metaKey) && e.key === "b") {
@@ -1816,32 +865,29 @@
                     openSidebar();
                 }
             }
-
+            
             if (e.key === "Escape" && sidebarOpen) {
                 closeSidebar();
             }
-
+            
             if ((e.ctrlKey || e.metaKey) && e.key === "k") {
                 e.preventDefault();
                 if (window.innerWidth <= 640) {
-                    openMobileSearch();
+                    toggleMobileSearch();
                 } else {
-                    if (headerSearchActive) {
-                        closeHeaderSearch();
-                    } else {
-                        openHeaderSearch();
-                    }
+                    const headerSearchInput = document.getElementById("header-search-input");
+                    headerSearchInput.focus();
                 }
             }
         });
-
+        
         // Initialize Charts
         function initializeCharts() {
             createStudentsChart();
             createLecturesChart();
             createAttendanceChart();
         }
-
+        
         function createStudentsChart() {
             const ctx = document.getElementById('studentsChart').getContext('2d');
             new Chart(ctx, {
@@ -1866,7 +912,7 @@
                 }
             });
         }
-
+        
         function createLecturesChart() {
             const ctx = document.getElementById('lecturesChart').getContext('2d');
             new Chart(ctx, {
@@ -1891,7 +937,7 @@
                 }
             });
         }
-
+        
         function createAttendanceChart() {
             const ctx = document.getElementById('attendanceChart').getContext('2d');
             window.attendanceChart = new Chart(ctx, {
@@ -1942,16 +988,16 @@
                 }
             });
         }
-
+        
         function updateCharts() {
             const chartType = document.getElementById('attendance-chart-filter').value;
-
+            
             if (window.attendanceChart) {
                 window.attendanceChart.destroy();
             }
-
+            
             const ctx = document.getElementById('attendanceChart').getContext('2d');
-
+            
             if (chartType === 'pie') {
                 window.attendanceChart = new Chart(ctx, {
                     type: 'doughnut',
@@ -2028,17 +1074,15 @@
                 createAttendanceChart();
             }
         }
-
+        
         // Teacher actions
         function showTeacherActions(button) {
             const actions = ['View Profile', 'Edit Details', 'View Classes', 'Send Message', 'Remove Teacher'];
             const action = prompt('Choose action:\n' + actions.map((a, i) => `${i + 1}. ${a}`).join('\n'));
-
             if (action && action >= 1 && action <= actions.length) {
                 alert(`Selected: ${actions[action - 1]}`);
             }
         }
     </script>
 </body>
-
 </html>
