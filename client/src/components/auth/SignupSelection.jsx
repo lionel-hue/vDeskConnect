@@ -1,4 +1,4 @@
-import '../../style/auth.css';
+import "../../style/auth.module.css"
 
 // SignupSelection.jsx
 function SignupSelection({ onTeacherSignup, onStudentSignup, onLoginClick, formMessage }) {

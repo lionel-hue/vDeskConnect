@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Chart, registerables } from 'chart.js';
-import Header from './Header';
-import SidebarNav from './SidebarNav';
-import './dashboard.css';
+import Header from '../Header';
+import SidebarNav from '../SidebarNav';
+import '../../style/dashboard.module.css';
 
 Chart.register(...registerables);
 

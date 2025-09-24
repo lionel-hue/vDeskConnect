@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useForm } from '../../hooks/useForm';
 import { validateForgotPassword } from '../../utils/validation';
 import { Mail } from 'lucide-react';
-import '../../style/auth.css';
+import styles from '../../style/auth.module.css';
 
 function ForgotPassword() {
     const { values, errors, isSubmitting, handleChange, setErrors, setIsSubmitting } = useForm({
@@ -67,7 +67,7 @@ function ForgotPassword() {
                 console.error('Network error:', error);
                 setServerError('Server temporarily down, Please try again later.');
             } finally {
-                setIsSubmitting(false);
+                 setIsSubmitting(false);
             }
         }
     };
@@ -84,36 +84,36 @@ function ForgotPassword() {
     };
 
     return (
-        <div className="app">
-            <div className="container">
-                <div className="card">
-                    <div className="card-header">
-                        <div className="logo">
+        <div className={styles.app}>
+            <div className={styles.container}>
+                <div className={styles.card}>
+                    <div className={styles.cardHeader}>
+                        <div className={styles.logo}>
                             <span>vD</span>
                         </div>
-                        <div className="header-content">
-                            <h1 className="card-title">Forgot Password</h1>
-                            <p className="card-description">
+                        <div className={styles.headerContent}>
+                            <h1 className={styles.cardTitle}>Forgot Password</h1>
+                            <p className={styles.cardDescription}>
                                 {messageSent
                                     ? "Check your inbox for a reset link."
                                     : "Enter your email to receive a password reset link."}
                             </p>
                         </div>
                     </div>
-                    <div className="card-content">
+                    <div className={styles.cardContent}>
                         {/* Server error message - auto dismisses after 5 seconds */}
                         {serverError && (
-                            <div className="error-message server-error">
+                            <div className={`${styles.errorMessage} ${styles.serverError}`}>
                                 {serverError}
                             </div>
                         )}
 
                         {messageSent ? (
-                            <div className="success-message">
-                                <div className="success-icon">
+                            <div className={styles.successMessage}>
+                                <div className={styles.successIcon}>
                                     <Mail size={24} />
                                 </div>
-                                <div className="success-content">
+                                <div className={styles.successContent}>
                                     <h3>Reset Link Sent</h3>
                                     <p>
                                         If an account with the email <strong>{values.email}</strong> exists,
@@ -123,14 +123,14 @@ function ForgotPassword() {
                                 </div>
                             </div>
                         ) : (
-                            <form onSubmit={handleSubmit} className="form">
-                                <div className="form-group">
-                                    <label htmlFor="email" className="label">Email</label>
+                            <form onSubmit={handleSubmit} className={styles.form}>
+                                <div className={styles.formGroup}>
+                                    <label htmlFor="email" className={styles.label}>Email</label>
                                     <input
                                         type="email"
                                         id="email"
                                         name="email"
-                                        className={`input ${fieldErrors.email ? 'error' : ''}`}
+                                        className={`${styles.input} ${fieldErrors.email ? styles.error : ''}`}
                                         value={values.email}
                                         onChange={handleInputChange}
                                         placeholder="Enter your registered email"
@@ -138,7 +138,7 @@ function ForgotPassword() {
                                     />
                                     {/* Inline error message - auto dismisses after 3 seconds */}
                                     {fieldErrors.email && (
-                                        <div className="error-message">
+                                        <div className={styles.errorMessage}>
                                             {fieldErrors.email}
                                         </div>
                                     )}
@@ -146,12 +146,12 @@ function ForgotPassword() {
 
                                 <button
                                     type="submit"
-                                    className="btn btn-primary"
+                                    className={`${styles.btn} ${styles.btnPrimary}`}
                                     disabled={isSubmitting}
                                 >
                                     {isSubmitting ? (
                                         <>
-                                            <span className="loading-spinner"></span>
+                                            <span className={styles.loadingSpinner}></span>
                                             Sending...
                                         </>
                                     ) : (
@@ -161,8 +161,8 @@ function ForgotPassword() {
                             </form>
                         )}
 
-                        <div className="footer-link" style={{ marginTop: '1rem' }}>
-                            <Link to="/" className="link-btn">
+                        <div className={styles.footerLink} style={{ marginTop: '1rem' }}>
+                            <Link to="/" className={styles.linkBtn}>
                                 Back to Sign In
                             </Link>
                         </div>

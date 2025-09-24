@@ -37,15 +37,15 @@ function App() {
     );
 }
 
-// Wrapper components remain the same...
+// Updated LoginWrapper to pass onLoginSuccess
 function LoginWrapper({ onLogin }) {
     const navigate = useNavigate();
     return (
         <Login
             onSignupClick={() => navigate('/signup-selection')}
             onLoginSuccess={() => {
-                onLogin();
-                navigate('/dashboard');
+                onLogin(); // This sets isAuthenticated to true
+                // Note: We DON'T navigate here anymore - navigation happens in Login.jsx
             }}
         />
     );

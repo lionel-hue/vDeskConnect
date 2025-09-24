@@ -3,9 +3,9 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from '../../hooks/useForm'
 import { validateLogin } from '../../utils/validation'
 import { usePasswordToggle } from '../../hooks/usePasswordToggle'
-import '../../style/auth.css';
+import styles from '../../style/auth.module.css';
 
-function Login({ onSignupClick }) {
+function Login({ onSignupClick, onLoginSuccess }) {
   const { values, errors, isSubmitting, handleChange, setErrors, setIsSubmitting } = useForm({
     email: '',
     password: '',
@@ -28,12 +28,12 @@ function Login({ onSignupClick }) {
   useEffect(() => {
     if (Object.keys(errors).length > 0) {
       setVisibleErrors(errors);
-      
+
       const timer = setTimeout(() => {
         setVisibleErrors({});
         setErrors({});
       }, 5000);
-      
+
       return () => clearTimeout(timer);
     }
   }, [errors, setErrors]);
@@ -65,19 +65,26 @@ function Login({ onSignupClick }) {
 
         // Handle 403 status (unverified account) specifically
         if (response.status === 403 && data.message.includes('not verified')) {
-          // Account is not verified - navigate to verification page
+          // Account is not verified - navigate to verification page (show animation)
           navigate('/verify-account', {
             state: {
-              fromLogin: true,
+              fromLogin: true, // This flag will show the animation
               email: values.email,
               role: values.role,
             }
           });
         }
-        // Handle successful login
+        // Handle successful login (account is verified)
         else if (response.ok) {
           console.log('User logged in successfully:', data)
-          // Here you would typically set authentication state and redirect
+
+          // Call the onLoginSuccess prop to update authentication state
+          if (onLoginSuccess) {
+            onLoginSuccess();
+          }
+
+          // Navigate directly to dashboard
+          navigate('/dashboard');
         }
         // Handle other errors
         else {
@@ -95,34 +102,34 @@ function Login({ onSignupClick }) {
   }
 
   return (
-    <div className="app">
-      <div className="container">
-        <div className="card">
-          <div className="card-header">
-            <div className="logo">
+    <div className={styles.app}>
+      <div className={styles.container}>
+        <div className={styles.card}>
+          <div className={styles.cardHeader}>
+            <div className={styles.logo}>
               <span>vD</span>
             </div>
-            <div className="header-content">
-              <h1 className="card-title">Welcome Back</h1>
-              <p className="card-description">Sign in to vDeskconnect</p>
+            <div className={styles.headerContent}>
+              <h1 className={styles.cardTitle}>Welcome Back</h1>
+              <p className={styles.cardDescription}>Sign in to vDeskconnect</p>
             </div>
           </div>
-          <div className="card-content">
-            <form onSubmit={handleSubmit} className="form">
+          <div className={styles.cardContent}>
+            <form onSubmit={handleSubmit} className={styles.form}>
               {/* Server error message */}
               {visibleErrors.server && (
-                <div className="error-message login-style" style={{ display: 'block' }}>
+                <div className={`${styles.errorMessage} ${styles.loginStyle}`} style={{ display: 'block' }}>
                   {visibleErrors.server}
                 </div>
               )}
 
               {/* Role Selection Dropdown */}
-              <div className="form-group">
-                <label htmlFor="role" className="label">I am a</label>
+              <div className={styles.formGroup}>
+                <label htmlFor="role" className={styles.label}>I am a</label>
                 <select
                   id="role"
                   name="role"
-                  className={`input ${visibleErrors.role ? 'error' : ''}`}
+                  className={`${styles.input} ${visibleErrors.role ? styles.error : ''}`}
                   value={values.role}
                   onChange={handleChange}
                   required
@@ -134,39 +141,39 @@ function Login({ onSignupClick }) {
                   ))}
                 </select>
                 {visibleErrors.role && (
-                  <div className="error-message login-style" style={{ display: 'block' }}>
+                  <div className={`${styles.errorMessage} ${styles.loginStyle}`} style={{ display: 'block' }}>
                     {visibleErrors.role}
                   </div>
                 )}
               </div>
 
-              <div className="form-group">
-                <label htmlFor="email" className="label">Email or Phone</label>
+              <div className={styles.formGroup}>
+                <label htmlFor="email" className={styles.label}>Email or Phone</label>
                 <input
                   type="text"
                   id="email"
                   name="email"
-                  className={`input ${visibleErrors.email ? 'error' : ''}`}
+                  className={`${styles.input} ${visibleErrors.email ? styles.error : ''}`}
                   value={values.email}
                   onChange={handleChange}
                   placeholder="Enter your email or phone number"
                   required
                 />
                 {visibleErrors.email && (
-                  <div className="error-message login-style" style={{ display: 'block' }}>
+                  <div className={`${styles.errorMessage} ${styles.loginStyle}`} style={{ display: 'block' }}>
                     {visibleErrors.email}
                   </div>
                 )}
               </div>
 
-              <div className="form-group">
-                <label htmlFor="password" className="label">Password</label>
-                <div className="input-wrapper">
+              <div className={styles.formGroup}>
+                <label htmlFor="password" className={styles.label}>Password</label>
+                <div className={styles.inputWrapper}>
                   <input
                     type={passwordType}
                     id="password"
                     name="password"
-                    className={`input password-input ${visibleErrors.password ? 'error' : ''}`}
+                    className={`${styles.input} ${styles.passwordInput} ${visibleErrors.password ? styles.error : ''}`}
                     value={values.password}
                     onChange={handleChange}
                     placeholder="Enter your password"
@@ -174,39 +181,39 @@ function Login({ onSignupClick }) {
                   />
                   <button
                     type="button"
-                    className="password-toggle"
+                    className={styles.passwordToggle}
                     onClick={togglePassword}
                   >
                     <i data-lucide={passwordIcon}></i>
                   </button>
                 </div>
                 {visibleErrors.password && (
-                  <div className="error-message login-style" style={{ display: 'block' }}>
+                  <div className={`${styles.errorMessage} ${styles.loginStyle}`} style={{ display: 'block' }}>
                     {visibleErrors.password}
                   </div>
                 )}
               </div>
 
               {/* Forgot Password Link */}
-              <div className="form-options">
-                <Link to="/forgot-password" className="link-btn">
+              <div className={styles.formOptions}>
+                <Link to="/forgot-password" className={styles.linkBtn}>
                   Forgot password?
                 </Link>
               </div>
 
               <button
                 type="submit"
-                className="btn btn-primary"
+                className={`${styles.btn} ${styles.btnPrimary}`}
                 disabled={isSubmitting}
               >
                 {isSubmitting ? 'Signing In...' : 'Sign In'}
               </button>
             </form>
 
-            <div className="footer-link">
+            <div className={styles.footerLink}>
               <button
                 onClick={onSignupClick}
-                className="link-btn"
+                className={styles.linkBtn}
               >
                 Don't have an account? Create new account
               </button>
