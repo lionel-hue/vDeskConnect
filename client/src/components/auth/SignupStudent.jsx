@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'; // Add this import
 import { validateStep, validateForm } from '../../utils/validation';
 import { usePasswordToggle } from '../../hooks/usePasswordToggle';
 import { ArrowLeft, ArrowRight, GraduationCap, Eye, EyeOff } from 'lucide-react';
+import '../../style/auth.css';
 
 function SignupStudent({ onBackClick, showMessage }) {
     const navigate = useNavigate(); // Add this hook

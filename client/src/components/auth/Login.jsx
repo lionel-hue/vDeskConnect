@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from '../../hooks/useForm'
 import { validateLogin } from '../../utils/validation'
 import { usePasswordToggle } from '../../hooks/usePasswordToggle'
+import '../../style/auth.css';
 
 function Login({ onSignupClick }) {
   const { values, errors, isSubmitting, handleChange, setErrors, setIsSubmitting } = useForm({

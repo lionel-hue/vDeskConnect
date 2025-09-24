@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useForm } from '../../hooks/useForm';
 import { validateForgotPassword } from '../../utils/validation';
 import { Mail } from 'lucide-react';
+import '../../style/auth.css';
 
 function ForgotPassword() {
     const { values, errors, isSubmitting, handleChange, setErrors, setIsSubmitting } = useForm({

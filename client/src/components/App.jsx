@@ -7,13 +7,8 @@ import SignupStudent from './auth/SignupStudent';
 import VerifyAccount from './auth/VerifyAccount';
 import ForgotPassword from './auth/ForgotPassword';
 import ResetPassword from './auth/ResetPassword';
-import DashboardHome from './dashboard/DashboardHome';
-import SidebarNav from './components/SidebarNav';
-import Header from './components/Header';
-import '../style/auth.css';
-import '../style/sidebar.css';
-import '../style/header.css';
-import '../style/dashboard.css';
+import SidebarNav from './SidebarNav';
+import Header from './Header';
 
 function App() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -21,15 +16,17 @@ function App() {
     return (
         <Router>
             <div className="app">
+                
                 {/* SidebarNav is rendered here to be available across all authenticated routes */}
-                <SidebarNav isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+                {/* <SidebarNav isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} /> */}
                 
                 {/* Header is rendered here to be available across all authenticated routes */}
-                <Header 
-                    sidebarOpen={sidebarOpen} 
-                    onSidebarToggle={() => setSidebarOpen(!sidebarOpen)}
-                    pageTitle="Dashboard"
-                />
+                {/* <Header  */}
+                    {/* sidebarOpen={sidebarOpen}  */}
+                    {/* onSidebarToggle={() => setSidebarOpen(!sidebarOpen)} */}
+                    {/* pageTitle="Dashboard" */}
+                {/* /> */}
+
 
                 <Routes>
                     {/* Public Routes */}
@@ -40,19 +37,6 @@ function App() {
                     <Route path="/verify-account" element={<VerifyAccountWrapper />} />
                     <Route path="/forgot-password" element={<ForgotPassword />} />
                     <Route path="/reset-password" element={<ResetPassword />} />
-                    
-                    {/* Protected Dashboard Routes */}
-                    <Route path="/dashboard" element={<DashboardHome />} />
-                    <Route path="/dashboard/analytics" element={<div>Analytics Page</div>} />
-                    <Route path="/dashboard/grades" element={<div>Grades Page</div>} />
-                    <Route path="/dashboard/invite-manager" element={<div>Invite Manager Page</div>} />
-                    <Route path="/dashboard/lectures" element={<div>Lectures Page</div>} />
-                    <Route path="/dashboard/subjects" element={<div>Subjects Page</div>} />
-                    <Route path="/dashboard/user-management" element={<div>User Management Page</div>} />
-                    <Route path="/dashboard/profile" element={<div>Profile Page</div>} />
-                    <Route path="/dashboard/profile/edit" element={<div>Edit Profile Page</div>} />
-                    <Route path="/dashboard/settings" element={<div>Settings Page</div>} />
-                    <Route path="/dashboard/privacy" element={<div>Privacy Page</div>} />
                 </Routes>
             </div>
         </Router>

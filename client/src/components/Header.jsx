@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import './header.css';
 
 const Header = ({ sidebarOpen, onSidebarToggle, pageTitle = "Dashboard" }) => {
     const [headerSearchActive, setHeaderSearchActive] = useState(false);

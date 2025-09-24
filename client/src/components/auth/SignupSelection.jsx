@@ -1,3 +1,5 @@
+import '../../style/auth.css';
+
 // SignupSelection.jsx
 function SignupSelection({ onTeacherSignup, onStudentSignup, onLoginClick, formMessage }) {
     return (
