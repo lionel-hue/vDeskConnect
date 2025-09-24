@@ -7,48 +7,46 @@ import SignupStudent from './auth/SignupStudent';
 import VerifyAccount from './auth/VerifyAccount';
 import ForgotPassword from './auth/ForgotPassword';
 import ResetPassword from './auth/ResetPassword';
-import SidebarNav from './SidebarNav';
-import Header from './Header';
+import Dashboard from './main/Dashboard';
+// import InviteManager from './InviteManager'; 
+// import UserManagement from './UserManagement';
 
 function App() {
-    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
 
     return (
         <Router>
             <div className="app">
-                
-                {/* SidebarNav is rendered here to be available across all authenticated routes */}
-                {/* <SidebarNav isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} /> */}
-                
-                {/* Header is rendered here to be available across all authenticated routes */}
-                {/* <Header  */}
-                    {/* sidebarOpen={sidebarOpen}  */}
-                    {/* onSidebarToggle={() => setSidebarOpen(!sidebarOpen)} */}
-                    {/* pageTitle="Dashboard" */}
-                {/* /> */}
-
-
                 <Routes>
-                    {/* Public Routes */}
-                    <Route path="/" element={<LoginWrapper />} />
+                    {/* Public Routes - No Header/Sidebar */}
+                    <Route path="/" element={<LoginWrapper onLogin={() => setIsAuthenticated(true)} />} />
                     <Route path="/signup-selection" element={<SignupSelectionWrapper />} />
                     <Route path="/signup-teacher" element={<SignupTeacherWrapper />} />
                     <Route path="/signup-student" element={<SignupStudentWrapper />} />
-                    <Route path="/verify-account" element={<VerifyAccountWrapper />} />
+                    <Route path="/verify-account" element={<VerifyAccountWrapper onVerify={() => setIsAuthenticated(true)} />} />
                     <Route path="/forgot-password" element={<ForgotPassword />} />
                     <Route path="/reset-password" element={<ResetPassword />} />
+                    
+                    {/* Protected Routes - Each is standalone with Header/Sidebar */}
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    {/* <Route path="/invite-manager" element={<InviteManager />} /> */}
+                    {/* <Route path="/user-management" element={<UserManagement />} /> */}
                 </Routes>
             </div>
         </Router>
     );
 }
 
-// Wrapper components
-function LoginWrapper() {
+// Wrapper components remain the same...
+function LoginWrapper({ onLogin }) {
     const navigate = useNavigate();
     return (
         <Login
             onSignupClick={() => navigate('/signup-selection')}
+            onLoginSuccess={() => {
+                onLogin();
+                navigate('/dashboard');
+            }}
         />
     );
 }
@@ -70,7 +68,7 @@ function SignupTeacherWrapper() {
         <SignupTeacher
             onBackClick={() => navigate('/signup-selection')}
             onSuccess={() => {
-                setTimeout(() => navigate('/dashboard'), 2000);
+                setTimeout(() => navigate('/verify-account'), 2000);
             }}
         />
     );
@@ -82,13 +80,13 @@ function SignupStudentWrapper() {
         <SignupStudent
             onBackClick={() => navigate('/signup-selection')}
             onSuccess={() => {
-                setTimeout(() => navigate('/dashboard'), 2000);
+                setTimeout(() => navigate('/verify-account'), 2000);
             }}
         />
     );
 }
 
-function VerifyAccountWrapper() {
+function VerifyAccountWrapper({ onVerify }) {
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -108,7 +106,10 @@ function VerifyAccountWrapper() {
             verificationCode={verificationCode}
             fromLogin={fromLogin}
             onBackClick={() => navigate('/')}
-            onSuccess={() => navigate('/dashboard')}
+            onSuccess={() => {
+                onVerify();
+                navigate('/dashboard');
+            }}
         />
     );
 }
