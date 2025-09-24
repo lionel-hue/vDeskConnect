@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { validateStep, validateForm } from '../../utils/validation';
 import { usePasswordToggle } from '../../hooks/usePasswordToggle';
 import { ArrowLeft, ArrowRight, BookOpen, Eye, EyeOff, ChevronDown, ChevronUp } from 'lucide-react';
-import '../../style/auth.module.css';
+import '../../style/auth.css';
 
 function SignupTeacher({ onBackClick, onSuccess, showMessage }) {
     const navigate = useNavigate();

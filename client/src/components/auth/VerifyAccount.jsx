@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, CheckCircle, Clock, Mail, Smartphone } from 'lucide-react';
-import '../../style/auth.module.css';
+import '../../style/auth.css';
 
 function VerifyAccount({ userType, email, phone, verificationCode, onBackClick }) {
     const [enteredCode, setEnteredCode] = useState('');

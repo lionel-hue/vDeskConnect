@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Chart, registerables } from 'chart.js';
 import Header from '../Header';
 import SidebarNav from '../SidebarNav';
-import '../../style/dashboard.module.css';
+import '../../style/dashboard.css';
 
 Chart.register(...registerables);
 

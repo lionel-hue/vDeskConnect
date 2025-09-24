@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from '../../hooks/useForm'
 import { validateLogin } from '../../utils/validation'
 import { usePasswordToggle } from '../../hooks/usePasswordToggle'
-import styles from '../../style/auth.module.css';
+import '../../style/auth.css';
 
 function Login({ onSignupClick, onLoginSuccess }) {
   const { values, errors, isSubmitting, handleChange, setErrors, setIsSubmitting } = useForm({
@@ -102,34 +102,34 @@ function Login({ onSignupClick, onLoginSuccess }) {
   }
 
   return (
-    <div className={styles.app}>
-      <div className={styles.container}>
-        <div className={styles.card}>
-          <div className={styles.cardHeader}>
-            <div className={styles.logo}>
+    <div className="app">
+      <div className="container">
+        <div className="card">
+          <div className="card-header">
+            <div className="logo">
               <span>vD</span>
             </div>
-            <div className={styles.headerContent}>
-              <h1 className={styles.cardTitle}>Welcome Back</h1>
-              <p className={styles.cardDescription}>Sign in to vDeskconnect</p>
+            <div className="header-content">
+              <h1 className="card-title">Welcome Back</h1>
+              <p className="card-description">Sign in to vDeskconnect</p>
             </div>
           </div>
-          <div className={styles.cardContent}>
-            <form onSubmit={handleSubmit} className={styles.form}>
+          <div className="card-content">
+            <form onSubmit={handleSubmit} className="form">
               {/* Server error message */}
               {visibleErrors.server && (
-                <div className={`${styles.errorMessage} ${styles.loginStyle}`} style={{ display: 'block' }}>
+                <div className="error-message login-style" style={{ display: 'block' }}>
                   {visibleErrors.server}
                 </div>
               )}
 
               {/* Role Selection Dropdown */}
-              <div className={styles.formGroup}>
-                <label htmlFor="role" className={styles.label}>I am a</label>
+              <div className="form-group">
+                <label htmlFor="role" className="label">I am a</label>
                 <select
                   id="role"
                   name="role"
-                  className={`${styles.input} ${visibleErrors.role ? styles.error : ''}`}
+                  className={`input ${visibleErrors.role ? 'error' : ''}`}
                   value={values.role}
                   onChange={handleChange}
                   required
@@ -141,39 +141,39 @@ function Login({ onSignupClick, onLoginSuccess }) {
                   ))}
                 </select>
                 {visibleErrors.role && (
-                  <div className={`${styles.errorMessage} ${styles.loginStyle}`} style={{ display: 'block' }}>
+                  <div className="error-message login-style" style={{ display: 'block' }}>
                     {visibleErrors.role}
                   </div>
                 )}
               </div>
 
-              <div className={styles.formGroup}>
-                <label htmlFor="email" className={styles.label}>Email or Phone</label>
+              <div className="form-group">
+                <label htmlFor="email" className="label">Email or Phone</label>
                 <input
                   type="text"
                   id="email"
                   name="email"
-                  className={`${styles.input} ${visibleErrors.email ? styles.error : ''}`}
+                  className={`input ${visibleErrors.email ? 'error' : ''}`}
                   value={values.email}
                   onChange={handleChange}
                   placeholder="Enter your email or phone number"
                   required
                 />
                 {visibleErrors.email && (
-                  <div className={`${styles.errorMessage} ${styles.loginStyle}`} style={{ display: 'block' }}>
+                  <div className="error-message login-style" style={{ display: 'block' }}>
                     {visibleErrors.email}
                   </div>
                 )}
               </div>
 
-              <div className={styles.formGroup}>
-                <label htmlFor="password" className={styles.label}>Password</label>
-                <div className={styles.inputWrapper}>
+              <div className="form-group">
+                <label htmlFor="password" className="label">Password</label>
+                <div className="input-wrapper">
                   <input
                     type={passwordType}
                     id="password"
                     name="password"
-                    className={`${styles.input} ${styles.passwordInput} ${visibleErrors.password ? styles.error : ''}`}
+                    className={`input password-input ${visibleErrors.password ? 'error' : ''}`}
                     value={values.password}
                     onChange={handleChange}
                     placeholder="Enter your password"
@@ -181,39 +181,39 @@ function Login({ onSignupClick, onLoginSuccess }) {
                   />
                   <button
                     type="button"
-                    className={styles.passwordToggle}
+                    className="password-toggle"
                     onClick={togglePassword}
                   >
                     <i data-lucide={passwordIcon}></i>
                   </button>
                 </div>
                 {visibleErrors.password && (
-                  <div className={`${styles.errorMessage} ${styles.loginStyle}`} style={{ display: 'block' }}>
+                  <div className="error-message login-style" style={{ display: 'block' }}>
                     {visibleErrors.password}
                   </div>
                 )}
               </div>
 
               {/* Forgot Password Link */}
-              <div className={styles.formOptions}>
-                <Link to="/forgot-password" className={styles.linkBtn}>
+              <div className="form-options">
+                <Link to="/forgot-password" className="link-btn">
                   Forgot password?
                 </Link>
               </div>
 
               <button
                 type="submit"
-                className={`${styles.btn} ${styles.btnPrimary}`}
+                className="btn btn-primary"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? 'Signing In...' : 'Sign In'}
               </button>
             </form>
 
-            <div className={styles.footerLink}>
+            <div className="footer-link">
               <button
                 onClick={onSignupClick}
-                className={styles.linkBtn}
+                className="link-btn"
               >
                 Don't have an account? Create new account
               </button>
