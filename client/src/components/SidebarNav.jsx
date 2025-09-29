@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-
+import "../style/sidebar.css"
 
 const SidebarNav = ({ isOpen, onClose }) => {
     const [searchActive, setSearchActive] = useState(false);

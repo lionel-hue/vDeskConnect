@@ -1,17 +1,23 @@
+// main/Dashboard.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { Chart, registerables } from 'chart.js';
 import Header from '../Header';
 import SidebarNav from '../SidebarNav';
+import Loader from '../Loader';
+import Modal, { useModal } from '../Modal';
 import '../../style/dashboard.css';
 
 Chart.register(...registerables);
 
 const Dashboard = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
     const studentsChartRef = useRef(null);
     const lecturesChartRef = useRef(null);
     const attendanceChartRef = useRef(null);
-
+    
+    const { modal, setModal, alert, confirm, prompt } = useModal();
+    
     useEffect(() => {
         // Initialize charts
         initializeCharts();
@@ -40,8 +46,6 @@ const Dashboard = () => {
         createLecturesChart();
         createAttendanceChart();
     };
-
-    // ... keep all your existing chart functions and showTeacherActions function
 
     const createStudentsChart = () => {
         const ctx = document.getElementById('studentsChart');
@@ -133,16 +137,63 @@ const Dashboard = () => {
         }
     };
 
-    const showTeacherActions = (teacherName) => {
-        const actions = ['View Profile', 'Edit Details', 'View Classes', 'Send Message', 'Remove Teacher'];
-        const action = prompt(`Choose action for ${teacherName}:\n` + actions.map((a, i) => `${i + 1}. ${a}`).join('\n'));
-        if (action && action >= 1 && action <= actions.length) {
-            alert(`Selected: ${actions[action - 1]} for ${teacherName}`);
+    const showTeacherActions = async (teacherName) => {
+        const actions = [
+            { id: 1, name: 'View Profile' },
+            { id: 2, name: 'Edit Details' },
+            { id: 3, name: 'View Classes' },
+            { id: 4, name: 'Send Message' },
+            { id: 5, name: 'Remove Teacher' }
+        ];
+
+        const actionText = actions.map((a, i) => `${i + 1}. ${a.name}`).join('\n');
+        
+        try {
+            const selectedAction = await prompt(
+                `Choose action for ${teacherName}:\n${actionText}`,
+                '',
+                'Teacher Actions'
+            );
+
+            if (selectedAction && selectedAction.trim() !== '') {
+                const actionIndex = parseInt(selectedAction) - 1;
+                if (actionIndex >= 0 && actionIndex < actions.length) {
+                    setIsLoading(true);
+                    
+                    // Simulate API call
+                    setTimeout(() => {
+                        setIsLoading(false);
+                        alert(`Selected: ${actions[actionIndex].name} for ${teacherName}`, 'Action Confirmed');
+                    }, 1500);
+                } else {
+                    await alert('Please select a valid action number (1-5)', 'Invalid Selection');
+                }
+            }
+        } catch (error) {
+            // User cancelled the prompt
+            console.log('Action selection cancelled');
+        }
+    };
+
+    const handleRemoveTeacher = async (teacherName) => {
+        const shouldRemove = await confirm(
+            `Are you sure you want to remove ${teacherName}? This action cannot be undone.`,
+            'Remove Teacher'
+        );
+
+        if (shouldRemove) {
+            setIsLoading(true);
+            
+            // Simulate removal process
+            setTimeout(() => {
+                setIsLoading(false);
+                alert(`${teacherName} has been successfully removed.`, 'Teacher Removed');
+            }, 2000);
         }
     };
 
     return (
-        <div className="dashboard-page">
+        <div className="dashboard dashboard-page">
             {/* NOW Dashboard includes Header and SidebarNav */}
             <SidebarNav isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
             <Header
@@ -150,6 +201,12 @@ const Dashboard = () => {
                 onSidebarToggle={() => setSidebarOpen(!sidebarOpen)}
                 pageTitle="Dashboard"
             />
+
+            {/* Loader */}
+            {isLoading && <Loader message="Processing your request..." />}
+
+            {/* Modal */}
+            <Modal modal={modal} setModal={setModal} />
 
             {/* Your existing dashboard content */}
             <main className="dashboard-content">
@@ -335,7 +392,10 @@ const Dashboard = () => {
                                         <td>Mathematics</td>
                                         <td>john@school.com</td>
                                         <td>
-                                            <button className="action-btn" onClick={() => showTeacherActions('John Smith')}>
+                                            <button 
+                                                className="action-btn" 
+                                                onClick={() => showTeacherActions('John Smith')}
+                                            >
                                                 <i data-lucide="more-vertical"></i>
                                             </button>
                                         </td>
@@ -346,7 +406,10 @@ const Dashboard = () => {
                                         <td>English</td>
                                         <td>sarah@school.com</td>
                                         <td>
-                                            <button className="action-btn" onClick={() => showTeacherActions('Sarah Johnson')}>
+                                            <button 
+                                                className="action-btn" 
+                                                onClick={() => showTeacherActions('Sarah Johnson')}
+                                            >
                                                 <i data-lucide="more-vertical"></i>
                                             </button>
                                         </td>
@@ -357,7 +420,10 @@ const Dashboard = () => {
                                         <td>Chemistry</td>
                                         <td>mike@school.com</td>
                                         <td>
-                                            <button className="action-btn" onClick={() => showTeacherActions('Mike Wilson')}>
+                                            <button 
+                                                className="action-btn" 
+                                                onClick={() => showTeacherActions('Mike Wilson')}
+                                            >
                                                 <i data-lucide="more-vertical"></i>
                                             </button>
                                         </td>

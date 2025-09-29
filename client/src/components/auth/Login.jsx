@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { Eye, EyeOff } from 'lucide-react';
 import { useForm } from '../../hooks/useForm'
 import { validateLogin } from '../../utils/validation'
 import { usePasswordToggle } from '../../hooks/usePasswordToggle'
@@ -184,7 +185,7 @@ function Login({ onSignupClick, onLoginSuccess }) {
                     className="password-toggle"
                     onClick={togglePassword}
                   >
-                    <i data-lucide={passwordIcon}></i>
+                    {passwordType === 'password' ? <Eye size={16} /> : <EyeOff size={16} />}
                   </button>
                 </div>
                 {visibleErrors.password && (

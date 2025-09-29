@@ -459,13 +459,23 @@ export const validateLogin = (values) => {
   return errors;
 };
 
-// ## Added this new function for the forgot password form ##
+// ## Updated forgot password validation with user type ##
 export const validateForgotPassword = (values) => {
     const errors = {};
-    if (!values.email) {
-        errors.email = 'Email address is required.';
-    } else if (!/\S+@\S+\.\S+/.test(values.email)) {
-        errors.email = 'Email address is invalid.';
+    
+    // Validate userType
+    if (!values.userType) {
+        errors.userType = 'Please select your user type';
+    } else if (!['student', 'teacher', 'admin'].includes(values.userType)) {
+        errors.userType = 'Please select a valid user type';
     }
+    
+    // Validate email
+    if (!values.email) {
+        errors.email = 'Email address is required';
+    } else if (!/\S+@\S+\.\S+/.test(values.email)) {
+        errors.email = 'Please enter a valid email address';
+    }
+    
     return errors;
 };

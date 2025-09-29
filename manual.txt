@@ -1,0 +1,17 @@
+// In any component
+const { alert, confirm, prompt } = useModal();
+
+// Alert
+await alert('Operation completed successfully!');
+
+// Confirm
+const result = await confirm('Are you sure?');
+if (result) {
+  // User confirmed
+}
+
+// Prompt
+const value = await prompt('Enter your name:', 'John Doe');
+if (value) {
+  // User entered a value
+}

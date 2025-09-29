@@ -1,11 +1,16 @@
+// components/Header.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useModal } from './Modal';
+import "../style/header.css"
 
 const Header = ({ sidebarOpen, onSidebarToggle, pageTitle = "Dashboard" }) => {
     const [headerSearchActive, setHeaderSearchActive] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const navigate = useNavigate();
     const location = useLocation();
+    
+    const { confirm } = useModal();
 
     const performDashboardSearch = (term) => {
         // Implement dashboard search functionality
@@ -29,14 +34,16 @@ const Header = ({ sidebarOpen, onSidebarToggle, pageTitle = "Dashboard" }) => {
         }
     };
 
-    const handleAdminAction = (action) => {
+    const handleAdminAction = async (action) => {
         switch (action) {
             case 'change-password':
                 navigate('/dashboard/settings');
                 break;
             case 'logout':
-                if (confirm('Are you sure you want to logout?')) {
+                const shouldLogout = await confirm('Are you sure you want to logout?', 'Confirm Logout');
+                if (shouldLogout) {
                     // Implement logout logic
+                    console.log('Logging out...');
                     navigate('/');
                 }
                 break;

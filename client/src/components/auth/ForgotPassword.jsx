@@ -7,12 +7,20 @@ import '../../style/auth.css';
 
 function ForgotPassword() {
     const { values, errors, isSubmitting, handleChange, setErrors, setIsSubmitting } = useForm({
+        userType: 'student', // Default to student
         email: '',
     });
 
     const [messageSent, setMessageSent] = useState(false);
     const [serverError, setServerError] = useState('');
     const [fieldErrors, setFieldErrors] = useState({});
+
+    // User type options
+    const userTypeOptions = [
+        { value: 'student', label: 'Student' },
+        { value: 'teacher', label: 'Teacher' },
+        { value: 'admin', label: 'Administrator' }
+    ];
 
     useEffect(() => {
         // Update field errors when errors change
@@ -44,6 +52,8 @@ function ForgotPassword() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setServerError('');
+        
+        // Include userType in validation
         const validationErrors = validateForgotPassword(values);
         setErrors(validationErrors);
         setFieldErrors(validationErrors);
@@ -54,7 +64,10 @@ function ForgotPassword() {
                 const response = await fetch(`${import.meta.env.VITE_HOST}:${import.meta.env.VITE_PORT}/auth/forgot-password/`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: values.email }),
+                    body: JSON.stringify({ 
+                        email: values.email,
+                        userType: values.userType // Send user type to backend
+                    }),
                 });
 
                 if (response.ok) {
@@ -84,36 +97,36 @@ function ForgotPassword() {
     };
 
     return (
-        <div className={styles.app}>
-            <div className={styles.container}>
-                <div className={styles.card}>
-                    <div className={styles.cardHeader}>
-                        <div className={styles.logo}>
+        <div className="app">
+            <div className="container">
+                <div className="card">
+                    <div className="card-header">
+                        <div className="logo">
                             <span>vD</span>
                         </div>
-                        <div className={styles.headerContent}>
-                            <h1 className={styles.cardTitle}>Forgot Password</h1>
-                            <p className={styles.cardDescription}>
+                        <div className="header-content">
+                            <h1 className="card-title">Forgot Password</h1>
+                            <p className="card-description">
                                 {messageSent
                                     ? "Check your inbox for a reset link."
-                                    : "Enter your email to receive a password reset link."}
+                                    : "Enter your details to receive a password reset link."}
                             </p>
                         </div>
                     </div>
-                    <div className={styles.cardContent}>
+                    <div className="card-content">
                         {/* Server error message - auto dismisses after 5 seconds */}
                         {serverError && (
-                            <div className={`${styles.errorMessage} ${styles.serverError}`}>
+                            <div className="error-message server-error">
                                 {serverError}
                             </div>
                         )}
 
                         {messageSent ? (
-                            <div className={styles.successMessage}>
-                                <div className={styles.successIcon}>
+                            <div className="success-message">
+                                <div className="success-icon">
                                     <Mail size={24} />
                                 </div>
-                                <div className={styles.successContent}>
+                                <div className="success-content">
                                     <h3>Reset Link Sent</h3>
                                     <p>
                                         If an account with the email <strong>{values.email}</strong> exists,
@@ -123,14 +136,39 @@ function ForgotPassword() {
                                 </div>
                             </div>
                         ) : (
-                            <form onSubmit={handleSubmit} className={styles.form}>
-                                <div className={styles.formGroup}>
-                                    <label htmlFor="email" className={styles.label}>Email</label>
+                            <form onSubmit={handleSubmit} className="form">
+                                {/* User Type Selection */}
+                                <div className="form-group">
+                                    <label htmlFor="userType" className="label">I am a</label>
+                                    <select
+                                        id="userType"
+                                        name="userType"
+                                        className={`input ${fieldErrors.userType ? 'error' : ''}`}
+                                        value={values.userType}
+                                        onChange={handleInputChange}
+                                        required
+                                    >
+                                        {userTypeOptions.map(option => (
+                                            <option key={option.value} value={option.value}>
+                                                {option.label}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    {/* Inline error message - auto dismisses after 3 seconds */}
+                                    {fieldErrors.userType && (
+                                        <div className="error-message">
+                                            {fieldErrors.userType}
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="form-group">
+                                    <label htmlFor="email" className="label">Email</label>
                                     <input
                                         type="email"
                                         id="email"
                                         name="email"
-                                        className={`${styles.input} ${fieldErrors.email ? styles.error : ''}`}
+                                        className={`input ${fieldErrors.email ? 'error' : ''}`}
                                         value={values.email}
                                         onChange={handleInputChange}
                                         placeholder="Enter your registered email"
@@ -138,7 +176,7 @@ function ForgotPassword() {
                                     />
                                     {/* Inline error message - auto dismisses after 3 seconds */}
                                     {fieldErrors.email && (
-                                        <div className={styles.errorMessage}>
+                                        <div className="error-message">
                                             {fieldErrors.email}
                                         </div>
                                     )}
@@ -146,12 +184,12 @@ function ForgotPassword() {
 
                                 <button
                                     type="submit"
-                                    className={`${styles.btn} ${styles.btnPrimary}`}
+                                    className="btn btn-primary"
                                     disabled={isSubmitting}
                                 >
                                     {isSubmitting ? (
                                         <>
-                                            <span className={styles.loadingSpinner}></span>
+                                            <span className="loading-spinner"></span>
                                             Sending...
                                         </>
                                     ) : (
@@ -161,8 +199,8 @@ function ForgotPassword() {
                             </form>
                         )}
 
-                        <div className={styles.footerLink} style={{ marginTop: '1rem' }}>
-                            <Link to="/" className={styles.linkBtn}>
+                        <div className="footer-link" style={{ marginTop: '1rem' }}>
+                            <Link to="/" className="link-btn">
                                 Back to Sign In
                             </Link>
                         </div>
