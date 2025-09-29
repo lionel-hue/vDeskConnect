@@ -1,32 +1,39 @@
 // components/Header.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useModal } from './Modal';
+import { useSearch } from './SearchManager';
+import Modal, { useModal } from './Modal';
 import "../style/header.css"
 
 const Header = ({ sidebarOpen, onSidebarToggle, pageTitle = "Dashboard" }) => {
     const [headerSearchActive, setHeaderSearchActive] = useState(false);
-    const [searchTerm, setSearchTerm] = useState('');
+    const { searchTerm, setSearchTerm, setIsSearching } = useSearch();
     const navigate = useNavigate();
     const location = useLocation();
     
-    const { confirm } = useModal();
+    const { modal, setModal, confirm } = useModal();
 
     const performDashboardSearch = (term) => {
-        // Implement dashboard search functionality
-        console.log('Searching for:', term);
-        // This would filter dashboard content based on search term
+        setSearchTerm(term);
+        setIsSearching(!!term.trim());
     };
 
     const handleSearchChange = (e) => {
         const value = e.target.value;
-        setSearchTerm(value);
         performDashboardSearch(value);
+    };
+
+    const clearSearch = () => {
+        setSearchTerm('');
+        setIsSearching(false);
     };
 
     const toggleMobileSearch = () => {
         if (window.innerWidth <= 640) {
             setHeaderSearchActive(!headerSearchActive);
+            if (headerSearchActive) {
+                clearSearch();
+            }
         } else {
             // On desktop, just focus the input
             const searchInput = document.getElementById("header-search-input");
@@ -60,6 +67,7 @@ const Header = ({ sidebarOpen, onSidebarToggle, pageTitle = "Dashboard" }) => {
                 const searchContainer = document.querySelector(".header-search-container");
                 if (searchContainer && !searchContainer.contains(event.target)) {
                     setHeaderSearchActive(false);
+                    clearSearch();
                 }
             }
         };
@@ -67,6 +75,13 @@ const Header = ({ sidebarOpen, onSidebarToggle, pageTitle = "Dashboard" }) => {
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [headerSearchActive]);
+
+    // Clear search when navigating away from dashboard
+    useEffect(() => {
+        if (!location.pathname.includes('/dashboard')) {
+            clearSearch();
+        }
+    }, [location.pathname]);
 
     return (
         <>
@@ -83,7 +98,7 @@ const Header = ({ sidebarOpen, onSidebarToggle, pageTitle = "Dashboard" }) => {
                             className="header-search-btn" 
                             onClick={toggleMobileSearch}
                         >
-                            <i data-lucide="search"></i>
+                            <i data-lucide={headerSearchActive ? "x" : "search"}></i>
                         </button>
                         <input 
                             type="text" 
@@ -93,6 +108,14 @@ const Header = ({ sidebarOpen, onSidebarToggle, pageTitle = "Dashboard" }) => {
                             value={searchTerm}
                             onChange={handleSearchChange}
                         />
+                        {searchTerm && (
+                            <button 
+                                className="header-clear-search"
+                                onClick={clearSearch}
+                            >
+                                <i data-lucide="x-circle"></i>
+                            </button>
+                        )}
                     </div>
                 </div>
                 <div className="header-right">
@@ -109,6 +132,9 @@ const Header = ({ sidebarOpen, onSidebarToggle, pageTitle = "Dashboard" }) => {
                 </div>
             </header>
             <div className="header-divider"></div>
+
+            {/* Add the Modal component here */}
+            <Modal modal={modal} setModal={setModal} />
         </>
     );
 };

@@ -8,6 +8,7 @@ import VerifyAccount from './auth/VerifyAccount';
 import ForgotPassword from './auth/ForgotPassword';
 import ResetPassword from './auth/ResetPassword';
 import Dashboard from './main/Dashboard';
+import { SearchProvider } from './SearchManager';
 // import InviteManager from './InviteManager'; 
 // import UserManagement from './UserManagement';
 
@@ -15,25 +16,25 @@ function App() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
 
     return (
-        <Router>
-            <div className="app">
-                <Routes>
-                    {/* Public Routes - No Header/Sidebar */}
-                    <Route path="/" element={<LoginWrapper onLogin={() => setIsAuthenticated(true)} />} />
-                    <Route path="/signup-selection" element={<SignupSelectionWrapper />} />
-                    <Route path="/signup-teacher" element={<SignupTeacherWrapper />} />
-                    <Route path="/signup-student" element={<SignupStudentWrapper />} />
-                    <Route path="/verify-account" element={<VerifyAccountWrapper onVerify={() => setIsAuthenticated(true)} />} />
-                    <Route path="/forgot-password" element={<ForgotPassword />} />
-                    <Route path="/reset-password" element={<ResetPassword />} />
-                    
-                    {/* Protected Routes - Each is standalone with Header/Sidebar */}
-                    <Route path="/dashboard" element={<Dashboard />} />
-                    {/* <Route path="/invite-manager" element={<InviteManager />} /> */}
-                    {/* <Route path="/user-management" element={<UserManagement />} /> */}
-                </Routes>
-            </div>
-        </Router>
+        <SearchProvider>
+            <Router>
+                <div className="app">
+                    <Routes>
+                        {/* Public Routes - No Header/Sidebar */}
+                        <Route path="/" element={<LoginWrapper onLogin={() => setIsAuthenticated(true)} />} />
+                        <Route path="/signup-selection" element={<SignupSelectionWrapper />} />
+                        <Route path="/signup-teacher" element={<SignupTeacherWrapper />} />
+                        <Route path="/signup-student" element={<SignupStudentWrapper />} />
+                        <Route path="/verify-account" element={<VerifyAccountWrapper onVerify={() => setIsAuthenticated(true)} />} />
+                        <Route path="/forgot-password" element={<ForgotPassword />} />
+                        <Route path="/reset-password" element={<ResetPassword />} />
+
+                        {/* Protected Routes - Each is standalone with Header/Sidebar */}
+                        <Route path="/dashboard" element={<Dashboard />} />
+                    </Routes>
+                </div>
+            </Router>
+        </SearchProvider>
     );
 }
 

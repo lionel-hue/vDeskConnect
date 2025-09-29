@@ -1,10 +1,12 @@
 // main/Dashboard.jsx
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Chart, registerables } from 'chart.js';
 import Header from '../Header';
 import SidebarNav from '../SidebarNav';
 import Loader from '../Loader';
 import Modal, { useModal } from '../Modal';
+import { useSearch } from '../SearchManager';
+import { searchDashboardData, shouldShowElement } from '../../utils/searchUtils';
 import '../../style/dashboard.css';
 
 Chart.register(...registerables);
@@ -15,9 +17,65 @@ const Dashboard = () => {
     const studentsChartRef = useRef(null);
     const lecturesChartRef = useRef(null);
     const attendanceChartRef = useRef(null);
+    const { setSearchTerm, setIsSearching } = useSearch();
     
     const { modal, setModal, alert, confirm, prompt } = useModal();
-    
+    const { searchTerm, isSearching } = useSearch();
+
+    // Mock dashboard data - replace with your actual data
+    const dashboardData = useMemo(() => ({
+        stats: [
+            { label: 'No of Students', number: 1247, searchTerms: ['students', 'total students', 'no of students'] },
+            { label: 'No of Teachers', number: 89, searchTerms: ['teachers', 'total teachers', 'no of teachers'] },
+            { label: 'No of Classes', number: 156, searchTerms: ['classes', 'total classes', 'no of classes'] },
+            { label: 'No of Admins', number: 5, searchTerms: ['admins', 'total admins', 'no of admins'] },
+            { label: 'Total Population', number: 1497, searchTerms: ['population', 'total population'] }
+        ],
+        overviewCards: [
+            { 
+                title: 'Students', 
+                searchTerms: ['students', 'boys', 'girls', 'gender'],
+                chartData: { boys: 687, girls: 560 }
+            },
+            { 
+                title: 'Lectures', 
+                searchTerms: ['lectures', 'completed', 'pending'],
+                chartData: { completed: 89, pending: 67 }
+            },
+            { 
+                title: 'Teacher List', 
+                searchTerms: ['teacher list', 'teachers'],
+                tableData: [
+                    { name: 'John Smith', grade: 'JSS1', subject: 'Mathematics', email: 'john@school.com' },
+                    { name: 'Sarah Johnson', grade: 'JSS2', subject: 'English', email: 'sarah@school.com' },
+                    { name: 'Mike Wilson', grade: 'SSS1', subject: 'Chemistry', email: 'mike@school.com' }
+                ]
+            },
+            { 
+                title: 'Attendance', 
+                searchTerms: ['attendance', 'present', 'absent'],
+                chartData: { present: [85, 92, 78, 88, 95], absent: [15, 8, 22, 12, 5] }
+            }
+        ],
+        activities: [
+            { content: 'Teacher X has started a lecture with the SS2 students.', time: '2 mins ago' },
+            { content: 'Teacher A has gone offline.', time: '10 mins ago' },
+            { content: 'JSS1 students assignment is due for submission!', time: '1 hour ago' },
+            { content: 'New student registrations for SSS3 completed.', time: '3 hours ago' },
+            { content: 'Low attendance alert for JSS2 today.', time: '5 hours ago' }
+        ],
+        teachers: [
+            { name: 'John Smith', grade: 'JSS1', subject: 'Mathematics', email: 'john@school.com' },
+            { name: 'Sarah Johnson', grade: 'JSS2', subject: 'English', email: 'sarah@school.com' },
+            { name: 'Mike Wilson', grade: 'SSS1', subject: 'Chemistry', email: 'mike@school.com' }
+        ]
+    }), []);
+
+    const searchResults = useMemo(() => 
+        searchDashboardData(searchTerm, dashboardData),
+        [searchTerm, dashboardData]
+    );
+
     useEffect(() => {
         // Initialize charts
         initializeCharts();
@@ -175,21 +233,9 @@ const Dashboard = () => {
         }
     };
 
-    const handleRemoveTeacher = async (teacherName) => {
-        const shouldRemove = await confirm(
-            `Are you sure you want to remove ${teacherName}? This action cannot be undone.`,
-            'Remove Teacher'
-        );
-
-        if (shouldRemove) {
-            setIsLoading(true);
-            
-            // Simulate removal process
-            setTimeout(() => {
-                setIsLoading(false);
-                alert(`${teacherName} has been successfully removed.`, 'Teacher Removed');
-            }, 2000);
-        }
+    // Helper function to check if element should be shown
+    const shouldShow = (element, type) => {
+        return shouldShowElement(element, searchTerm, searchResults, type);
     };
 
     return (
@@ -210,62 +256,53 @@ const Dashboard = () => {
 
             {/* Your existing dashboard content */}
             <main className="dashboard-content">
+                {/* Search Results Indicator */}
+                {isSearching && (
+                    <div className="search-results-indicator">
+                        <div className="search-results-info">
+                            <i data-lucide="search"></i>
+                            <span>
+                                {searchTerm ? `Search results for "${searchTerm}"` : 'Showing all results'}
+                            </span>
+                            {searchTerm && (
+                                <button 
+                                    className="clear-search-btn"
+                                    onClick={() => {
+                                        setSearchTerm('');
+                                        setIsSearching(false);
+                                    }}
+                                >
+                                    <i data-lucide="x"></i>
+                                    Clear
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                )}
+
                 {/* Stats Cards */}
                 <div className="stats-container">
-                    <div className="stat-card" data-search-terms="students total students no of students">
-                        <div className="stat-icon">
-                            <i data-lucide="users"></i>
+                    {dashboardData.stats.map((stat, index) => (
+                        <div 
+                            key={index}
+                            className={`stat-card ${shouldShow(stat, 'stat-card') ? '' : 'search-hidden'}`}
+                            data-search-terms={stat.searchTerms ? stat.searchTerms.join(' ') : ''}
+                        >
+                            <div className="stat-icon">
+                                <i data-lucide={
+                                    index === 0 ? "users" :
+                                    index === 1 ? "graduation-cap" :
+                                    index === 2 ? "book-open" :
+                                    index === 3 ? "shield-check" : "users-2"
+                                }></i>
+                            </div>
+                            <div className="stat-divider"></div>
+                            <div className="stat-content">
+                                <div className="stat-label">{stat.label}</div>
+                                <div className="stat-number">{stat.number}</div>
+                            </div>
                         </div>
-                        <div className="stat-divider"></div>
-                        <div className="stat-content">
-                            <div className="stat-label">No of Students</div>
-                            <div className="stat-number">1,247</div>
-                        </div>
-                    </div>
-
-                    <div className="stat-card" data-search-terms="teachers total teachers no of teachers">
-                        <div className="stat-icon">
-                            <i data-lucide="graduation-cap"></i>
-                        </div>
-                        <div className="stat-divider"></div>
-                        <div className="stat-content">
-                            <div className="stat-label">No of Teachers</div>
-                            <div className="stat-number">89</div>
-                        </div>
-                    </div>
-
-                    <div className="stat-card" data-search-terms="classes total classes no of classes">
-                        <div className="stat-icon">
-                            <i data-lucide="book-open"></i>
-                        </div>
-                        <div className="stat-divider"></div>
-                        <div className="stat-content">
-                            <div className="stat-label">No of Classes</div>
-                            <div className="stat-number">156</div>
-                        </div>
-                    </div>
-
-                    <div className="stat-card" data-search-terms="admins total admins no of admins">
-                        <div className="stat-icon">
-                            <i data-lucide="shield-check"></i>
-                        </div>
-                        <div className="stat-divider"></div>
-                        <div className="stat-content">
-                            <div className="stat-label">No of Admins</div>
-                            <div className="stat-number">5</div>
-                        </div>
-                    </div>
-
-                    <div className="stat-card" data-search-terms="population total population">
-                        <div className="stat-icon">
-                            <i data-lucide="users-2"></i>
-                        </div>
-                        <div className="stat-divider"></div>
-                        <div className="stat-content">
-                            <div className="stat-label">Total Population</div>
-                            <div className="stat-number">1,497</div>
-                        </div>
-                    </div>
+                    ))}
                 </div>
 
                 <div className="content-divider"></div>
@@ -274,9 +311,11 @@ const Dashboard = () => {
                 <div className="overview-section">
                     <h2 className="section-title">Overview</h2>
                     <div className="overview-grid">
-
                         {/* Students Chart Card */}
-                        <div className="overview-card" data-search-terms="students boys girls gender">
+                        <div 
+                            className={`overview-card ${shouldShow({ title: 'Students' }, 'overview-card') ? '' : 'search-hidden'}`}
+                            data-search-terms="students boys girls gender"
+                        >
                             <div className="card-header">
                                 <h3 className="card-title">Students</h3>
                                 <div className="card-filters">
@@ -312,7 +351,10 @@ const Dashboard = () => {
                         </div>
 
                         {/* Lectures Chart Card */}
-                        <div className="overview-card" data-search-terms="lectures completed pending">
+                        <div 
+                            className={`overview-card ${shouldShow({ title: 'Lectures' }, 'overview-card') ? '' : 'search-hidden'}`}
+                            data-search-terms="lectures completed pending"
+                        >
                             <div className="card-header">
                                 <h3 className="card-title">Lectures</h3>
                                 <div className="card-filters">
@@ -354,7 +396,10 @@ const Dashboard = () => {
                         </div>
 
                         {/* Teacher List Card */}
-                        <div className="overview-card" data-search-terms="teacher list teachers">
+                        <div 
+                            className={`overview-card ${shouldShow({ title: 'Teacher List' }, 'overview-card') ? '' : 'search-hidden'}`}
+                            data-search-terms="teacher list teachers"
+                        >
                             <div className="card-header">
                                 <h3 className="card-title">Teacher List</h3>
                                 <div className="card-filters">
@@ -386,54 +431,34 @@ const Dashboard = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td>John Smith</td>
-                                        <td>JSS1</td>
-                                        <td>Mathematics</td>
-                                        <td>john@school.com</td>
-                                        <td>
-                                            <button 
-                                                className="action-btn" 
-                                                onClick={() => showTeacherActions('John Smith')}
-                                            >
-                                                <i data-lucide="more-vertical"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Sarah Johnson</td>
-                                        <td>JSS2</td>
-                                        <td>English</td>
-                                        <td>sarah@school.com</td>
-                                        <td>
-                                            <button 
-                                                className="action-btn" 
-                                                onClick={() => showTeacherActions('Sarah Johnson')}
-                                            >
-                                                <i data-lucide="more-vertical"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Mike Wilson</td>
-                                        <td>SSS1</td>
-                                        <td>Chemistry</td>
-                                        <td>mike@school.com</td>
-                                        <td>
-                                            <button 
-                                                className="action-btn" 
-                                                onClick={() => showTeacherActions('Mike Wilson')}
-                                            >
-                                                <i data-lucide="more-vertical"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
+                                    {dashboardData.teachers.map((teacher, index) => (
+                                        <tr 
+                                            key={index}
+                                            className={shouldShow(teacher, 'teacher-row') ? '' : 'search-hidden'}
+                                        >
+                                            <td>{teacher.name}</td>
+                                            <td>{teacher.grade}</td>
+                                            <td>{teacher.subject}</td>
+                                            <td>{teacher.email}</td>
+                                            <td>
+                                                <button 
+                                                    className="action-btn" 
+                                                    onClick={() => showTeacherActions(teacher.name)}
+                                                >
+                                                    <i data-lucide="more-vertical"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
                                 </tbody>
                             </table>
                         </div>
 
                         {/* Attendance Chart Card */}
-                        <div className="overview-card" data-search-terms="attendance present absent">
+                        <div 
+                            className={`overview-card ${shouldShow({ title: 'Attendance' }, 'overview-card') ? '' : 'search-hidden'}`}
+                            data-search-terms="attendance present absent"
+                        >
                             <div className="card-header">
                                 <h3 className="card-title">Attendance</h3>
                                 <div className="card-filters">
@@ -489,53 +514,40 @@ const Dashboard = () => {
                     <div className="content-divider"></div>
                     <h2 className="section-title">Activity</h2>
                     <div className="activity-list">
-                        <div className="activity-item">
-                            <div className="activity-icon">
-                                <i data-lucide="book-open"></i>
+                        {dashboardData.activities.map((activity, index) => (
+                            <div 
+                                key={index}
+                                className={`activity-item ${shouldShow(activity, 'activity-item') ? '' : 'search-hidden'}`}
+                            >
+                                <div className="activity-icon">
+                                    <i data-lucide={
+                                        index === 0 ? "book-open" :
+                                        index === 1 ? "user-minus" :
+                                        index === 2 ? "file-text" :
+                                        index === 3 ? "check-circle" : "alert-triangle"
+                                    }></i>
+                                </div>
+                                <div className="activity-content">
+                                    <p>{activity.content}</p>
+                                    <span className="activity-time">{activity.time}</span>
+                                </div>
                             </div>
-                            <div className="activity-content">
-                                <p><strong>Teacher X</strong> has started a lecture with the <strong>SS2 students</strong>.</p>
-                                <span className="activity-time">2 mins ago</span>
-                            </div>
-                        </div>
-                        <div className="activity-item">
-                            <div className="activity-icon">
-                                <i data-lucide="user-minus"></i>
-                            </div>
-                            <div className="activity-content">
-                                <p><strong>Teacher A</strong> has gone offline.</p>
-                                <span className="activity-time">10 mins ago</span>
-                            </div>
-                        </div>
-                        <div className="activity-item">
-                            <div className="activity-icon">
-                                <i data-lucide="file-text"></i>
-                            </div>
-                            <div className="activity-content">
-                                <p><strong>JSS1 students' assignment</strong> is due for submission!</p>
-                                <span className="activity-time">1 hour ago</span>
-                            </div>
-                        </div>
-                        <div className="activity-item">
-                            <div className="activity-icon">
-                                <i data-lucide="check-circle"></i>
-                            </div>
-                            <div className="activity-content">
-                                <p><strong>New student registrations</strong> for SSS3 completed.</p>
-                                <span className="activity-time">3 hours ago</span>
-                            </div>
-                        </div>
-                        <div className="activity-item">
-                            <div className="activity-icon">
-                                <i data-lucide="alert-triangle"></i>
-                            </div>
-                            <div className="activity-content">
-                                <p><strong>Low attendance alert</strong> for JSS2 today.</p>
-                                <span className="activity-time">5 hours ago</span>
-                            </div>
-                        </div>
+                        ))}
                     </div>
                 </div>
+
+                {/* No Results Message */}
+                {isSearching && searchTerm && 
+                 searchResults.stats.length === 0 && 
+                 searchResults.overviewCards.length === 0 && 
+                 searchResults.activities.length === 0 && 
+                 searchResults.teachers.length === 0 && (
+                    <div className="no-search-results">
+                        <i data-lucide="search-x"></i>
+                        <h3>No results found</h3>
+                        <p>No dashboard items match your search for "<strong>{searchTerm}</strong>"</p>
+                    </div>
+                )}
             </main>
         </div>
     );

@@ -377,64 +377,64 @@
     .dashboard .dashboard-content {
         padding: 0.75rem;
     }
-    
+
     .dashboard .stats-container {
         gap: 1rem;
     }
-    
+
     .dashboard .stat-card {
         padding: 1rem;
         gap: 1rem;
         min-height: 80px;
     }
-    
+
     .dashboard .stat-icon {
         width: 3rem;
         height: 3rem;
     }
-    
+
     .dashboard .stat-divider {
         height: 2.5rem;
     }
-    
+
     .dashboard .stat-label {
         font-size: 0.875rem;
     }
-    
+
     .dashboard .stat-number {
         font-size: 1.5rem;
     }
-    
+
     .dashboard .section-title {
         font-size: 1.5rem;
         margin-bottom: 1.5rem;
     }
-    
+
     .dashboard .overview-grid {
         gap: 1.5rem;
     }
-    
+
     .dashboard .overview-card {
         padding: 1.5rem;
         min-height: auto;
     }
-    
+
     .dashboard .card-header {
         margin-bottom: 1.5rem;
         flex-direction: column;
         align-items: flex-start;
         gap: 1rem;
     }
-    
+
     .dashboard .card-title {
         font-size: 1.125rem;
     }
-    
+
     .dashboard .card-filters {
         gap: 0.5rem;
         width: 100%;
     }
-    
+
     .dashboard .filter-select {
         flex: 1;
         min-width: 80px;
@@ -442,62 +442,62 @@
         padding: 0.375rem 0.5rem;
         padding-right: 1.75rem;
     }
-    
+
     .dashboard .chart-wrapper {
         width: 150px;
         height: 150px;
         margin: 0 auto;
     }
-    
+
     .dashboard .chart-center-text {
         font-size: 1.1rem;
     }
-    
+
     .dashboard .chart-legend {
         gap: 1rem;
         flex-direction: column;
         max-width: 280px;
         margin: 0 auto;
     }
-    
+
     .dashboard .legend-item {
         gap: 0.5rem;
     }
-    
+
     .dashboard .teacher-table {
         font-size: 0.75rem;
         display: block;
         overflow-x: auto;
     }
-    
+
     .dashboard .teacher-table th,
     .dashboard .teacher-table td {
         padding: 0.75rem 0.5rem;
         white-space: nowrap;
     }
-    
+
     .dashboard .teacher-table th:nth-child(3),
     .dashboard .teacher-table td:nth-child(3) {
         display: none;
     }
-    
+
     .dashboard .chart-keys {
         gap: 1rem;
         flex-direction: column;
         align-items: center;
     }
-    
+
     .dashboard .chart-canvas {
         padding: 1rem;
         max-width: 100%;
         overflow: hidden;
     }
-    
+
     .dashboard canvas {
         max-width: 100% !important;
         height: auto !important;
     }
-    
+
     .dashboard .pie-chart-container {
         gap: 1rem;
     }
@@ -508,160 +508,160 @@
     .dashboard .dashboard-content {
         padding: 1.25rem;
     }
-    
+
     .dashboard .stats-container {
         grid-template-columns: repeat(2, 1fr);
         gap: 1.25rem;
         margin-bottom: 2.5rem;
     }
-    
+
     .dashboard .stat-card {
         padding: 1.25rem;
         gap: 1.25rem;
         min-height: 110px;
         border-radius: 0.75rem;
     }
-    
+
     .dashboard .stat-icon {
         width: 3.5rem;
         height: 3.5rem;
     }
-    
+
     .dashboard .stat-divider {
         height: 2.75rem;
     }
-    
+
     .dashboard .stat-label {
         font-size: 0.95rem;
         margin-bottom: 0.75rem;
     }
-    
+
     .dashboard .stat-number {
         font-size: 1.75rem;
     }
-    
+
     .dashboard .section-title {
         font-size: 1.625rem;
         margin-bottom: 2.25rem;
     }
-    
+
     .dashboard .overview-grid {
         grid-template-columns: 1fr;
         gap: 2.25rem;
     }
-    
+
     .dashboard .overview-card {
         padding: 2.25rem;
         min-height: 350px;
         border-radius: 0.75rem;
     }
-    
+
     .dashboard .card-header {
         margin-bottom: 2.25rem;
         gap: 1.25rem;
     }
-    
+
     .dashboard .card-title {
         font-size: 1.375rem;
     }
-    
+
     .dashboard .card-filters {
         gap: 0.875rem;
     }
-    
+
     .dashboard .filter-select {
         padding: 0.625rem 0.875rem;
         font-size: 0.875rem;
         border-radius: 0.5rem;
         min-width: 110px;
     }
-    
+
     .dashboard .chart-wrapper {
         width: 220px;
         height: 220px;
     }
-    
+
     .dashboard .chart-center-text {
         font-size: 1.375rem;
     }
-    
+
     .dashboard .chart-legend {
         max-width: 380px;
         gap: 1.75rem;
     }
-    
+
     .dashboard .legend-item {
         gap: 0.875rem;
     }
-    
+
     .dashboard .legend-color {
         width: 1.375rem;
         height: 1.375rem;
     }
-    
+
     .dashboard .legend-label {
         font-size: 0.9375rem;
     }
-    
+
     .dashboard .legend-value {
         font-size: 1.0625rem;
     }
-    
+
     .dashboard .teacher-table th,
     .dashboard .teacher-table td {
         padding: 1.125rem 0.875rem;
         font-size: 0.9375rem;
     }
-    
+
     .dashboard .chart-keys {
         gap: 2.25rem;
         margin-bottom: 1.75rem;
     }
-    
+
     .dashboard .chart-key {
         gap: 0.875rem;
     }
-    
+
     .dashboard .key-color {
         width: 1.375rem;
         height: 1.375rem;
     }
-    
+
     .dashboard .key-label {
         font-size: 0.9375rem;
     }
-    
+
     .dashboard .chart-canvas {
         padding: 1.75rem;
         border-radius: 0.5rem;
     }
-    
+
     .dashboard .activity-list {
         gap: 1.25rem;
     }
-    
+
     .dashboard .activity-item {
         padding: 1.25rem;
         gap: 1.25rem;
         border-radius: 0.75rem;
     }
-    
+
     .dashboard .activity-icon {
         width: 2.75rem;
         height: 2.75rem;
         border-radius: 0.75rem;
     }
-    
+
     .dashboard .activity-content p {
         font-size: 1rem;
         line-height: 1.6;
     }
-    
+
     .dashboard .activity-time {
         font-size: 0.875rem;
         margin-top: 0.5rem;
     }
-    
+
     .dashboard .content-divider {
         margin: 2.5rem 0;
     }
@@ -671,11 +671,11 @@
     .dashboard .stats-container {
         grid-template-columns: repeat(2, 1fr);
     }
-    
+
     .dashboard .overview-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .dashboard .chart-wrapper {
         width: 180px;
         height: 180px;
@@ -686,7 +686,7 @@
     .dashboard .stats-container {
         grid-template-columns: repeat(3, 1fr);
     }
-    
+
     .dashboard .overview-grid {
         grid-template-columns: repeat(2, 1fr);
     }
@@ -696,8 +696,123 @@
     .dashboard .stats-container {
         grid-template-columns: repeat(5, 1fr);
     }
-    
+
     .dashboard .overview-grid {
         grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Search Results Styles */
+.dashboard .search-results-indicator {
+    background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+    border-radius: 0.5rem;
+    padding: 1rem 1.5rem;
+    margin-bottom: 2rem;
+    border: 1px solid #4b5563;
+}
+
+.dashboard .search-results-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: white;
+    font-weight: 500;
+}
+
+.dashboard .search-results-info i {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+.dashboard .clear-search-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: auto;
+    transition: all 0.2s;
+}
+
+.dashboard .clear-search-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.dashboard .no-search-results {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: #94a3b8;
+}
+
+.dashboard .no-search-results i {
+    width: 4rem;
+    height: 4rem;
+    color: #6b7280;
+    margin-bottom: 1rem;
+}
+
+.dashboard .no-search-results h3 {
+    color: #f8fafc;
+    margin-bottom: 0.5rem;
+    font-size: 1.25rem;
+}
+
+.dashboard .no-search-results p {
+    font-size: 1rem;
+}
+
+.dashboard .no-search-results strong {
+    color: #e2e8f0;
+}
+
+/* Search hidden state */
+.dashboard .search-hidden {
+    display: none !important;
+}
+
+/* Header search clear button */
+.dashboard .header-clear-search {
+    position: absolute;
+    right: 2.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
+    padding: 0.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+}
+
+.dashboard .header-clear-search:hover {
+    color: #e2e8f0;
+}
+
+/* Mobile search adjustments */
+@media (max-width: 640px) {
+    .dashboard .search-results-indicator {
+        padding: 0.75rem 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .dashboard .search-results-info {
+        font-size: 0.875rem;
+    }
+
+    .dashboard .clear-search-btn {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.75rem;
+    }
+
+    .dashbord .header-clear-search {
+        right: 2.25rem;
     }
 }
