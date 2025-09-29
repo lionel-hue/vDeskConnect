@@ -10,6 +10,7 @@ login_router.post("/login", async (req, res) => {
     try {
         const { email, password, role } = req.body;
 
+
         // Validate required fields
         if (!email || !password || !role) {
             return res.status(400).json({
@@ -53,7 +54,7 @@ login_router.post("/login", async (req, res) => {
 
                 // Check if user is actually an admin (but don't reveal this info yet)
                 if (role === "admin") {
-                    const adminResult = await teacher.admin.getById(user.T_id);
+                    const adminResult = await teacher.auth.getById(user.T_id);
                     if (!adminResult.rows || adminResult.rows.length === 0) {
                         // Don't reveal admin status until after password verification
                         userRole = "teacher"; // Temporarily set to teacher
@@ -74,6 +75,11 @@ login_router.post("/login", async (req, res) => {
 
         // Compare password FIRST (before checking verification)
         const isMatch = await bcrypt.compare(password, user.password);
+
+        // console.log(password)
+        // console.log(user.password)
+        // console.log(isMatch)
+        
         if (!isMatch) {
             return res.status(401).json({
                 success: false,

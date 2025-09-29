@@ -10,77 +10,148 @@ import generator from "../../utils/id_generator.js"
 const forgot_password = Router()
 
 forgot_password.post("/forgot-password", async (req, res) => {
-
     try {
-        // get all emails of students and teachers 
-        const students = (await student.auth.getAllEmails()).rows
-        const teachers = (await teacher.auth.getAllEmails()).rows
+        const { email, userType } = req.body;
 
-        // define the empty user id and type.. and token 
+        // Validate input
+        if (!email || !userType) {
+            return res.status(400).json({
+                "success": false,
+                "message": "Email and user type are required"
+            });
+        }
+
+        // Define the empty user id and type
         const user = {
             id: null,
             type: undefined
         }
 
-        let tokenHash
+        let tokenHash;
 
         try {
-            //check where the email belongs... to the table Student or Teacher
-            // not found ? email doesn't exist.. found ??? success !
-            if (students.find(elem => elem === req.body.email) != '') {
+            // Check the user type and search in the appropriate table
+            switch (userType) {
+                case 'student':
+                    // Check if email exists in student table
+                    const studentResult = await student.auth.getByEmail(email);
+                    if (studentResult.rows.length === 0) {
+                        return res.status(400).json({
+                            "success": false,
+                            "message": "Student email not found"
+                        });
+                    }
+                    user.id = studentResult.rows[0].Stu_id;
+                    user.type = "student";
+                    
+                    // Generate database token for the user
+                    tokenHash = await bcrypt.hash(generator.id(), 10);
+                    await general.auth.token.build_token(
+                        generator.id(), 
+                        tokenHash, 
+                        "student", 
+                        new Date(Date.now() + 10 * 60 * 1000), 
+                        user.id
+                    );
+                    break;
 
-                user.id = (await student.auth.getByEmail(req.body.email)).rows[0].Stu_id
-                user.type = "student"
+                case 'teacher':
+                    // Check if email exists in teacher table
+                    const teacherResult = await teacher.auth.getByEmail(email);
+                    if (teacherResult.rows.length === 0) {
+                        return res.status(400).json({
+                            "success": false,
+                            "message": "Teacher email not found"
+                        });
+                    }
+                    user.id = teacherResult.rows[0].T_id;
+                    user.type = "teacher";
+                    
+                    // Generate database token for the user
+                    tokenHash = await bcrypt.hash(generator.id(), 10);
+                    await general.auth.token.build_token(
+                        generator.id(), 
+                        tokenHash, 
+                        "teacher", 
+                        new Date(Date.now() + 10 * 60 * 1000), 
+                        user.id
+                    );
+                    break;
 
-                // generate database token for the user..
-                tokenHash = await bcrypt.hash(generator.id(), 10)
-                await general.auth.token.build_token(generator.id(), tokenHash, "student", new Date(Date.now() + 10 * 60 * 1000), user.id)
+                case 'admin':
+                    // Check if email exists in admin table (through teacher table)
+                    const adminResult = await teacher.auth.getByEmail(email);
+                    // console.log(adminResult.rows)
+                    if ( adminResult.rows.length === 0) {
+                        return res.status(400).json({
+                            "success": false,
+                            "message": "Administrator email not found"
+                        });
+                    }
+                    
+                    // Verify that this teacher is also an admin
+                    // console.log( adminResult.rows[0].T_id )
+                    const adminCheck = await teacher.admin.getById( adminResult.rows[0].T_id )
+                    if ( adminCheck.rows.lenght === 0 ) {
+                        return res.status(400).json({
+                            "success": false,
+                            "message": "Administrator email not found"
+                        });
+                    }
+                    
+                    user.id = adminResult.rows[0].T_id;
+                    user.type = "admin";
+                    
+                    // Generate database token for the user
+                    tokenHash = await bcrypt.hash(generator.id(), 10);
+                    await general.auth.token.build_token(
+                        generator.id(), 
+                        tokenHash, 
+                        "admin", 
+                        new Date(Date.now() + 10 * 60 * 1000), 
+                        user.id
+                    );
+                    break;
 
-            } else if (teachers.find((elem => elem === req.body.email)) != '') {
-
-                user.id = (await teacher.auth.getByEmail(email)).rows[0].T_id
-                user.type = "teacher"
-
-                // generate database token for the user..
-                tokenHash = await bcrypt.hash(generator.id(), 10)
-                await general.auth.token.build_token(generator.id(), tokenHash, "teacher", new Date(Date.now() + 10 * 60 * 1000), user.id)
-
+                default:
+                    return res.status(400).json({
+                        "success": false,
+                        "message": "Invalid user type"
+                    });
             }
 
         } catch (error) {
-            console.log("An unexpected error occured : ", error.message)
-
+            console.log("An unexpected error occurred:", error.message);
             return res.status(400).json({
                 "success": false,
-                "message": "Email doesn't exists"
-            })
+                "message": "Email doesn't exist for the selected user type"
+            });
         }
 
-        //jwt token generator
-        const jwt_token =
-            jwt.sign(
-                user,
-                process.env.JWT_SECRET,
-                { expiresIn: '10m' }
-            )
+        // JWT token generator
+        const jwt_token = jwt.sign(
+            user,
+            process.env.JWT_SECRET,
+            { expiresIn: '10m' }
+        );
 
-        const passwordRestLink = `${process.env.VITE_FRONT}/reset-password?token=${jwt_token}`
+        const passwordResetLink = `${process.env.FRONT}/reset-password?token=${jwt_token}`;
 
-        send_mail.forgot_password(req.body.email, passwordRestLink)
+        // Send email
+        await send_mail.forgot_password(email, passwordResetLink);
 
         res.status(200).json({
             success: true,
-            message: "successfully sent password reset link"
-        })
+            message: "Password reset link sent successfully"
+        });
 
     } catch (error) {
-        console.log(error)
+        console.log(error);
         res.status(500).json({
             "success": false,
-            "messsge": "An unexpected problem occured"
-        })
+            "message": "An unexpected problem occurred"
+        });
     }
+});
 
-})
-
-export default forgot_password
+export default forgot_password;

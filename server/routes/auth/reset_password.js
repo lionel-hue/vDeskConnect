@@ -28,15 +28,19 @@ reset_password.post("/reset-password", async (req, res) => {
                 passwordHash = await bcrypt.hash(req.body.newPassword, 10)
                 await student.auth.changePassword(decoded.id, passwordHash)
 
-                //else if the decoded token was from a teacher    
-            } else if (decoded.type === "teacher") {
+                //else if the decoded token was from a teacher or admin !    
+            } else if (decoded.type === "teacher" || decoded.type === "admin") {
 
                 //ok, let's finally reset the user password for them !
-                passwordHash = bcrypt.hash(req.body.newPassword, 10)
+                passwordHash = await bcrypt.hash(req.body.newPassword, 10)
                 await teacher.auth.changePassword(decoded.id, passwordHash)
             }
 
-            console.log(passwordHash)
+            console.log("decoded.id : " + decoded.id)
+            console.log("decoded.type : " + decoded.type)
+            console.log("decoded : " + JSON.stringify(decoded) )
+            console.log("depuis reset_password.js, le hash du mot de passe : " + passwordHash)
+            console.log("depuis reset_password.js, le mot de passe : " + req.body.newPassword)
             //return success !
             return res.status(200).json({
                 "success": true,

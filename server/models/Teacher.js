@@ -21,11 +21,11 @@ const teacher = {
 
         async getByEmail(email){ return await pool.query( `SELECT * FROM Public."Teacher" WHERE email = $1`, [email])},
 
-        async getById(id){ return await pool.query( `SELECT * FROM Public."Teacher" WHERE "T_id = $1`, [id])},
+        async getById(id){ return await pool.query( `SELECT * FROM Public."Teacher" WHERE "T_id" = $1`, [id])},
 
         async getAllEmails(){ return await pool.query(` SELECT email FROM Public."Teacher" `)},
 
-        async changePassword(id, password){ return await pool.query( `UPDATE public."Teacher" SET password = $2 WHERE T_id = $1`, [id, password] )},
+        async changePassword(id, password){ return await pool.query( `UPDATE public."Teacher" SET password = $2 WHERE "T_id" = $1`, [id, password] )},
 
         async add_teach_subject_grade(sub_code, grade_num, t_id){
             return await pool.query(`
@@ -55,7 +55,7 @@ const teacher = {
                 `, [id, role])
         },
 
-        async getById(id){ return pool.query(`SELECT * FROM public."Admin" where T_id = $1`, [id]) }
+        async getById(id){ return pool.query(`SELECT * FROM public."Admin" where "T_id" = $1`, [id]) }
     }
 }
 

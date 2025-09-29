@@ -12,7 +12,10 @@ const app = express()
 
 // Explicit CORS config for frontend
 app.use(cors({
-  origin: [`${process.env.HOST}`,`${process.env.FRONT}`, 'http://localhost:5173'],
+  origin: [`${process.env.HOST}`,
+    `${process.env.FRONT}`, 
+    'http://localhost:5173',
+    'http://127.0.0.1:5173'],
   credentials: true
 }))
 
