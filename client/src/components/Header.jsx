@@ -1,5 +1,5 @@
 // components/Header.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSearch } from './SearchManager';
 import Modal, { useModal } from './Modal';
@@ -7,9 +7,11 @@ import "../style/header.css"
 
 const Header = ({ sidebarOpen, onSidebarToggle, pageTitle = "Dashboard" }) => {
     const [headerSearchActive, setHeaderSearchActive] = useState(false);
+    const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
     const { searchTerm, setSearchTerm, setIsSearching } = useSearch();
     const navigate = useNavigate();
     const location = useLocation();
+    const profileDropdownRef = useRef(null);
     
     const { modal, setModal, confirm } = useModal();
 
@@ -41,7 +43,13 @@ const Header = ({ sidebarOpen, onSidebarToggle, pageTitle = "Dashboard" }) => {
         }
     };
 
-    const handleAdminAction = async (action) => {
+    const toggleProfileDropdown = () => {
+        setIsProfileDropdownOpen(!isProfileDropdownOpen);
+    };
+
+    const handleProfileAction = async (action) => {
+        setIsProfileDropdownOpen(false);
+        
         switch (action) {
             case 'change-password':
                 navigate('/dashboard/settings');
@@ -55,7 +63,7 @@ const Header = ({ sidebarOpen, onSidebarToggle, pageTitle = "Dashboard" }) => {
                 }
                 break;
             default:
-                // Do nothing for 'name' selection
+                // Do nothing
                 break;
         }
     };
@@ -64,17 +72,23 @@ const Header = ({ sidebarOpen, onSidebarToggle, pageTitle = "Dashboard" }) => {
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (headerSearchActive && window.innerWidth <= 640) {
-                const searchContainer = document.querySelector(".header-search-container");
+                const searchContainer = document.querySelector(".header .header-search-container");
                 if (searchContainer && !searchContainer.contains(event.target)) {
                     setHeaderSearchActive(false);
                     clearSearch();
                 }
             }
+            
+            // Close profile dropdown when clicking outside
+            if (isProfileDropdownOpen && profileDropdownRef.current && 
+                !profileDropdownRef.current.contains(event.target)) {
+                setIsProfileDropdownOpen(false);
+            }
         };
 
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, [headerSearchActive]);
+    }, [headerSearchActive, isProfileDropdownOpen]);
 
     // Clear search when navigating away from dashboard
     useEffect(() => {
@@ -83,9 +97,21 @@ const Header = ({ sidebarOpen, onSidebarToggle, pageTitle = "Dashboard" }) => {
         }
     }, [location.pathname]);
 
+    // Close dropdown on escape key
+    useEffect(() => {
+        const handleEscape = (event) => {
+            if (event.key === 'Escape' && isProfileDropdownOpen) {
+                setIsProfileDropdownOpen(false);
+            }
+        };
+
+        document.addEventListener('keydown', handleEscape);
+        return () => document.removeEventListener('keydown', handleEscape);
+    }, [isProfileDropdownOpen]);
+
     return (
         <>
-            <header className="header">
+            <header className={`header ${headerSearchActive ? 'search-active' : ''}`}>
                 <div className="header-left">
                     <button className="sidebar-menu-btn" onClick={onSidebarToggle}>
                         <i data-lucide="menu"></i>
@@ -119,16 +145,48 @@ const Header = ({ sidebarOpen, onSidebarToggle, pageTitle = "Dashboard" }) => {
                     </div>
                 </div>
                 <div className="header-right">
-                    <span className="admin-label">Admin</span>
-                    <select 
-                        className="admin-select"
-                        onChange={(e) => handleAdminAction(e.target.value)}
-                        defaultValue="name"
-                    >
-                        <option value="name">Name</option>
-                        <option value="change-password">Change Password</option>
-                        <option value="logout">Logout</option>
-                    </select>
+                    {/* Profile Dropdown Container */}
+                    <div className="profile-dropdown-container" ref={profileDropdownRef}>
+                        <button 
+                            className="profile-dropdown-trigger"
+                            onClick={toggleProfileDropdown}
+                            title="Profile Menu"
+                        >
+                            <i data-lucide="user" className="profile-icon"></i>
+                            <span className="admin-label">Admin</span>
+                            <i data-lucide="chevron-down" className="dropdown-chevron"></i>
+                        </button>
+                        
+                        {/* Profile Dropdown Menu */}
+                        {isProfileDropdownOpen && (
+                            <div className="profile-dropdown-menu">
+                                <div className="profile-dropdown-header">
+                                    <div className="user-avatar">
+                                        <i data-lucide="user"></i>
+                                    </div>
+                                    <div className="user-info">
+                                        <div className="user-name">User Name</div>
+                                        <div className="user-role">Admin</div>
+                                    </div>
+                                </div>
+                                <div className="profile-dropdown-divider"></div>
+                                <button 
+                                    className="profile-dropdown-item"
+                                    onClick={() => handleProfileAction('change-password')}
+                                >
+                                    <i data-lucide="key"></i>
+                                    <span>Change Password</span>
+                                </button>
+                                <button 
+                                    className="profile-dropdown-item logout-item"
+                                    onClick={() => handleProfileAction('logout')}
+                                >
+                                    <i data-lucide="log-out"></i>
+                                    <span>Logout</span>
+                                </button>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </header>
             <div className="header-divider"></div>
