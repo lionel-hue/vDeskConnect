@@ -13,14 +13,16 @@ export const useSearch = () => {
 
 export const SearchProvider = ({ children }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
+  const [searchResults, setSearchResults] = useState(null);
   const [isSearching, setIsSearching] = useState(false);
 
   // Clear search when term is empty
   useEffect(() => {
     if (!searchTerm.trim()) {
-      setSearchResults([]);
+      setSearchResults(null);
       setIsSearching(false);
+    } else {
+      setIsSearching(true);
     }
   }, [searchTerm]);
 

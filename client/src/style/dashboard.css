@@ -644,3 +644,39 @@
         min-height: 650px;
     }
 }
+
+/* Ensure search hidden elements don't collapse containers */
+.dashboard-stats-container:has(.dashboard-search-hidden:only-child) {
+    display: none;
+}
+
+.dashboard-overview-grid:has(.dashboard-search-hidden:only-child) {
+    display: none;
+}
+
+.dashboard-activity-list:has(.dashboard-search-hidden:only-child) {
+    display: none;
+}
+
+
+/* Hide entire sections if all their children are hidden */
+.dashboard-stats-container:not(:has(.dashboard-stat-card:not(.dashboard-search-hidden))) {
+    display: none;
+}
+
+.dashboard-overview-grid:not(:has(.dashboard-overview-card:not(.dashboard-search-hidden))) {
+    display: none;
+}
+
+.dashboard-activity-list:not(:has(.dashboard-activity-item:not(.dashboard-search-hidden))) {
+    display: none;
+}
+
+/* Hide section titles when their content is completely hidden */
+.dashboard-overview-section:not(:has(.dashboard-overview-card:not(.dashboard-search-hidden))) {
+    display: none;
+}
+
+.dashboard-activity-section:not(:has(.dashboard-activity-item:not(.dashboard-search-hidden))) {
+    display: none;
+}

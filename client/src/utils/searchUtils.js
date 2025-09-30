@@ -1,7 +1,12 @@
 // utils/searchUtils.js
 export const searchDashboardData = (searchTerm, dashboardData) => {
     if (!searchTerm.trim()) {
-        return dashboardData;
+        return {
+            stats: dashboardData.stats,
+            overviewCards: dashboardData.overviewCards,
+            activities: dashboardData.activities,
+            teachers: dashboardData.teachers
+        };
     }
 
     const term = searchTerm.toLowerCase().trim();
@@ -20,18 +25,18 @@ export const searchDashboardData = (searchTerm, dashboardData) => {
     );
 
     // Search in overview cards
-    results.overviewCards = dashboardData.overviewCards.filter(card => 
-        card.title.toLowerCase().includes(term) ||
-        (card.searchTerms && card.searchTerms.some(st => st.toLowerCase().includes(term))) ||
-        // Search in chart data
-        (card.chartData && JSON.stringify(card.chartData).toLowerCase().includes(term)) ||
-        // Search in table data
-        (card.tableData && card.tableData.some(row => 
+    results.overviewCards = dashboardData.overviewCards.filter(card => {
+        const matchesTitle = card.title.toLowerCase().includes(term);
+        const matchesSearchTerms = card.searchTerms && card.searchTerms.some(st => st.toLowerCase().includes(term));
+        const matchesChartData = card.chartData && JSON.stringify(card.chartData).toLowerCase().includes(term);
+        const matchesTableData = card.tableData && card.tableData.some(row => 
             Object.values(row).some(value => 
                 value.toString().toLowerCase().includes(term)
             )
-        ))
-    );
+        );
+        
+        return matchesTitle || matchesSearchTerms || matchesChartData || matchesTableData;
+    });
 
     // Search in activities
     results.activities = dashboardData.activities.filter(activity => 
@@ -63,7 +68,7 @@ export const shouldShowElement = (element, searchTerm, searchResults, elementTyp
             return searchResults.overviewCards.some(card => card.title === element.title);
         case 'activity-item':
             return searchResults.activities.some(activity => 
-                activity.content === element.content
+                activity.content === element.content && activity.time === element.time
             );
         case 'teacher-row':
             return searchResults.teachers.some(teacher => 
