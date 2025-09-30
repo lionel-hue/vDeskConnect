@@ -33,17 +33,17 @@ const Dashboard = () => {
         overviewCards: [
             { 
                 title: 'Students', 
-                searchTerms: ['students', 'boys', 'girls', 'gender'],
+                searchTerms: ['students', 'boys', 'girls', 'gender', 'overview'],
                 chartData: { boys: 687, girls: 560 }
             },
             { 
                 title: 'Lectures', 
-                searchTerms: ['lectures', 'completed', 'pending'],
+                searchTerms: ['lectures', 'completed', 'pending', 'overview'],
                 chartData: { completed: 89, pending: 67 }
             },
             { 
                 title: 'Teacher List', 
-                searchTerms: ['teacher list', 'teachers'],
+                searchTerms: ['teacher list', 'teachers', 'overview'],
                 tableData: [
                     { name: 'John Smith', grade: 'JSS1', subject: 'Mathematics', email: 'john@school.com' },
                     { name: 'Sarah Johnson', grade: 'JSS2', subject: 'English', email: 'sarah@school.com' },
@@ -52,16 +52,36 @@ const Dashboard = () => {
             },
             { 
                 title: 'Attendance', 
-                searchTerms: ['attendance', 'present', 'absent'],
+                searchTerms: ['attendance', 'present', 'absent', 'overview'],
                 chartData: { present: [85, 92, 78, 88, 95], absent: [15, 8, 22, 12, 5] }
             }
         ],
         activities: [
-            { content: 'Teacher X has started a lecture with the SS2 students.', time: '2 mins ago' },
-            { content: 'Teacher A has gone offline.', time: '10 mins ago' },
-            { content: 'JSS1 students assignment is due for submission!', time: '1 hour ago' },
-            { content: 'New student registrations for SSS3 completed.', time: '3 hours ago' },
-            { content: 'Low attendance alert for JSS2 today.', time: '5 hours ago' }
+            { 
+                content: 'Teacher X has started a lecture with the SS2 students.', 
+                time: '2 mins ago',
+                searchTerms: ['teacher', 'lecture', 'ss2', 'activity']
+            },
+            { 
+                content: 'Teacher A has gone offline.', 
+                time: '10 mins ago',
+                searchTerms: ['teacher', 'offline', 'activity']
+            },
+            { 
+                content: 'JSS1 students assignment is due for submission!', 
+                time: '1 hour ago',
+                searchTerms: ['jss1', 'assignment', 'submission', 'activity']
+            },
+            { 
+                content: 'New student registrations for SSS3 completed.', 
+                time: '3 hours ago',
+                searchTerms: ['student', 'registrations', 'sss3', 'activity']
+            },
+            { 
+                content: 'Low attendance alert for JSS2 today.', 
+                time: '5 hours ago',
+                searchTerms: ['attendance', 'alert', 'jss2', 'activity']
+            }
         ],
         teachers: [
             { name: 'John Smith', grade: 'JSS1', subject: 'Mathematics', email: 'john@school.com' },
@@ -81,6 +101,21 @@ const Dashboard = () => {
                searchResults.activities.length > 0 || 
                searchResults.teachers.length > 0;
     }, [searchResults]);
+
+    // Check if specific sections have results
+    const hasOverviewResults = useMemo(() => {
+        return searchResults.overviewCards.length > 0 || 
+               (searchTerm && searchTerm.toLowerCase().includes('overview'));
+    }, [searchResults.overviewCards, searchTerm]);
+
+    const hasActivityResults = useMemo(() => {
+        return searchResults.activities.length > 0 || 
+               (searchTerm && searchTerm.toLowerCase().includes('activity'));
+    }, [searchResults.activities, searchTerm]);
+
+    const hasStatsResults = useMemo(() => {
+        return searchResults.stats.length > 0;
+    }, [searchResults.stats]);
 
     useEffect(() => {
         initializeCharts();
@@ -245,15 +280,15 @@ const Dashboard = () => {
                 <main className="dashboard-content">
                     {/* Search Results Indicator */}
                     {isSearching && (
-                        <div className="search-results-indicator">
-                            <div className="search-results-info">
+                        <div className="dashboard-search-results-indicator">
+                            <div className="dashboard-search-results-info">
                                 <i data-lucide="search"></i>
                                 <span>
                                     {searchTerm ? `Search results for "${searchTerm}"` : 'Showing all results'}
                                 </span>
                                 {searchTerm && (
                                     <button 
-                                        className="clear-search-btn"
+                                        className="dashboard-clear-search-btn"
                                         onClick={() => {
                                             setSearchTerm('');
                                             setIsSearching(false);
@@ -268,266 +303,278 @@ const Dashboard = () => {
                     )}
 
                     {/* Stats Cards */}
-                    <div className="stats-container">
-                        {dashboardData.stats.map((stat, index) => (
-                            <div 
-                                key={index}
-                                className={`stat-card ${shouldShow(stat, 'stat-card') ? '' : 'search-hidden'}`}
-                                data-search-terms={stat.searchTerms ? stat.searchTerms.join(' ') : ''}
-                            >
-                                <div className="stat-icon">
-                                    <i data-lucide={
-                                        index === 0 ? "users" :
-                                        index === 1 ? "graduation-cap" :
-                                        index === 2 ? "book-open" :
-                                        index === 3 ? "shield-check" : "users-2"
-                                    }></i>
-                                </div>
-                                <div className="stat-divider"></div>
-                                <div className="stat-content">
-                                    <div className="stat-label">{stat.label}</div>
-                                    <div className="stat-number">{stat.number}</div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-
-                    <div className="content-divider"></div>
-
-                    {/* Overview Section */}
-                    <div className="overview-section">
-                        <h2 className="section-title">Overview</h2>
-                        <div className="overview-grid">
-                            {/* Students Chart Card */}
-                            <div 
-                                className={`overview-card ${shouldShow({ title: 'Students' }, 'overview-card') ? '' : 'search-hidden'}`}
-                                data-search-terms="students boys girls gender"
-                            >
-                                <div className="card-header">
-                                    <h3 className="card-title">Students</h3>
-                                    <div className="card-filters">
-                                        <select className="filter-select" id="student-grade-filter">
-                                            <option value="all">All</option>
-                                            <option value="jss1">JSS1</option>
-                                            <option value="jss2">JSS2</option>
-                                            <option value="jss3">JSS3</option>
-                                            <option value="sss1">SSS1</option>
-                                            <option value="sss2">SSS2</option>
-                                            <option value="sss3">SSS3</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div className="pie-chart-container">
-                                    <div className="chart-wrapper">
-                                        <canvas id="studentsChart"></canvas>
-                                        <div className="chart-center-text">1,247</div>
-                                    </div>
-                                    <div className="chart-legend">
-                                        <div className="legend-item">
-                                            <div className="legend-color" style={{ backgroundColor: '#8b5cf6' }}></div>
-                                            <span className="legend-label">Boys</span>
-                                            <span className="legend-value">687</span>
-                                        </div>
-                                        <div className="legend-item">
-                                            <div className="legend-color" style={{ backgroundColor: '#3b82f6' }}></div>
-                                            <span className="legend-label">Girls</span>
-                                            <span className="legend-value">560</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Lectures Chart Card */}
-                            <div 
-                                className={`overview-card ${shouldShow({ title: 'Lectures' }, 'overview-card') ? '' : 'search-hidden'}`}
-                                data-search-terms="lectures completed pending"
-                            >
-                                <div className="card-header">
-                                    <h3 className="card-title">Lectures</h3>
-                                    <div className="card-filters">
-                                        <select className="filter-select" id="lecture-grade-filter">
-                                            <option value="jss1">JSS1</option>
-                                            <option value="all">All</option>
-                                            <option value="jss2">JSS2</option>
-                                            <option value="jss3">JSS3</option>
-                                            <option value="sss1">SSS1</option>
-                                            <option value="sss2">SSS2</option>
-                                            <option value="sss3">SSS3</option>
-                                        </select>
-                                        <select className="filter-select" id="lecture-subject-filter">
-                                            <option value="all">All</option>
-                                            <option value="mathematics">Mathematics</option>
-                                            <option value="english">English</option>
-                                            <option value="chemistry">Chemistry</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div className="pie-chart-container">
-                                    <div className="chart-wrapper">
-                                        <canvas id="lecturesChart"></canvas>
-                                        <div className="chart-center-text">156</div>
-                                    </div>
-                                    <div className="chart-legend">
-                                        <div className="legend-item">
-                                            <div className="legend-color" style={{ backgroundColor: '#8b5cf6' }}></div>
-                                            <span className="legend-label">Completed</span>
-                                            <span className="legend-value">89</span>
-                                        </div>
-                                        <div className="legend-item">
-                                            <div className="legend-color" style={{ backgroundColor: '#3b82f6' }}></div>
-                                            <span className="legend-label">Pending</span>
-                                            <span className="legend-value">67</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Teacher List Card */}
-                            <div 
-                                className={`overview-card ${shouldShow({ title: 'Teacher List' }, 'overview-card') ? '' : 'search-hidden'}`}
-                                data-search-terms="teacher list teachers"
-                            >
-                                <div className="card-header">
-                                    <h3 className="card-title">Teacher List</h3>
-                                    <div className="card-filters">
-                                        <select className="filter-select" id="teacher-grade-filter">
-                                            <option value="all">All</option>
-                                            <option value="jss1">JSS1</option>
-                                            <option value="jss2">JSS2</option>
-                                            <option value="jss3">JSS3</option>
-                                            <option value="sss1">SSS1</option>
-                                            <option value="sss2">SSS2</option>
-                                            <option value="sss3">SSS3</option>
-                                        </select>
-                                        <select className="filter-select" id="teacher-subject-filter">
-                                            <option value="all">All</option>
-                                            <option value="mathematics">Mathematics</option>
-                                            <option value="english">English</option>
-                                            <option value="chemistry">Chemistry</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div className="table-container">
-                                    <table className="teacher-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Name</th>
-                                                <th>Grade</th>
-                                                <th>Subject</th>
-                                                <th>Email</th>
-                                                <th>Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {dashboardData.teachers.map((teacher, index) => (
-                                                <tr 
-                                                    key={index}
-                                                    className={shouldShow(teacher, 'teacher-row') ? '' : 'search-hidden'}
-                                                >
-                                                    <td>{teacher.name}</td>
-                                                    <td>{teacher.grade}</td>
-                                                    <td>{teacher.subject}</td>
-                                                    <td>{teacher.email}</td>
-                                                    <td>
-                                                        <button 
-                                                            className="action-btn" 
-                                                            onClick={() => showTeacherActions(teacher.name)}
-                                                        >
-                                                            <i data-lucide="more-vertical"></i>
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-
-                            {/* Attendance Chart Card */}
-                            <div 
-                                className={`overview-card ${shouldShow({ title: 'Attendance' }, 'overview-card') ? '' : 'search-hidden'}`}
-                                data-search-terms="attendance present absent"
-                            >
-                                <div className="card-header">
-                                    <h3 className="card-title">Attendance</h3>
-                                    <div className="card-filters">
-                                        <select className="filter-select" id="attendance-type-filter">
-                                            <option value="teachers">Teachers</option>
-                                            <option value="all">All</option>
-                                            <option value="students">Students</option>
-                                        </select>
-                                        <select className="filter-select" id="attendance-period-filter">
-                                            <option value="today">Today</option>
-                                            <option value="week">This Week</option>
-                                            <option value="month">This Month</option>
-                                            <option value="term">This Term</option>
-                                            <option value="session">This Session</option>
-                                        </select>
-                                        <select className="filter-select" id="attendance-grade-filter">
-                                            <option value="jss1">JSS1</option>
-                                            <option value="all">All</option>
-                                            <option value="jss2">JSS2</option>
-                                            <option value="jss3">JSS3</option>
-                                            <option value="sss1">SSS1</option>
-                                            <option value="sss2">SSS2</option>
-                                            <option value="sss3">SSS3</option>
-                                        </select>
-                                        <select className="filter-select" id="attendance-chart-filter">
-                                            <option value="bar">Bar Chart</option>
-                                            <option value="pie">Pie Chart</option>
-                                            <option value="line">Line Graph</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div className="chart-container">
-                                    <div className="chart-keys">
-                                        <div className="chart-key">
-                                            <div className="key-color" style={{ backgroundColor: '#10b981' }}></div>
-                                            <span className="key-label">Total Present</span>
-                                        </div>
-                                        <div className="chart-key">
-                                            <div className="key-color" style={{ backgroundColor: '#ef4444' }}></div>
-                                            <span className="key-label">Total Absent</span>
-                                        </div>
-                                    </div>
-                                    <div className="chart-canvas">
-                                        <canvas id="attendanceChart"></canvas>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Activity Section */}
-                    <div className="activity-section">
-                        <div className="content-divider"></div>
-                        <h2 className="section-title">Activity</h2>
-                        <div className="activity-list">
-                            {dashboardData.activities.map((activity, index) => (
+                    {(hasStatsResults || !isSearching || !searchTerm) && (
+                        <div className="dashboard-stats-container">
+                            {dashboardData.stats.map((stat, index) => (
                                 <div 
                                     key={index}
-                                    className={`activity-item ${shouldShow(activity, 'activity-item') ? '' : 'search-hidden'}`}
+                                    className={`dashboard-stat-card ${shouldShow(stat, 'stat-card') ? '' : 'dashboard-search-hidden'}`}
+                                    data-search-terms={stat.searchTerms ? stat.searchTerms.join(' ') : ''}
                                 >
-                                    <div className="activity-icon">
+                                    <div className="dashboard-stat-icon">
                                         <i data-lucide={
-                                            index === 0 ? "book-open" :
-                                            index === 1 ? "user-minus" :
-                                            index === 2 ? "file-text" :
-                                            index === 3 ? "check-circle" : "alert-triangle"
+                                            index === 0 ? "users" :
+                                            index === 1 ? "graduation-cap" :
+                                            index === 2 ? "book-open" :
+                                            index === 3 ? "shield-check" : "users-2"
                                         }></i>
                                     </div>
-                                    <div className="activity-content">
-                                        <p>{activity.content}</p>
-                                        <span className="activity-time">{activity.time}</span>
+                                    <div className="dashboard-stat-divider"></div>
+                                    <div className="dashboard-stat-content">
+                                        <div className="dashboard-stat-label">{stat.label}</div>
+                                        <div className="dashboard-stat-number">{stat.number}</div>
                                     </div>
                                 </div>
                             ))}
                         </div>
-                    </div>
+                    )}
+
+                    {/* Only show divider if there are stats and either overview or activity sections */}
+                    {(hasStatsResults || !isSearching || !searchTerm) && 
+                     (hasOverviewResults || hasActivityResults || !isSearching || !searchTerm) && (
+                        <div className="dashboard-content-divider"></div>
+                    )}
+
+                    {/* Overview Section - Only show if there are results or not searching */}
+                    {(hasOverviewResults || !isSearching || !searchTerm) && (
+                        <div className="dashboard-overview-section">
+                            <h2 className="dashboard-section-title">Overview</h2>
+                            <div className="dashboard-overview-grid">
+                                {/* Students Chart Card */}
+                                <div 
+                                    className={`dashboard-overview-card ${shouldShow({ title: 'Students' }, 'overview-card') ? '' : 'dashboard-search-hidden'}`}
+                                    data-search-terms="students boys girls gender overview"
+                                >
+                                    <div className="dashboard-card-header">
+                                        <h3 className="dashboard-card-title">Students</h3>
+                                        <div className="dashboard-card-filters">
+                                            <select className="dashboard-filter-select" id="student-grade-filter">
+                                                <option value="all">All</option>
+                                                <option value="jss1">JSS1</option>
+                                                <option value="jss2">JSS2</option>
+                                                <option value="jss3">JSS3</option>
+                                                <option value="sss1">SSS1</option>
+                                                <option value="sss2">SSS2</option>
+                                                <option value="sss3">SSS3</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div className="dashboard-pie-chart-container">
+                                        <div className="dashboard-chart-wrapper">
+                                            <canvas id="studentsChart"></canvas>
+                                            <div className="dashboard-chart-center-text">1,247</div>
+                                        </div>
+                                        <div className="dashboard-chart-legend">
+                                            <div className="dashboard-legend-item">
+                                                <div className="dashboard-legend-color" style={{ backgroundColor: '#8b5cf6' }}></div>
+                                                <span className="dashboard-legend-label">Boys</span>
+                                                <span className="dashboard-legend-value">687</span>
+                                            </div>
+                                            <div className="dashboard-legend-item">
+                                                <div className="dashboard-legend-color" style={{ backgroundColor: '#3b82f6' }}></div>
+                                                <span className="dashboard-legend-label">Girls</span>
+                                                <span className="dashboard-legend-value">560</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Lectures Chart Card */}
+                                <div 
+                                    className={`dashboard-overview-card ${shouldShow({ title: 'Lectures' }, 'overview-card') ? '' : 'dashboard-search-hidden'}`}
+                                    data-search-terms="lectures completed pending overview"
+                                >
+                                    <div className="dashboard-card-header">
+                                        <h3 className="dashboard-card-title">Lectures</h3>
+                                        <div className="dashboard-card-filters">
+                                            <select className="dashboard-filter-select" id="lecture-grade-filter">
+                                                <option value="jss1">JSS1</option>
+                                                <option value="all">All</option>
+                                                <option value="jss2">JSS2</option>
+                                                <option value="jss3">JSS3</option>
+                                                <option value="sss1">SSS1</option>
+                                                <option value="sss2">SSS2</option>
+                                                <option value="sss3">SSS3</option>
+                                            </select>
+                                            <select className="dashboard-filter-select" id="lecture-subject-filter">
+                                                <option value="all">All</option>
+                                                <option value="mathematics">Mathematics</option>
+                                                <option value="english">English</option>
+                                                <option value="chemistry">Chemistry</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div className="dashboard-pie-chart-container">
+                                        <div className="dashboard-chart-wrapper">
+                                            <canvas id="lecturesChart"></canvas>
+                                            <div className="dashboard-chart-center-text">156</div>
+                                        </div>
+                                        <div className="dashboard-chart-legend">
+                                            <div className="dashboard-legend-item">
+                                                <div className="dashboard-legend-color" style={{ backgroundColor: '#8b5cf6' }}></div>
+                                                <span className="dashboard-legend-label">Completed</span>
+                                                <span className="dashboard-legend-value">89</span>
+                                            </div>
+                                            <div className="dashboard-legend-item">
+                                                <div className="dashboard-legend-color" style={{ backgroundColor: '#3b82f6' }}></div>
+                                                <span className="dashboard-legend-label">Pending</span>
+                                                <span className="dashboard-legend-value">67</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Teacher List Card */}
+                                <div 
+                                    className={`dashboard-overview-card ${shouldShow({ title: 'Teacher List' }, 'overview-card') ? '' : 'dashboard-search-hidden'}`}
+                                    data-search-terms="teacher list teachers overview"
+                                >
+                                    <div className="dashboard-card-header">
+                                        <h3 className="dashboard-card-title">Teacher List</h3>
+                                        <div className="dashboard-card-filters">
+                                            <select className="dashboard-filter-select" id="teacher-grade-filter">
+                                                <option value="all">All</option>
+                                                <option value="jss1">JSS1</option>
+                                                <option value="jss2">JSS2</option>
+                                                <option value="jss3">JSS3</option>
+                                                <option value="sss1">SSS1</option>
+                                                <option value="sss2">SSS2</option>
+                                                <option value="sss3">SSS3</option>
+                                            </select>
+                                            <select className="dashboard-filter-select" id="teacher-subject-filter">
+                                                <option value="all">All</option>
+                                                <option value="mathematics">Mathematics</option>
+                                                <option value="english">English</option>
+                                                <option value="chemistry">Chemistry</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div className="dashboard-table-container">
+                                        <table className="dashboard-teacher-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Name</th>
+                                                    <th>Grade</th>
+                                                    <th>Subject</th>
+                                                    <th>Email</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {dashboardData.teachers.map((teacher, index) => (
+                                                    <tr 
+                                                        key={index}
+                                                        className={shouldShow(teacher, 'teacher-row') ? '' : 'dashboard-search-hidden'}
+                                                    >
+                                                        <td>{teacher.name}</td>
+                                                        <td>{teacher.grade}</td>
+                                                        <td>{teacher.subject}</td>
+                                                        <td>{teacher.email}</td>
+                                                        <td>
+                                                            <button 
+                                                                className="dashboard-action-btn" 
+                                                                onClick={() => showTeacherActions(teacher.name)}
+                                                            >
+                                                                <i data-lucide="more-vertical"></i>
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                {/* Attendance Chart Card */}
+                                <div 
+                                    className={`dashboard-overview-card ${shouldShow({ title: 'Attendance' }, 'overview-card') ? '' : 'dashboard-search-hidden'}`}
+                                    data-search-terms="attendance present absent overview"
+                                >
+                                    <div className="dashboard-card-header">
+                                        <h3 className="dashboard-card-title">Attendance</h3>
+                                        <div className="dashboard-card-filters">
+                                            <select className="dashboard-filter-select" id="attendance-type-filter">
+                                                <option value="teachers">Teachers</option>
+                                                <option value="all">All</option>
+                                                <option value="students">Students</option>
+                                            </select>
+                                            <select className="dashboard-filter-select" id="attendance-period-filter">
+                                                <option value="today">Today</option>
+                                                <option value="week">This Week</option>
+                                                <option value="month">This Month</option>
+                                                <option value="term">This Term</option>
+                                                <option value="session">This Session</option>
+                                            </select>
+                                            <select className="dashboard-filter-select" id="attendance-grade-filter">
+                                                <option value="jss1">JSS1</option>
+                                                <option value="all">All</option>
+                                                <option value="jss2">JSS2</option>
+                                                <option value="jss3">JSS3</option>
+                                                <option value="sss1">SSS1</option>
+                                                <option value="sss2">SSS2</option>
+                                                <option value="sss3">SSS3</option>
+                                            </select>
+                                            <select className="dashboard-filter-select" id="attendance-chart-filter">
+                                                <option value="bar">Bar Chart</option>
+                                                <option value="pie">Pie Chart</option>
+                                                <option value="line">Line Graph</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div className="dashboard-chart-container">
+                                        <div className="dashboard-chart-keys">
+                                            <div className="dashboard-chart-key">
+                                                <div className="dashboard-key-color" style={{ backgroundColor: '#10b981' }}></div>
+                                                <span className="dashboard-key-label">Total Present</span>
+                                            </div>
+                                            <div className="dashboard-chart-key">
+                                                <div className="dashboard-key-color" style={{ backgroundColor: '#ef4444' }}></div>
+                                                <span className="dashboard-key-label">Total Absent</span>
+                                            </div>
+                                        </div>
+                                        <div className="dashboard-chart-canvas">
+                                            <canvas id="attendanceChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Activity Section - Only show if there are results or not searching */}
+                    {(hasActivityResults || !isSearching || !searchTerm) && (
+                        <div className="dashboard-activity-section">
+                            {(hasOverviewResults || !isSearching || !searchTerm) && (
+                                <div className="dashboard-content-divider"></div>
+                            )}
+                            <h2 className="dashboard-section-title">Activity</h2>
+                            <div className="dashboard-activity-list">
+                                {dashboardData.activities.map((activity, index) => (
+                                    <div 
+                                        key={index}
+                                        className={`dashboard-activity-item ${shouldShow(activity, 'activity-item') ? '' : 'dashboard-search-hidden'}`}
+                                    >
+                                        <div className="dashboard-activity-icon">
+                                            <i data-lucide={
+                                                index === 0 ? "book-open" :
+                                                index === 1 ? "user-minus" :
+                                                index === 2 ? "file-text" :
+                                                index === 3 ? "check-circle" : "alert-triangle"
+                                            }></i>
+                                        </div>
+                                        <div className="dashboard-activity-content">
+                                            <p>{activity.content}</p>
+                                            <span className="dashboard-activity-time">{activity.time}</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
                     {/* No Results Message */}
                     {isSearching && searchTerm && !hasSearchResults && (
-                        <div className="no-search-results">
+                        <div className="dashboard-no-search-results">
                             <i data-lucide="search-x"></i>
                             <h3>No results found</h3>
                             <p>No dashboard items match your search for "<strong>{searchTerm}</strong>"</p>

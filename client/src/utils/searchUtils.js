@@ -36,7 +36,8 @@ export const searchDashboardData = (searchTerm, dashboardData) => {
     // Search in activities
     results.activities = dashboardData.activities.filter(activity => 
         activity.content.toLowerCase().includes(term) ||
-        activity.time.toLowerCase().includes(term)
+        activity.time.toLowerCase().includes(term) ||
+        (activity.searchTerms && activity.searchTerms.some(st => st.toLowerCase().includes(term)))
     );
 
     // Search in teacher table
