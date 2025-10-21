@@ -95,6 +95,7 @@ function Login({ onSignupClick, onLoginSuccess }) {
         }
       } catch (error) {
         console.error('Network error:', error)
+        alert(error)
         setErrors({ server: 'Network error. Please check your connection.' });
       } finally {
         setIsSubmitting(false)
