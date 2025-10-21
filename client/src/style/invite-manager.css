@@ -1,0 +1,575 @@
+/* style/invite-manager.css */
+.invite-manager-layout {
+    display: flex;
+    min-height: 100vh;
+    background-color: #0f172a;
+}
+
+.invite-manager-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.invite-manager-content {
+    flex: 1;
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.invite-manager-section {
+    margin-bottom: 3rem;
+}
+
+.invite-manager-section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #f8fafc;
+    margin-bottom: 1rem;
+}
+
+.invite-manager-card {
+    background-color: #1e293b;
+    border: 1px solid #374151;
+    border-radius: 0.5rem;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.invite-manager-card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #f8fafc;
+    margin-bottom: 1.5rem;
+}
+
+.invite-manager-generate-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.invite-manager-generate-btn {
+    padding: 1.5rem;
+    border: none;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+}
+
+.invite-manager-teacher-btn {
+    background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+}
+
+.invite-manager-teacher-btn:hover {
+    background: linear-gradient(135deg, #7c3aed, #2563eb);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+}
+
+.invite-manager-student-btn {
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+}
+
+.invite-manager-student-btn:hover {
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.invite-manager-code-display {
+    background-color: #374151;
+    border: 1px solid #4b5563;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    margin-top: 1rem;
+    display: none;
+}
+
+.invite-manager-show {
+    display: block;
+    animation: invite-manager-slideDown 0.3s ease;
+}
+
+@keyframes invite-manager-slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.invite-manager-code-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #1e293b;
+    border: 2px solid #8b5cf6;
+    border-radius: 0.375rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.invite-manager-code-text {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #8b5cf6;
+    letter-spacing: 0.1em;
+}
+
+.invite-manager-copy-btn {
+    background-color: #8b5cf6;
+    border: none;
+    border-radius: 0.375rem;
+    padding: 0.5rem 1rem;
+    color: white;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+}
+
+.invite-manager-copy-btn:hover {
+    background-color: #7c3aed;
+}
+
+.invite-manager-code-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.invite-manager-code-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.invite-manager-code-detail-label {
+    color: #94a3b8;
+    font-size: 0.875rem;
+}
+
+.invite-manager-code-detail-value {
+    color: #f8fafc;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.invite-manager-filters {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.invite-manager-filter-group {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.invite-manager-search-input {
+    background-color: #374151;
+    border: 1px solid #4b5563;
+    border-radius: 0.375rem;
+    padding: 0.625rem 1rem;
+    color: #f8fafc;
+    font-size: 0.875rem;
+    min-width: 300px;
+}
+
+.invite-manager-search-input::placeholder {
+    color: #9ca3af;
+}
+
+.invite-manager-search-input:focus {
+    outline: none;
+    border-color: #8b5cf6;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+}
+
+.invite-manager-filter-select {
+    background-color: #374151;
+    border: 1px solid #4b5563;
+    border-radius: 0.375rem;
+    padding: 0.625rem 1rem;
+    color: #f8fafc;
+    font-size: 0.875rem;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1rem;
+    padding-right: 2.5rem;
+    min-width: 150px;
+}
+
+.invite-manager-filter-select:focus {
+    outline: none;
+    border-color: #8b5cf6;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+}
+
+.invite-manager-table-container {
+    overflow-x: auto;
+}
+
+.invite-manager-invites-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.invite-manager-invites-table th,
+.invite-manager-invites-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #374151;
+}
+
+.invite-manager-invites-table th {
+    background-color: #374151;
+    color: #e2e8f0;
+    font-weight: 600;
+    font-size: 0.875rem;
+    white-space: nowrap;
+}
+
+.invite-manager-invites-table td {
+    color: #f8fafc;
+    font-size: 0.875rem;
+}
+
+.invite-manager-table-row {
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.invite-manager-table-row:hover {
+    background-color: #374151;
+}
+
+.invite-manager-user-avatar {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+}
+
+.invite-manager-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.invite-manager-badge.invite-manager-teacher {
+    background-color: rgba(139, 92, 246, 0.2);
+    color: #c4b5fd;
+}
+
+.invite-manager-badge.invite-manager-student {
+    background-color: rgba(59, 130, 246, 0.2);
+    color: #93c5fd;
+}
+
+.invite-manager-badge.invite-manager-used {
+    background-color: rgba(156, 163, 175, 0.2);
+    color: #d1d5db;
+}
+
+.invite-manager-badge.invite-manager-unused {
+    background-color: rgba(34, 197, 94, 0.2);
+    color: #86efac;
+}
+
+.invite-manager-badge.invite-manager-expired {
+    background-color: rgba(239, 68, 68, 0.2);
+    color: #fca5a5;
+}
+
+.invite-manager-badge.invite-manager-valid {
+    background-color: rgba(34, 197, 94, 0.2);
+    color: #86efac;
+}
+
+.invite-manager-badge.invite-manager-expiring-soon {
+    background-color: rgba(251, 191, 36, 0.2);
+    color: #fde047;
+}
+
+.invite-manager-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.invite-manager-modal {
+    background-color: #1e293b;
+    border: 1px solid #374151;
+    border-radius: 0.5rem;
+    padding: 2rem;
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.invite-manager-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.invite-manager-modal-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #f8fafc;
+}
+
+.invite-manager-modal-close {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 0.375rem;
+    transition: all 0.2s;
+}
+
+.invite-manager-modal-close:hover {
+    background-color: #374151;
+    color: #f8fafc;
+}
+
+.invite-manager-modal-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.invite-manager-modal-btn {
+    padding: 1rem;
+    border: 1px solid #4b5563;
+    border-radius: 0.375rem;
+    background-color: #374151;
+    color: #f8fafc;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    transition: all 0.2s;
+}
+
+.invite-manager-modal-btn:hover {
+    background-color: #475569;
+    border-color: #8b5cf6;
+}
+
+.invite-manager-modal-btn.invite-manager-danger:hover {
+    background-color: rgba(239, 68, 68, 0.2);
+    border-color: #ef4444;
+    color: #fca5a5;
+}
+
+.invite-manager-chart-container {
+    background-color: #374151;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    margin-top: 1rem;
+}
+
+.invite-manager-chart-filters {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.invite-manager-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.invite-manager-stat-card {
+    background-color: #374151;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+}
+
+.invite-manager-stat-label {
+    color: #94a3b8;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+}
+
+.invite-manager-stat-value {
+    color: #f8fafc;
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.invite-manager-empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: #94a3b8;
+}
+
+.invite-manager-empty-state i {
+    width: 4rem;
+    height: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.invite-manager-search-results-indicator {
+    margin-bottom: 2rem;
+}
+
+.invite-manager-search-results-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    background-color: #1e293b;
+    border: 1px solid #374151;
+    border-radius: 0.5rem;
+    color: #94a3b8;
+}
+
+.invite-manager-clear-search-btn {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    border-radius: 0.375rem;
+    transition: all 0.2s;
+}
+
+.invite-manager-clear-search-btn:hover {
+    background-color: #374151;
+    color: #f8fafc;
+}
+
+.invite-manager-no-search-results {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: #94a3b8;
+}
+
+.invite-manager-no-search-results i {
+    width: 4rem;
+    height: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.invite-manager-no-search-results h3 {
+    color: #f8fafc;
+    margin-bottom: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .invite-manager-content {
+        padding: 1rem;
+    }
+
+    .invite-manager-section-title {
+        font-size: 1.25rem;
+    }
+
+    .invite-manager-generate-buttons {
+        grid-template-columns: 1fr;
+    }
+
+    .invite-manager-search-input {
+        min-width: 100%;
+    }
+
+    .invite-manager-filter-group {
+        width: 100%;
+    }
+
+    .invite-manager-filter-select {
+        flex: 1;
+    }
+
+    .invite-manager-invites-table {
+        font-size: 0.75rem;
+    }
+
+    .invite-manager-invites-table th,
+    .invite-manager-invites-table td {
+        padding: 0.75rem 0.5rem;
+    }
+
+    .invite-manager-modal {
+        padding: 1.5rem;
+    }
+
+    .invite-manager-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .invite-manager-stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .invite-manager-filters {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .invite-manager-filter-group {
+        justify-content: stretch;
+    }
+    
+    .invite-manager-filter-select {
+        flex: 1;
+        min-width: unset;
+    }
+}
