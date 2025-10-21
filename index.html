@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invite Manager - vDeskconnect</title>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+            line-height: 1.5;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #f8fafc;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: #94a3b8;
+            font-size: 1rem;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #374151;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 1rem 1.5rem;
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            transition: all 0.2s;
+        }
+
+        .tab:hover {
+            color: #f8fafc;
+        }
+
+        .tab.active {
+            color: #8b5cf6;
+            border-bottom-color: #8b5cf6;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .card {
+            background-color: #1e293b;
+            border: 1px solid #374151;
+            border-radius: 0.5rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #f8fafc;
+            margin-bottom: 1.5rem;
+        }
+
+        .generate-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .generate-btn {
+            padding: 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+
+        .generate-btn.teacher {
+            background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+        }
+
+        .generate-btn.teacher:hover {
+            background: linear-gradient(135deg, #7c3aed, #2563eb);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+        }
+
+        .generate-btn.student {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+        }
+
+        .generate-btn.student:hover {
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+
+        .code-display {
+            background-color: #374151;
+            border: 1px solid #4b5563;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .code-display.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .code-box {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #1e293b;
+            border: 2px solid #8b5cf6;
+            border-radius: 0.375rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .code-text {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #8b5cf6;
+            letter-spacing: 0.1em;
+        }
+
+        .copy-btn {
+            background-color: #8b5cf6;
+            border: none;
+            border-radius: 0.375rem;
+            padding: 0.5rem 1rem;
+            color: white;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            background-color: #7c3aed;
+        }
+
+        .code-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .code-detail {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .code-detail-label {
+            color: #94a3b8;
+            font-size: 0.875rem;
+        }
+
+        .code-detail-value {
+            color: #f8fafc;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            background-color: #374151;
+            border: 1px solid #4b5563;
+            border-radius: 0.375rem;
+            padding: 0.625rem 1rem;
+            color: #f8fafc;
+            font-size: 0.875rem;
+            min-width: 300px;
+        }
+
+        .search-input::placeholder {
+            color: #9ca3af;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #8b5cf6;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+
+        .filter-select {
+            background-color: #374151;
+            border: 1px solid #4b5563;
+            border-radius: 0.375rem;
+            padding: 0.625rem 1rem;
+            color: #f8fafc;
+            font-size: 0.875rem;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 1rem;
+            padding-right: 2.5rem;
+            min-width: 150px;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: #8b5cf6;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        .invites-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .invites-table th,
+        .invites-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #374151;
+        }
+
+        .invites-table th {
+            background-color: #374151;
+            color: #e2e8f0;
+            font-weight: 600;
+            font-size: 0.875rem;
+            white-space: nowrap;
+        }
+
+        .invites-table td {
+            color: #f8fafc;
+            font-size: 0.875rem;
+        }
+
+        .invites-table tbody tr {
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .invites-table tbody tr:hover {
+            background-color: #374151;
+        }
+
+        .user-avatar {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge.teacher {
+            background-color: rgba(139, 92, 246, 0.2);
+            color: #c4b5fd;
+        }
+
+        .badge.student {
+            background-color: rgba(59, 130, 246, 0.2);
+            color: #93c5fd;
+        }
+
+        .badge.used {
+            background-color: rgba(156, 163, 175, 0.2);
+            color: #d1d5db;
+        }
+
+        .badge.unused {
+            background-color: rgba(34, 197, 94, 0.2);
+            color: #86efac;
+        }
+
+        .badge.expired {
+            background-color: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+
+        .badge.valid {
+            background-color: rgba(34, 197, 94, 0.2);
+            color: #86efac;
+        }
+
+        .badge.expiring-soon {
+            background-color: rgba(251, 191, 36, 0.2);
+            color: #fde047;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            background-color: #1e293b;
+            border: 1px solid #374151;
+            border-radius: 0.5rem;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #f8fafc;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover {
+            background-color: #374151;
+            color: #f8fafc;
+        }
+
+        .modal-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .modal-btn {
+            padding: 1rem;
+            border: 1px solid #4b5563;
+            border-radius: 0.375rem;
+            background-color: #374151;
+            color: #f8fafc;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .modal-btn:hover {
+            background-color: #475569;
+            border-color: #8b5cf6;
+        }
+
+        .modal-btn.danger:hover {
+            background-color: rgba(239, 68, 68, 0.2);
+            border-color: #ef4444;
+            color: #fca5a5;
+        }
+
+        .chart-container {
+            background-color: #374151;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .chart-filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background-color: #374151;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+        }
+
+        .stat-label {
+            color: #94a3b8;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            color: #f8fafc;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #94a3b8;
+        }
+
+        .empty-state i {
+            width: 4rem;
+            height: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background-color: #1e293b;
+            border: 1px solid #8b5cf6;
+            border-radius: 0.5rem;
+            padding: 1rem 1.5rem;
+            display: none;
+            align-items: center;
+            gap: 0.75rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            z-index: 1001;
+        }
+
+        .toast.show {
+            display: flex;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .toast-text {
+            color: #f8fafc;
+            font-size: 0.875rem;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .tabs {
+                overflow-x: auto;
+            }
+
+            .tab {
+                padding: 0.75rem 1rem;
+                font-size: 0.875rem;
+                white-space: nowrap;
+            }
+
+            .generate-buttons {
+                grid-template-columns: 1fr;
+            }
+
+            .search-input {
+                min-width: 100%;
+            }
+
+            .filter-group {
+                width: 100%;
+            }
+
+            .filter-select {
+                flex: 1;
+            }
+
+            .invites-table {
+                font-size: 0.75rem;
+            }
+
+            .invites-table th,
+            .invites-table td {
+                padding: 0.75rem 0.5rem;
+            }
+
+            .modal {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Invite Manager</h1>
+            <p>Generate, manage, and track invitation codes for teachers and students</p>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" data-tab="generate">Generate Codes</button>
+            <button class="tab" data-tab="view">View Invites</button>
+            <button class="tab" data-tab="analytics">Usage Analytics</button>
+        </div>
+
+        <!-- Generate Codes Tab -->
+        <div class="tab-content active" id="generate-tab">
+            <div class="card">
+                <h2 class="card-title">Generate New Invite Code</h2>
+                <div class="generate-buttons">
+                    <button class="generate-btn teacher" onclick="generateCode('teacher')">
+                        <i data-lucide="graduation-cap"></i>
+                        Generate Teacher Code
+                    </button>
+                    <button class="generate-btn student" onclick="generateCode('student')">
+                        <i data-lucide="users"></i>
+                        Generate Student Code
+                    </button>
+                </div>
+
+                <div class="code-display" id="code-display">
+                    <div class="code-box">
+                        <span class="code-text" id="generated-code"></span>
+                        <button class="copy-btn" onclick="copyCode()">
+                            <i data-lucide="copy"></i>
+                            Copy Code
+                        </button>
+                    </div>
+                    <div class="code-details">
+                        <div class="code-detail">
+                            <span class="code-detail-label">User Type</span>
+                            <span class="code-detail-value" id="code-user-type"></span>
+                        </div>
+                        <div class="code-detail">
+                            <span class="code-detail-label">Created</span>
+                            <span class="code-detail-value" id="code-created"></span>
+                        </div>
+                        <div class="code-detail">
+                            <span class="code-detail-label">Expires</span>
+                            <span class="code-detail-value" id="code-expires"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- View Invites Tab -->
+        <div class="tab-content" id="view-tab">
+            <div class="card">
+                <h2 class="card-title">All Invite Codes</h2>
+                
+                <div class="filters">
+                    <input type="text" class="search-input" id="search-input" placeholder="Search by name, code, or date...">
+                    <div class="filter-group">
+                        <select class="filter-select" id="user-type-filter">
+                            <option value="all">All Users</option>
+                            <option value="teacher">Teachers</option>
+                            <option value="student">Students</option>
+                        </select>
+                        <select class="filter-select" id="usage-filter">
+                            <option value="all">All Status</option>
+                            <option value="used">Used</option>
+                            <option value="unused">Not Used</option>
+                        </select>
+                        <select class="filter-select" id="expiry-filter">
+                            <option value="all">All Expiry</option>
+                            <option value="expired">Expired</option>
+                            <option value="valid">Valid</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table class="invites-table">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Name</th>
+                                <th>Invite Code</th>
+                                <th>User Type</th>
+                                <th>Created</th>
+                                <th>Expires</th>
+                                <th>Used At</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="invites-tbody">
+                            <!-- Table rows will be inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Usage Analytics Tab -->
+        <div class="tab-content" id="analytics-tab">
+            <div class="card">
+                <h2 class="card-title">Usage Statistics</h2>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Total Codes</div>
+                        <div class="stat-value" id="total-codes">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Active Codes</div>
+                        <div class="stat-value" id="active-codes">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Usage Rate</div>
+                        <div class="stat-value" id="usage-rate">0%</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Expired Codes</div>
+                        <div class="stat-value" id="expired-codes">0</div>
+                    </div>
+                </div>
+
+                <div class="chart-filters">
+                    <select class="filter-select" id="chart-timeframe">
+                        <option value="daily">Daily</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="monthly">Monthly</option>
+                    </select>
+                    <select class="filter-select" id="chart-user-type">
+                        <option value="all">All Users</option>
+                        <option value="teacher">Teachers</option>
+                        <option value="student">Students</option>
+                    </select>
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="analytics-chart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Manage Invite Code</h3>
+                <button class="modal-close" onclick="closeModal()">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn" onclick="regenerateCode()">
+                    <i data-lucide="refresh-cw"></i>
+                    Regenerate Code
+                </button>
+                <button class="modal-btn" onclick="viewDetails()">
+                    <i data-lucide="eye"></i>
+                    View Full Details
+                </button>
+                <button class="modal-btn" onclick="sendReminder()">
+                    <i data-lucide="mail"></i>
+                    Send Reminder (Coming Soon)
+                </button>
+                <button class="modal-btn danger" onclick="deleteCode()">
+                    <i data-lucide="trash-2"></i>
+                    Delete Code
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <i data-lucide="check-circle"></i>
+        <span class="toast-text" id="toast-text"></span>
+    </div>
+
+    <script>
+        // Mock data matching database schema
+        let invites = [
+            {
+                id: 1,
+                code: 'TCH-A7K9M2',
+                user_type: 'teacher',
+                created_at: new Date('2024-01-15'),
+                expires_at: new Date('2024-01-22'),
+                used: true,
+                used_by: 'John Smith',
+                used_at: new Date('2024-01-16'),
+                admin_id: 1
+            },
+            {
+                id: 2,
+                code: 'STD-B3N8P5',
+                user_type: 'student',
+                created_at: new Date('2024-01-18'),
+                expires_at: new Date('2024-01-25'),
+                used: false,
+                used_by: null,
+                used_at: null,
+                admin_id: 1
+            },
+            {
+                id: 3,
+                code: 'TCH-C4Q7R1',
+                user_type: 'teacher',
+                created_at: new Date('2024-01-10'),
+                expires_at: new Date('2024-01-17'),
+                used: false,
+                used_by: null,
+                used_at: null,
+                admin_id: 1
+            },
+            {
+                id: 4,
+                code: 'STD-D9W2E6',
+                user_type: 'student',
+                created_at: new Date('2024-01-20'),
+                expires_at: new Date('2024-01-27'),
+                used: true,
+                used_by: 'Sarah Johnson',
+                used_at: new Date('2024-01-21'),
+                admin_id: 1
+            },
+            {
+                id: 5,
+                code: 'TCH-E5T8Y3',
+                user_type: 'teacher',
+                created_at: new Date('2024-01-12'),
+                expires_at: new Date('2024-01-19'),
+                used: false,
+                used_by: null,
+                used_at: null,
+                admin_id: 1
+            }
+        ];
+
+        let selectedInvite = null;
+        let analyticsChart = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            setupTabs();
+            renderInvitesTable();
+            setupFilters();
+            updateAnalytics();
+            createAnalyticsChart();
+        });
+
+        // Tab switching
+        function setupTabs() {
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabName = tab.dataset.tab;
+                    
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    
+                    tab.classList.add('active');
+                    document.getElementById(`${tabName}-tab`).classList.add('active');
+                    
+                    if (tabName === 'analytics') {
+                        updateAnalytics();
+                    }
+                });
+            });
+        }
+
+        // Generate code
+        function generateCode(userType) {
+            const code = `${userType === 'teacher' ? 'TCH' : 'STD'}-${generateRandomCode()}`;
+            const createdAt = new Date();
+            const expiresAt = new Date(createdAt.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 days
+
+            const newInvite = {
+                id: invites.length + 1,
+                code: code,
+                user_type: userType,
+                created_at: createdAt,
+                expires_at: expiresAt,
+                used: false,
+                used_by: null,
+                used_at: null,
+                admin_id: 1
+            };
+
+            invites.push(newInvite);
+
+            // Display code
+            document.getElementById('generated-code').textContent = code;
+            document.getElementById('code-user-type').textContent = userType.charAt(0).toUpperCase() + userType.slice(1);
+            document.getElementById('code-created').textContent = formatDate(createdAt);
+            document.getElementById('code-expires').textContent = formatDate(expiresAt);
+            document.getElementById('code-display').classList.add('show');
+
+            showToast(`${userType.charAt(0).toUpperCase() + userType.slice(1)} code generated successfully!`);
+            renderInvitesTable();
+            updateAnalytics();
+        }
+
+        function generateRandomCode() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let code = '';
+            for (let i = 0; i < 6; i++) {
+                if (i === 3) code += '';
+                code += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return code;
+        }
+
+        // Copy code
+        function copyCode() {
+            const code = document.getElementById('generated-code').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                showToast('Code copied to clipboard!');
+            });
+        }
+
+        // Render invites table
+        function renderInvitesTable(filteredInvites = invites) {
+            const tbody = document.getElementById('invites-tbody');
+            tbody.innerHTML = '';
+
+            if (filteredInvites.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="empty-state"><i data-lucide="inbox"></i><p>No invites found</p></td></tr>';
+                lucide.createIcons();
+                return;
+            }
+
+            filteredInvites.forEach(invite => {
+                const row = document.createElement('tr');
+                row.onclick = () => openModal(invite);
+
+                const avatar = invite.used_by ? invite.used_by.split(' ').map(n => n[0]).join('') : '?';
+                const expiryStatus = getExpiryStatus(invite.expires_at);
+                
+                row.innerHTML = `
+                    <td>
+                        <div class="user-avatar">${avatar}</div>
+                    </td>
+                    <td>${invite.used_by || 'Not Used'}</td>
+                    <td><strong>${invite.code}</strong></td>
+                    <td><span class="badge ${invite.user_type}">${invite.user_type}</span></td>
+                    <td>${formatDate(invite.created_at)}</td>
+                    <td><span class="badge ${expiryStatus.class}">${formatDate(invite.expires_at)}</span></td>
+                    <td>${invite.used_at ? formatDate(invite.used_at) : '00/00/0000'}</td>
+                    <td><span class="badge ${invite.used ? 'used' : 'unused'}">${invite.used ? 'Used' : 'Active'}</span></td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+
+            lucide.createIcons();
+        }
+
+        // Get expiry status
+        function getExpiryStatus(expiresAt) {
+            const now = new Date();
+            const daysUntilExpiry = Math.ceil((expiresAt - now) / (1000 * 60 * 60 * 24));
+            
+            if (daysUntilExpiry < 0) {
+                return { class: 'expired', text: 'Expired' };
+            } else if (daysUntilExpiry <= 2) {
+                return { class: 'expiring-soon', text: 'Expiring Soon' };
+            } else {
+                return { class: 'valid', text: 'Valid' };
+            }
+        }
+
+        // Setup filters
+        function setupFilters() {
+            const searchInput = document.getElementById('search-input');
+            const userTypeFilter = document.getElementById('user-type-filter');
+            const usageFilter = document.getElementById('usage-filter');
+            const expiryFilter = document.getElementById('expiry-filter');
+
+            function applyFilters() {
+                let filtered = invites;
+
+                // Search filter
+                const searchTerm = searchInput.value.toLowerCase();
+                if (searchTerm) {
+                    filtered = filtered.filter(invite => 
+                        invite.code.toLowerCase().includes(searchTerm) ||
+                        (invite.used_by && invite.used_by.toLowerCase().includes(searchTerm)) ||
+                        formatDate(invite.created_at).toLowerCase().includes(searchTerm) ||
+                        formatDate(invite.expires_at).toLowerCase().includes(searchTerm)
+                    );
+                }
+
+                // User type filter
+                if (userTypeFilter.value !== 'all') {
+                    filtered = filtered.filter(invite => invite.user_type === userTypeFilter.value);
+                }
+
+                // Usage filter
+                if (usageFilter.value !== 'all') {
+                    const isUsed = usageFilter.value === 'used';
+                    filtered = filtered.filter(invite => invite.used === isUsed);
+                }
+
+                // Expiry filter
+                if (expiryFilter.value !== 'all') {
+                    const now = new Date();
+                    if (expiryFilter.value === 'expired') {
+                        filtered = filtered.filter(invite => invite.expires_at < now);
+                    } else {
+                        filtered = filtered.filter(invite => invite.expires_at >= now);
+                    }
+                }
+
+                renderInvitesTable(filtered);
+            }
+
+            searchInput.addEventListener('input', applyFilters);
+            userTypeFilter.addEventListener('change', applyFilters);
+            usageFilter.addEventListener('change', applyFilters);
+            expiryFilter.addEventListener('change', applyFilters);
+        }
+
+        // Modal functions
+        function openModal(invite) {
+            selectedInvite = invite;
+            document.getElementById('modal-overlay').classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('modal-overlay').classList.remove('show');
+            selectedInvite = null;
+        }
+
+        function regenerateCode() {
+            if (!selectedInvite) return;
+            
+            const newCode = `${selectedInvite.user_type === 'teacher' ? 'TCH' : 'STD'}-${generateRandomCode()}`;
+            selectedInvite.code = newCode;
+            selectedInvite.created_at = new Date();
+            selectedInvite.expires_at = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+            
+            renderInvitesTable();
+            closeModal();
+            showToast('Code regenerated successfully!');
+        }
+
+        function viewDetails() {
+            if (!selectedInvite) return;
+            alert(`Code: ${selectedInvite.code}\nUser Type: ${selectedInvite.user_type}\nCreated: ${formatDate(selectedInvite.created_at)}\nExpires: ${formatDate(selectedInvite.expires_at)}\nUsed: ${selectedInvite.used ? 'Yes' : 'No'}\nUsed By: ${selectedInvite.used_by || 'N/A'}`);
+        }
+
+        function sendReminder() {
+            showToast('Email reminder feature coming soon!');
+        }
+
+        function deleteCode() {
+            if (!selectedInvite) return;
+            
+            if (confirm('Are you sure you want to delete this invite code?')) {
+                invites = invites.filter(i => i.id !== selectedInvite.id);
+                renderInvitesTable();
+                updateAnalytics();
+                closeModal();
+                showToast('Code deleted successfully!');
+            }
+        }
+
+        // Analytics
+        function updateAnalytics() {
+            const now = new Date();
+            const totalCodes = invites.length;
+            const activeCodes = invites.filter(i => !i.used && i.expires_at >= now).length;
+            const usedCodes = invites.filter(i => i.used).length;
+            const expiredCodes = invites.filter(i => i.expires_at < now && !i.used).length;
+            const usageRate = totalCodes > 0 ? Math.round((usedCodes / totalCodes) * 100) : 0;
+
+            document.getElementById('total-codes').textContent = totalCodes;
+            document.getElementById('active-codes').textContent = activeCodes;
+            document.getElementById('usage-rate').textContent = `${usageRate}%`;
+            document.getElementById('expired-codes').textContent = expiredCodes;
+        }
+
+        function createAnalyticsChart() {
+            const ctx = document.getElementById('analytics-chart').getContext('2d');
+            
+            // Generate mock data for the last 7 days
+            const labels = [];
+            const teacherData = [];
+            const studentData = [];
+            
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                labels.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+                teacherData.push(Math.floor(Math.random() * 10) + 1);
+                studentData.push(Math.floor(Math.random() * 15) + 1);
+            }
+
+            analyticsChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Teacher Codes',
+                            data: teacherData,
+                            borderColor: '#8b5cf6',
+                            backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Student Codes',
+                            data: studentData,
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#f8fafc'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: '#94a3b8'
+                            },
+                            grid: {
+                                color: '#374151'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: '#94a3b8'
+                            },
+                            grid: {
+                                color: '#374151'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Setup chart filter listeners
+            document.getElementById('chart-timeframe').addEventListener('change', updateChartData);
+            document.getElementById('chart-user-type').addEventListener('change', updateChartData);
+        }
+
+        function updateChartData() {
+            // In a real application, this would fetch new data based on filters
+            const timeframe = document.getElementById('chart-timeframe').value;
+            const userType = document.getElementById('chart-user-type').value;
+            
+            // For demo purposes, just regenerate random data
+            analyticsChart.data.datasets.forEach(dataset => {
+                dataset.data = dataset.data.map(() => Math.floor(Math.random() * 20) + 1);
+            });
+            
+            analyticsChart.update();
+        }
+
+        // Utility functions
+        function formatDate(date) {
+            return new Date(date).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastText = document.getElementById('toast-text');
+            
+            toastText.textContent = message;
+            toast.classList.add('show');
+            
+            lucide.createIcons();
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Close modal on overlay click
+        document.getElementById('modal-overlay').addEventListener('click', (e) => {
+            if (e.target.id === 'modal-overlay') {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
