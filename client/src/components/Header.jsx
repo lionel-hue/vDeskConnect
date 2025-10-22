@@ -15,14 +15,25 @@ const Header = ({ sidebarOpen, onSidebarToggle, pageTitle = "Dashboard" }) => {
     
     const { modal, setModal, confirm } = useModal();
 
-    const performDashboardSearch = (term) => {
+    // Dynamic search placeholder based on current page
+    const getSearchPlaceholder = () => {
+        if (location.pathname.includes('/invite-manager')) {
+            return "Search invite manager...";
+        } else if (location.pathname.includes('/dashboard')) {
+            return "Search dashboard...";
+        } else {
+            return "Search...";
+        }
+    };
+
+    const performSearch = (term) => {
         setSearchTerm(term);
         setIsSearching(!!term.trim());
     };
 
     const handleSearchChange = (e) => {
         const value = e.target.value;
-        performDashboardSearch(value);
+        performSearch(value);
     };
 
     const clearSearch = () => {
@@ -90,11 +101,9 @@ const Header = ({ sidebarOpen, onSidebarToggle, pageTitle = "Dashboard" }) => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [headerSearchActive, isProfileDropdownOpen]);
 
-    // Clear search when navigating away from dashboard
+    // Clear search when navigating away from current page
     useEffect(() => {
-        if (!location.pathname.includes('/dashboard')) {
-            clearSearch();
-        }
+        clearSearch();
     }, [location.pathname]);
 
     // Close dropdown on escape key
@@ -130,7 +139,7 @@ const Header = ({ sidebarOpen, onSidebarToggle, pageTitle = "Dashboard" }) => {
                             type="text" 
                             id="header-search-input"
                             className={`header-search-input ${headerSearchActive ? 'mobile-visible' : ''}`}
-                            placeholder="Search dashboard..."
+                            placeholder={getSearchPlaceholder()}
                             value={searchTerm}
                             onChange={handleSearchChange}
                         />

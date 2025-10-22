@@ -1,3 +1,4 @@
+// App.jsx - UPDATED
 import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import Login from './auth/Login';
@@ -8,10 +9,8 @@ import VerifyAccount from './auth/VerifyAccount';
 import ForgotPassword from './auth/ForgotPassword';
 import ResetPassword from './auth/ResetPassword';
 import Dashboard from './main/Dashboard';
+import InviteManager from './main/InviteManager'; // ADD THIS IMPORT
 import { SearchProvider } from './SearchManager';
-import InviteManager from './main/InviteManager';
-
-// import UserManagement from './UserManagement';
 
 function App() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -33,6 +32,7 @@ function App() {
                         {/* Protected Routes - Each is standalone with Header/Sidebar */}
                         <Route path="/dashboard" element={<Dashboard />} />
                         <Route path="/invite-manager" element={<InviteManager />} />
+                        <Route path="/invite-manager/:section" element={<InviteManager />} />
                     </Routes>
                 </div>
             </Router>

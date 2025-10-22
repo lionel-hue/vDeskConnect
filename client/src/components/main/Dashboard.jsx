@@ -1,5 +1,6 @@
 // main/Dashboard.jsx
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { useParams } from 'react-router-dom';
 import { Chart, registerables } from 'chart.js';
 import Header from '../Header';
 import SidebarNav from '../SidebarNav';
@@ -16,12 +17,28 @@ const Dashboard = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [attendanceChartType, setAttendanceChartType] = useState('bar');
     const [isMobile, setIsMobile] = useState(false);
+    const { section } = useParams();
     const studentsChartRef = useRef(null);
     const lecturesChartRef = useRef(null);
     const attendanceChartRef = useRef(null);
     
     const { modal, setModal, alert, confirm, prompt } = useModal();
     const { searchTerm, isSearching, setSearchTerm, setIsSearching } = useSearch();
+
+    // Scroll to section when URL parameter changes
+    useEffect(() => {
+        if (section) {
+            setTimeout(() => {
+                const element = document.getElementById(section);
+                if (element) {
+                    element.scrollIntoView({ 
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            }, 300);
+        }
+    }, [section]);
 
     // Mock dashboard data
     const dashboardData = useMemo(() => ({
@@ -110,12 +127,10 @@ const Dashboard = () => {
     const searchResults = useMemo(() => {
         const results = searchDashboardData(searchTerm, dashboardData);
         
-        // On mobile, filter out overview-related results
         if (isMobile) {
             return {
                 ...results,
-                overviewCards: [], // Empty overview results on mobile
-                // Also filter out overview-related search terms from other sections
+                overviewCards: [],
                 stats: results.stats.filter(stat => 
                     !stat.searchTerms?.some(term => 
                         term.toLowerCase().includes('overview')
@@ -150,7 +165,6 @@ const Dashboard = () => {
 
     // Enhanced shouldShow function that considers mobile state
     const shouldShow = (element, type) => {
-        // On mobile, never show overview-related elements
         if (isMobile && type === 'overview-card') {
             return false;
         }
@@ -159,7 +173,6 @@ const Dashboard = () => {
     };
 
     useEffect(() => {
-        // Only initialize charts if not on mobile
         if (!isMobile) {
             initializeCharts();
         }
@@ -238,7 +251,6 @@ const Dashboard = () => {
         const ctx = document.getElementById('attendanceChart');
         if (!ctx) return;
 
-        // Destroy existing chart if it exists
         if (attendanceChartRef.current) {
             attendanceChartRef.current.destroy();
         }
@@ -251,7 +263,6 @@ const Dashboard = () => {
 
         switch (attendanceChartType) {
             case 'pie':
-                // For pie chart, we'll show total present vs total absent
                 const totalPresent = presentData.reduce((a, b) => a + b, 0);
                 const totalAbsent = absentData.reduce((a, b) => a + b, 0);
                 
@@ -442,7 +453,7 @@ const Dashboard = () => {
                         </div>
                     )}
 
-                    {/* Stats Section - ALWAYS RENDERED, just hide individual cards */}
+                    {/* Stats Section */}
                     <div className="dashboard-stats-container">
                         {dashboardData.stats.map((stat, index) => (
                             <div 
@@ -466,14 +477,14 @@ const Dashboard = () => {
                         ))}
                     </div>
 
-                    {/* Divider - Only show if there are visible stats AND overview/activity */}
+                    {/* Divider */}
                     {(hasVisibleStats && (hasVisibleOverview || hasVisibleActivity)) && (
                         <div className="dashboard-content-divider"></div>
                     )}
 
-                    {/* Overview Section - HIDDEN ON MOBILE */}
+                    {/* Overview Section */}
                     {!isMobile && (
-                        <div className="dashboard-overview-section">
+                        <section id="overview" className="dashboard-overview-section">
                             <h2 className="dashboard-section-title">Overview</h2>
                             <div className="dashboard-overview-grid">
                                 {/* Students Chart Card */}
@@ -675,12 +686,11 @@ const Dashboard = () => {
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </section>
                     )}
 
-                    {/* Activity Section - ALWAYS RENDERED */}
-                    <div className="dashboard-activity-section">
-                        {/* Show divider only if there's content above (overview on desktop) or activities */}
+                    {/* Activity Section */}
+                    <section id="activity" className="dashboard-activity-section">
                         {(hasVisibleStats && (hasVisibleOverview || hasVisibleActivity)) && (
                             <div className="dashboard-content-divider"></div>
                         )}
@@ -706,9 +716,9 @@ const Dashboard = () => {
                                 </div>
                             ))}
                         </div>
-                    </div>
+                    </section>
 
-                    {/* No Results Message - Only show when searching AND no results */}
+                    {/* No Results Message */}
                     {searchTerm && !hasVisibleStats && !hasVisibleOverview && !hasVisibleActivity && (
                         <div className="dashboard-no-search-results">
                             <i data-lucide="search-x"></i>

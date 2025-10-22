@@ -1,5 +1,6 @@
 // main/InviteManager.jsx
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Chart, registerables } from 'chart.js';
 import Header from '../Header';
 import SidebarNav from '../SidebarNav';
@@ -14,8 +15,9 @@ Chart.register(...registerables);
 const InviteManager = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const [activeSection, setActiveSection] = useState('generate-codes');
     const [isMobile, setIsMobile] = useState(false);
+    const { section } = useParams();
+    const navigate = useNavigate();
 
     const { modal, setModal, alert, confirm, prompt } = useModal();
     const { searchTerm, isSearching, setSearchTerm, setIsSearching } = useSearch();
@@ -86,6 +88,7 @@ const InviteManager = () => {
     const [usageFilter, setUsageFilter] = useState('all');
     const [expiryFilter, setExpiryFilter] = useState('all');
     const [searchInput, setSearchInput] = useState('');
+    const chartInitialized = useRef(false);
 
     // Check if mobile on mount and resize
     useEffect(() => {
@@ -101,14 +104,32 @@ const InviteManager = () => {
         };
     }, []);
 
+    // Scroll to section when URL parameter changes
+    useEffect(() => {
+        if (section) {
+            // Wait for DOM to be ready
+            setTimeout(() => {
+                const element = document.getElementById(section);
+                if (element) {
+                    element.scrollIntoView({ 
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            }, 300);
+        }
+    }, [section]);
+
     // Initialize icons and analytics chart
     useEffect(() => {
         if (typeof lucide !== 'undefined') {
             lucide.createIcons();
         }
 
-        if (activeSection === 'usage-analytics') {
+        // Initialize chart on component mount
+        if (!chartInitialized.current) {
             createAnalyticsChart();
+            chartInitialized.current = true;
         }
 
         return () => {
@@ -116,7 +137,17 @@ const InviteManager = () => {
                 analyticsChart.destroy();
             }
         };
-    }, [activeSection]);
+    }, []);
+
+    // Recreate chart when analytics section becomes visible
+    useEffect(() => {
+        if (shouldShowSection('usage-analytics') && chartInitialized.current) {
+            // Small delay to ensure DOM is ready
+            setTimeout(() => {
+                createAnalyticsChart();
+            }, 100);
+        }
+    }, [searchTerm]);
 
     // Search functionality
     const searchResults = useMemo(() => {
@@ -278,7 +309,15 @@ const InviteManager = () => {
     // Analytics functions
     const createAnalyticsChart = () => {
         const ctx = document.getElementById('invite-manager-analytics-chart');
-        if (!ctx) return;
+        if (!ctx) {
+            console.log('Chart canvas not found, retrying...');
+            return;
+        }
+
+        // Clear existing chart if it exists
+        if (analyticsChart) {
+            analyticsChart.destroy();
+        }
 
         // Generate mock data for the last 7 days
         const labels = [];
@@ -293,60 +332,73 @@ const InviteManager = () => {
             studentData.push(Math.floor(Math.random() * 15) + 1);
         }
 
-        const newChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [
-                    {
-                        label: 'Teacher Codes',
-                        data: teacherData,
-                        borderColor: '#8b5cf6',
-                        backgroundColor: 'rgba(139, 92, 246, 0.1)',
-                        tension: 0.4
-                    },
-                    {
-                        label: 'Student Codes',
-                        data: studentData,
-                        borderColor: '#3b82f6',
-                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                        tension: 0.4
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                plugins: {
-                    legend: {
-                        labels: {
-                            color: '#f8fafc'
+        try {
+            const newChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Teacher Codes',
+                            data: teacherData,
+                            borderColor: '#8b5cf6',
+                            backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: 'Student Codes',
+                            data: studentData,
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            fill: true
                         }
-                    }
+                    ]
                 },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            color: '#94a3b8'
-                        },
-                        grid: {
-                            color: '#374151'
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                color: '#f8fafc',
+                                font: {
+                                    size: 12
+                                }
+                            }
                         }
                     },
-                    x: {
-                        ticks: {
-                            color: '#94a3b8'
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: '#94a3b8',
+                                stepSize: 5
+                            },
+                            grid: {
+                                color: '#374151'
+                            }
                         },
-                        grid: {
-                            color: '#374151'
+                        x: {
+                            ticks: {
+                                color: '#94a3b8'
+                            },
+                            grid: {
+                                color: '#374151'
+                            }
                         }
                     }
                 }
-            }
-        });
+            });
 
-        setAnalyticsChart(newChart);
+            setAnalyticsChart(newChart);
+        } catch (error) {
+            console.error('Error creating chart:', error);
+        }
     };
 
     // Utility functions
@@ -371,11 +423,8 @@ const InviteManager = () => {
         }
     };
 
-    const showToast = (message) => {
-        // In a real app, you'd use a proper toast component
-        console.log('Toast:', message);
-        // For now, we'll use alert
-        alert(message, 'Success');
+    const showToast = async (message) => {
+        await alert(message, 'Success');
     };
 
     // Check if sections should be shown based on search
@@ -384,16 +433,20 @@ const InviteManager = () => {
         return searchResults.sections && searchResults.sections.includes(sectionId);
     };
 
-
     const shouldShowInviteElement = (element, type) => {
         if (!searchTerm) return true;
         return shouldShowElement(element, searchTerm, searchResults, type);
     };
 
+    // Function to handle section navigation
+    const navigateToSection = (sectionName) => {
+        navigate(`/invite-manager/${sectionName}`);
+    };
+
     return (
         <div className="invite-manager-layout">
             <SidebarNav isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-
+            
             <div className="invite-manager-main">
                 <Header
                     sidebarOpen={sidebarOpen}
