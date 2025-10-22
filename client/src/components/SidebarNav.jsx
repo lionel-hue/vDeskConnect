@@ -52,8 +52,6 @@ const SidebarNav = ({ isOpen, onClose }) => {
     };
 
     const filterSidebarItems = (term) => {
-        // This would filter the sidebar items based on search term
-        // Implementation would depend on your menu structure
         console.log('Search term:', term);
     };
 
@@ -63,42 +61,96 @@ const SidebarNav = ({ isOpen, onClose }) => {
         filterSidebarItems(value);
     };
 
-    const handleSelectChange = (e, section) => {
+    const handleSelectChange = (e, menuSection) => {
         const value = e.target.value;
         
+        // Close sidebar immediately when any option is selected
+        onClose();
+        
         // Handle navigation based on the selected value
-        switch (section) {
+        switch (menuSection) {
             case 'profile':
                 handleProfileAction(value);
                 break;
             case 'analytics':
-                navigate('/dashboard/analytics');
+                if (value === 'platform-usage') {
+                    navigate('/dashboard/analytics/platform-usage');
+                } else if (value === 'export-data') {
+                    navigate('/dashboard/analytics/export-data');
+                } else {
+                    navigate('/dashboard/analytics');
+                }
                 break;
             case 'dashboard':
-                navigate('/dashboard');
+                if (value === 'overview') {
+                    navigate('/dashboard/overview');
+                } else if (value === 'activity') {
+                    navigate('/dashboard/activity');
+                } else {
+                    navigate('/dashboard');
+                }
                 break;
             case 'grades':
-                navigate('/dashboard/grades');
+                if (value === 'grade-book') {
+                    navigate('/dashboard/grades/grade-book');
+                } else if (value === 'grade-reports') {
+                    navigate('/dashboard/grades/grade-reports');
+                } else {
+                    navigate('/dashboard/grades');
+                }
                 break;
             case 'invite-manager':
-                navigate('/dashboard/invite-manager');
+                if (value === 'generate-codes') {
+                    navigate('/invite-manager/generate-codes');
+                } else if (value === 'view-invites') {
+                    navigate('/invite-manager/view-invites');
+                } else if (value === 'usage-analytics') {
+                    navigate('/invite-manager/usage-analytics');
+                } else {
+                    navigate('/invite-manager');
+                }
                 break;
             case 'lectures':
-                navigate('/dashboard/lectures');
+                if (value === 'create-lecture') {
+                    navigate('/dashboard/lectures/create');
+                } else if (value === 'manage-lectures') {
+                    navigate('/dashboard/lectures/manage');
+                } else {
+                    navigate('/dashboard/lectures');
+                }
                 break;
             case 'subjects':
-                navigate('/dashboard/subjects');
+                if (value === 'manage-subjects') {
+                    navigate('/dashboard/subjects/manage');
+                } else if (value === 'subject-assignments') {
+                    navigate('/dashboard/subjects/assignments');
+                } else {
+                    navigate('/dashboard/subjects');
+                }
                 break;
             case 'user-management':
-                navigate('/dashboard/user-management');
+                if (value === 'students') {
+                    navigate('/dashboard/user-management/students');
+                } else if (value === 'student-overview') {
+                    navigate('/dashboard/user-management/students/overview');
+                } else if (value === 'student-progress') {
+                    navigate('/dashboard/user-management/students/progress');
+                } else if (value === 'student-metrics') {
+                    navigate('/dashboard/user-management/students/metrics');
+                } else if (value === 'teachers') {
+                    navigate('/dashboard/user-management/teachers');
+                } else if (value === 'teacher-overview') {
+                    navigate('/dashboard/user-management/teachers/overview');
+                } else if (value === 'teacher-activities') {
+                    navigate('/dashboard/user-management/teachers/activities');
+                } else if (value === 'teacher-metrics') {
+                    navigate('/dashboard/user-management/teachers/metrics');
+                } else {
+                    navigate('/dashboard/user-management');
+                }
                 break;
             default:
                 console.log('Navigating to:', value);
-        }
-
-        // Close sidebar on mobile after selection
-        if (window.innerWidth < 1024) {
-            onClose();
         }
     };
 
@@ -115,23 +167,6 @@ const SidebarNav = ({ isOpen, onClose }) => {
                 break;
             default:
                 navigate('/dashboard/profile');
-        }
-    };
-
-    const handleAdminAction = (action) => {
-        switch (action) {
-            case 'change-password':
-                console.log('Change password clicked');
-                // Implement change password functionality
-                break;
-            case 'logout':
-                if (confirm('Are you sure you want to logout?')) {
-                    // Implement logout functionality
-                    console.log('Logging out...');
-                }
-                break;
-            default:
-                console.log('Admin action:', action);
         }
     };
 
