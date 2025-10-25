@@ -41,6 +41,7 @@
     padding: 1rem;
     border-bottom: 1px solid #374151;
     gap: 1rem;
+    position: relative;
 }
 
 .sidebar-menu-btn {
@@ -93,11 +94,18 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    min-width: 2.5rem;
+    min-height: 2.5rem;
 }
 
 .search-btn:hover {
     color: #e2e8f0;
     background-color: #374151;
+    transform: scale(1.05);
+}
+
+.search-btn:active {
+    transform: scale(0.95);
 }
 
 .search-container {
@@ -106,9 +114,18 @@
     right: 1rem;
     top: 1rem;
     transition: all 0.3s ease;
+    z-index: 1;
+}
+
+.search-container.active {
+    display: block;
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0);
 }
 
 .search-container.hidden {
+    display: none;
     opacity: 0;
     visibility: hidden;
     transform: translateX(-10px);
@@ -122,7 +139,7 @@
     padding: 0.5rem 0.75rem;
     color: #f8fafc;
     font-size: 0.875rem;
-    transition: border-color 0.2s;
+    transition: all 0.2s;
 }
 
 .search-input:focus {
@@ -148,10 +165,16 @@
 .sidebar-item {
     margin-bottom: 0.5rem;
     padding: 0 1rem;
+    transition: all 0.3s ease;
 }
 
 .sidebar-item.hidden {
     display: none;
+}
+
+/* Hide sidebar items when filtered */
+.sidebar-item[style*="display: none"] {
+    display: none !important;
 }
 
 .profile-section {
@@ -265,6 +288,13 @@
     
     .sidebar-title {
         font-size: 1rem;
+    }
+}
+
+/* Mobile-specific styles for overview filtering */
+@media (max-width: 767px) {
+    .sidebar-select option[value="overview"] {
+        display: none !important;
     }
 }
 
