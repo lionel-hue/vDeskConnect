@@ -1,6 +1,6 @@
 // main/Dashboard.jsx
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import { Chart, registerables } from 'chart.js';
 import Header from '../Header';
 import SidebarNav from '../SidebarNav';
@@ -18,27 +18,71 @@ const Dashboard = () => {
     const [attendanceChartType, setAttendanceChartType] = useState('bar');
     const [isMobile, setIsMobile] = useState(false);
     const { section } = useParams();
+    const location = useLocation();
     const studentsChartRef = useRef(null);
     const lecturesChartRef = useRef(null);
     const attendanceChartRef = useRef(null);
-    
+
     const { modal, setModal, alert, confirm, prompt } = useModal();
     const { searchTerm, isSearching, setSearchTerm, setIsSearching } = useSearch();
 
-    // Scroll to section when URL parameter changes
+    // Get the current section from URL path - FIXED VERSION
+    const getCurrentSection = () => {
+        const path = location.pathname;
+        console.log('Current path:', path); // Debug log
+        
+        // Extract section from path
+        const pathParts = path.split('/').filter(part => part);
+        console.log('Path parts:', pathParts); // Debug log
+        
+        if (pathParts.length > 1) {
+            // If we have something after /dashboard/
+            const sectionFromPath = pathParts[1];
+            console.log('Section from path:', sectionFromPath); // Debug log
+            return sectionFromPath;
+        }
+        
+        return 'overview'; // default to overview
+    };
+
+    const currentSection = getCurrentSection();
+    console.log('Final current section:', currentSection); // Debug log
+
+    // Scroll to section when URL changes - ENHANCED
     useEffect(() => {
-        if (section) {
+        console.log('Scrolling to section:', currentSection);
+        
+        const scrollToSection = () => {
+            // Wait for DOM to be fully ready
             setTimeout(() => {
-                const element = document.getElementById(section);
+                const element = document.getElementById(currentSection);
                 if (element) {
-                    element.scrollIntoView({ 
+                    console.log('Found element, scrolling...');
+                    element.scrollIntoView({
                         behavior: 'smooth',
                         block: 'start'
                     });
+                } else {
+                    console.log(`Section element with id '${currentSection}' not found, available IDs:`, 
+                        Array.from(document.querySelectorAll('[id]')).map(el => el.id));
+                    // Try alternative approach - find by data-section
+                    const altElement = document.querySelector(`[data-section="${currentSection}"]`);
+                    if (altElement) {
+                        console.log('Found element by data-section, scrolling...');
+                        altElement.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    } else {
+                        console.log('Scrolling to top as fallback');
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
                 }
-            }, 300);
-        }
-    }, [section]);
+            }, 1000); // Increased timeout to ensure everything is loaded
+        };
+
+        scrollToSection();
+    }, [currentSection, location.pathname]);
 
     // Mock dashboard data
     const dashboardData = useMemo(() => ({
@@ -50,18 +94,18 @@ const Dashboard = () => {
             { label: 'Total Population', number: 1497, searchTerms: ['population', 'total population'] }
         ],
         overviewCards: [
-            { 
-                title: 'Students', 
+            {
+                title: 'Students',
                 searchTerms: ['students', 'boys', 'girls', 'gender', 'overview'],
                 chartData: { boys: 687, girls: 560 }
             },
-            { 
-                title: 'Lectures', 
+            {
+                title: 'Lectures',
                 searchTerms: ['lectures', 'completed', 'pending', 'overview'],
                 chartData: { completed: 89, pending: 67 }
             },
-            { 
-                title: 'Teacher List', 
+            {
+                title: 'Teacher List',
                 searchTerms: ['teacher list', 'teachers', 'overview'],
                 tableData: [
                     { name: 'John Smith', grade: 'JSS1', subject: 'Mathematics', email: 'john@school.com' },
@@ -69,35 +113,35 @@ const Dashboard = () => {
                     { name: 'Mike Wilson', grade: 'SSS1', subject: 'Chemistry', email: 'mike@school.com' }
                 ]
             },
-            { 
-                title: 'Attendance', 
+            {
+                title: 'Attendance',
                 searchTerms: ['attendance', 'present', 'absent', 'overview'],
                 chartData: { present: [85, 92, 78, 88, 95], absent: [15, 8, 22, 12, 5] }
             }
         ],
         activities: [
-            { 
-                content: 'Teacher X has started a lecture with the SS2 students.', 
+            {
+                content: 'Teacher X has started a lecture with the SS2 students.',
                 time: '2 mins ago',
                 searchTerms: ['teacher', 'lecture', 'ss2', 'activity']
             },
-            { 
-                content: 'Teacher A has gone offline.', 
+            {
+                content: 'Teacher A has gone offline.',
                 time: '10 mins ago',
                 searchTerms: ['teacher', 'offline', 'activity']
             },
-            { 
-                content: 'JSS1 students assignment is due for submission!', 
+            {
+                content: 'JSS1 students assignment is due for submission!',
                 time: '1 hour ago',
                 searchTerms: ['jss1', 'assignment', 'submission', 'activity']
             },
-            { 
-                content: 'New student registrations for SSS3 completed.', 
+            {
+                content: 'New student registrations for SSS3 completed.',
                 time: '3 hours ago',
                 searchTerms: ['student', 'registrations', 'sss3', 'activity']
             },
-            { 
-                content: 'Low attendance alert for JSS2 today.', 
+            {
+                content: 'Low attendance alert for JSS2 today.',
                 time: '5 hours ago',
                 searchTerms: ['attendance', 'alert', 'jss2', 'activity']
             }
@@ -112,7 +156,8 @@ const Dashboard = () => {
     // Check if mobile on mount and resize
     useEffect(() => {
         const checkMobile = () => {
-            setIsMobile(window.innerWidth < 768);
+            const mobile = window.innerWidth < 768;
+            setIsMobile(mobile);
         };
 
         checkMobile();
@@ -126,39 +171,39 @@ const Dashboard = () => {
     // Filter search results based on mobile state
     const searchResults = useMemo(() => {
         const results = searchDashboardData(searchTerm, dashboardData);
-        
+
         if (isMobile) {
             return {
                 ...results,
                 overviewCards: [],
-                stats: results.stats.filter(stat => 
-                    !stat.searchTerms?.some(term => 
+                stats: results.stats.filter(stat =>
+                    !stat.searchTerms?.some(term =>
                         term.toLowerCase().includes('overview')
                     )
                 ),
                 activities: results.activities.filter(activity =>
-                    !activity.searchTerms?.some(term => 
+                    !activity.searchTerms?.some(term =>
                         term.toLowerCase().includes('overview')
                     )
                 )
             };
         }
-        
+
         return results;
     }, [searchTerm, dashboardData, isMobile]);
 
-    // SIMPLE approach: Check if we have ANY visible elements in each section
-    const hasVisibleStats = useMemo(() => 
+    // Check if we have ANY visible elements in each section
+    const hasVisibleStats = useMemo(() =>
         searchResults.stats.length > 0 || !searchTerm,
         [searchResults.stats, searchTerm]
     );
 
-    const hasVisibleOverview = useMemo(() => 
+    const hasVisibleOverview = useMemo(() =>
         !isMobile && (searchResults.overviewCards.length > 0 || !searchTerm),
         [searchResults.overviewCards, searchTerm, isMobile]
     );
 
-    const hasVisibleActivity = useMemo(() => 
+    const hasVisibleActivity = useMemo(() =>
         searchResults.activities.length > 0 || !searchTerm,
         [searchResults.activities, searchTerm]
     );
@@ -168,7 +213,7 @@ const Dashboard = () => {
         if (isMobile && type === 'overview-card') {
             return false;
         }
-        
+
         return shouldShowElement(element, searchTerm, searchResults, type);
     };
 
@@ -265,7 +310,7 @@ const Dashboard = () => {
             case 'pie':
                 const totalPresent = presentData.reduce((a, b) => a + b, 0);
                 const totalAbsent = absentData.reduce((a, b) => a + b, 0);
-                
+
                 chartConfig = {
                     type: 'pie',
                     data: {
@@ -279,15 +324,15 @@ const Dashboard = () => {
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        plugins: { 
-                            legend: { 
+                        plugins: {
+                            legend: {
                                 display: true,
                                 position: 'bottom',
                                 labels: {
                                     color: '#94a3b8',
                                     padding: 20
                                 }
-                            } 
+                            }
                         }
                     }
                 };
@@ -392,7 +437,7 @@ const Dashboard = () => {
         ];
 
         const actionText = actions.map((a, i) => `${i + 1}. ${a.name}`).join('\n');
-        
+
         try {
             const selectedAction = await prompt(
                 `Choose action for ${teacherName}:\n${actionText}`,
@@ -420,7 +465,7 @@ const Dashboard = () => {
     return (
         <div className="dashboard-layout">
             <SidebarNav isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-            
+
             <div className="dashboard-main">
                 <Header
                     sidebarOpen={sidebarOpen}
@@ -439,7 +484,7 @@ const Dashboard = () => {
                             <div className="dashboard-search-results-info">
                                 <i data-lucide="search"></i>
                                 <span>Search results for "{searchTerm}"</span>
-                                <button 
+                                <button
                                     className="dashboard-clear-search-btn"
                                     onClick={() => {
                                         setSearchTerm('');
@@ -454,41 +499,43 @@ const Dashboard = () => {
                     )}
 
                     {/* Stats Section */}
-                    <div className="dashboard-stats-container">
-                        {dashboardData.stats.map((stat, index) => (
-                            <div 
-                                key={index}
-                                className={`dashboard-stat-card ${shouldShow(stat, 'stat-card') ? '' : 'dashboard-search-hidden'}`}
-                            >
-                                <div className="dashboard-stat-icon">
-                                    <i data-lucide={
-                                        index === 0 ? "users" :
-                                        index === 1 ? "graduation-cap" :
-                                        index === 2 ? "book-open" :
-                                        index === 3 ? "shield-check" : "users-2"
-                                    }></i>
+                    {hasVisibleStats && (
+                        <div className="dashboard-stats-container">
+                            {dashboardData.stats.map((stat, index) => (
+                                <div
+                                    key={index}
+                                    className={`dashboard-stat-card ${shouldShow(stat, 'stat-card') ? '' : 'dashboard-search-hidden'}`}
+                                >
+                                    <div className="dashboard-stat-icon">
+                                        <i data-lucide={
+                                            index === 0 ? "users" :
+                                                index === 1 ? "graduation-cap" :
+                                                    index === 2 ? "book-open" :
+                                                        index === 3 ? "shield-check" : "users-2"
+                                        }></i>
+                                    </div>
+                                    <div className="dashboard-stat-divider"></div>
+                                    <div className="dashboard-stat-content">
+                                        <div className="dashboard-stat-label">{stat.label}</div>
+                                        <div className="dashboard-stat-number">{stat.number}</div>
+                                    </div>
                                 </div>
-                                <div className="dashboard-stat-divider"></div>
-                                <div className="dashboard-stat-content">
-                                    <div className="dashboard-stat-label">{stat.label}</div>
-                                    <div className="dashboard-stat-number">{stat.number}</div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
+                    )}
 
                     {/* Divider */}
                     {(hasVisibleStats && (hasVisibleOverview || hasVisibleActivity)) && (
                         <div className="dashboard-content-divider"></div>
                     )}
 
-                    {/* Overview Section */}
-                    {!isMobile && (
-                        <section id="overview" className="dashboard-overview-section">
+                    {/* Overview Section - CONDITIONALLY RENDERED */}
+                    {hasVisibleOverview && (
+                        <section id="overview" data-section="overview" className="dashboard-overview-section">
                             <h2 className="dashboard-section-title">Overview</h2>
                             <div className="dashboard-overview-grid">
                                 {/* Students Chart Card */}
-                                <div 
+                                <div
                                     className={`dashboard-overview-card ${shouldShow({ title: 'Students' }, 'overview-card') ? '' : 'dashboard-search-hidden'}`}
                                 >
                                     <div className="dashboard-card-header">
@@ -526,7 +573,7 @@ const Dashboard = () => {
                                 </div>
 
                                 {/* Lectures Chart Card */}
-                                <div 
+                                <div
                                     className={`dashboard-overview-card ${shouldShow({ title: 'Lectures' }, 'overview-card') ? '' : 'dashboard-search-hidden'}`}
                                 >
                                     <div className="dashboard-card-header">
@@ -570,7 +617,7 @@ const Dashboard = () => {
                                 </div>
 
                                 {/* Teacher List Card */}
-                                <div 
+                                <div
                                     className={`dashboard-overview-card ${shouldShow({ title: 'Teacher List' }, 'overview-card') ? '' : 'dashboard-search-hidden'}`}
                                 >
                                     <div className="dashboard-card-header">
@@ -606,7 +653,7 @@ const Dashboard = () => {
                                             </thead>
                                             <tbody>
                                                 {dashboardData.teachers.map((teacher, index) => (
-                                                    <tr 
+                                                    <tr
                                                         key={index}
                                                         className={shouldShow(teacher, 'teacher-row') ? '' : 'dashboard-search-hidden'}
                                                     >
@@ -615,8 +662,8 @@ const Dashboard = () => {
                                                         <td>{teacher.subject}</td>
                                                         <td>{teacher.email}</td>
                                                         <td>
-                                                            <button 
-                                                                className="dashboard-action-btn" 
+                                                            <button
+                                                                className="dashboard-action-btn"
                                                                 onClick={() => showTeacherActions(teacher.name)}
                                                             >
                                                                 <i data-lucide="more-vertical"></i>
@@ -630,7 +677,7 @@ const Dashboard = () => {
                                 </div>
 
                                 {/* Attendance Chart Card */}
-                                <div 
+                                <div
                                     className={`dashboard-overview-card ${shouldShow({ title: 'Attendance' }, 'overview-card') ? '' : 'dashboard-search-hidden'}`}
                                 >
                                     <div className="dashboard-card-header">
@@ -657,8 +704,8 @@ const Dashboard = () => {
                                                 <option value="sss2">SSS2</option>
                                                 <option value="sss3">SSS3</option>
                                             </select>
-                                            <select 
-                                                className="dashboard-filter-select" 
+                                            <select
+                                                className="dashboard-filter-select"
                                                 id="attendance-chart-filter"
                                                 value={attendanceChartType}
                                                 onChange={handleAttendanceChartTypeChange}
@@ -690,33 +737,35 @@ const Dashboard = () => {
                     )}
 
                     {/* Activity Section */}
-                    <section id="activity" className="dashboard-activity-section">
-                        {(hasVisibleStats && (hasVisibleOverview || hasVisibleActivity)) && (
-                            <div className="dashboard-content-divider"></div>
-                        )}
-                        <h2 className="dashboard-section-title">Activity</h2>
-                        <div className="dashboard-activity-list">
-                            {dashboardData.activities.map((activity, index) => (
-                                <div 
-                                    key={index}
-                                    className={`dashboard-activity-item ${shouldShow(activity, 'activity-item') ? '' : 'dashboard-search-hidden'}`}
-                                >
-                                    <div className="dashboard-activity-icon">
-                                        <i data-lucide={
-                                            index === 0 ? "book-open" :
-                                            index === 1 ? "user-minus" :
-                                            index === 2 ? "file-text" :
-                                            index === 3 ? "check-circle" : "alert-triangle"
-                                        }></i>
+                    {hasVisibleActivity && (
+                        <section id="activity" data-section="activity" className="dashboard-activity-section">
+                            {(hasVisibleStats && hasVisibleOverview) && (
+                                <div className="dashboard-content-divider"></div>
+                            )}
+                            <h2 className="dashboard-section-title">Activity</h2>
+                            <div className="dashboard-activity-list">
+                                {dashboardData.activities.map((activity, index) => (
+                                    <div
+                                        key={index}
+                                        className={`dashboard-activity-item ${shouldShow(activity, 'activity-item') ? '' : 'dashboard-search-hidden'}`}
+                                    >
+                                        <div className="dashboard-activity-icon">
+                                            <i data-lucide={
+                                                index === 0 ? "book-open" :
+                                                    index === 1 ? "user-minus" :
+                                                        index === 2 ? "file-text" :
+                                                            index === 3 ? "check-circle" : "alert-triangle"
+                                            }></i>
+                                        </div>
+                                        <div className="dashboard-activity-content">
+                                            <p>{activity.content}</p>
+                                            <span className="dashboard-activity-time">{activity.time}</span>
+                                        </div>
                                     </div>
-                                    <div className="dashboard-activity-content">
-                                        <p>{activity.content}</p>
-                                        <span className="dashboard-activity-time">{activity.time}</span>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </section>
+                                ))}
+                            </div>
+                        </section>
+                    )}
 
                     {/* No Results Message */}
                     {searchTerm && !hasVisibleStats && !hasVisibleOverview && !hasVisibleActivity && (

@@ -253,7 +253,7 @@ const InviteManager = () => {
         }
     };
 
-    // Modal functions
+    // Modal functions - FIXED
     const openModal = (invite) => {
         setSelectedInvite(invite);
     };
@@ -724,33 +724,51 @@ const InviteManager = () => {
                 </main>
             </div>
 
-            {/* Modal */}
+            {/* Modal - FIXED VERSION */}
             {selectedInvite && (
                 <div className="invite-manager-modal-overlay invite-manager-show" onClick={closeModal}>
                     <div className="invite-manager-modal" onClick={(e) => e.stopPropagation()}>
                         <div className="invite-manager-modal-header">
-                            <h3 className="invite-manager-modal-title">Manage Invite Code</h3>
+                            <h3 className="invite-manager-modal-title">Manage Invite Code: {selectedInvite.code}</h3>
                             <button className="invite-manager-modal-close" onClick={closeModal}>
                                 <i data-lucide="x"></i>
                             </button>
                         </div>
-                        <div className="invite-manager-modal-actions">
-                            <button className="invite-manager-modal-btn" onClick={regenerateCode}>
-                                <i data-lucide="refresh-cw"></i>
-                                Regenerate Code
-                            </button>
-                            <button className="invite-manager-modal-btn" onClick={viewDetails}>
-                                <i data-lucide="eye"></i>
-                                View Full Details
-                            </button>
-                            <button className="invite-manager-modal-btn" onClick={sendReminder}>
-                                <i data-lucide="mail"></i>
-                                Send Reminder (Coming Soon)
-                            </button>
-                            <button className="invite-manager-modal-btn invite-manager-danger" onClick={deleteCode}>
-                                <i data-lucide="trash-2"></i>
-                                Delete Code
-                            </button>
+                        <div className="invite-manager-modal-content">
+                            <div className="invite-manager-modal-info">
+                                <div className="invite-manager-modal-info-item">
+                                    <span className="invite-manager-modal-info-label">User Type:</span>
+                                    <span className="invite-manager-modal-info-value">{selectedInvite.user_type}</span>
+                                </div>
+                                <div className="invite-manager-modal-info-item">
+                                    <span className="invite-manager-modal-info-label">Status:</span>
+                                    <span className={`invite-manager-modal-info-value ${selectedInvite.used ? 'invite-manager-used' : 'invite-manager-unused'}`}>
+                                        {selectedInvite.used ? 'Used' : 'Active'}
+                                    </span>
+                                </div>
+                                <div className="invite-manager-modal-info-item">
+                                    <span className="invite-manager-modal-info-label">Expires:</span>
+                                    <span className="invite-manager-modal-info-value">{formatDate(selectedInvite.expires_at)}</span>
+                                </div>
+                            </div>
+                            <div className="invite-manager-modal-actions">
+                                <button className="invite-manager-modal-btn" onClick={regenerateCode}>
+                                    <i data-lucide="refresh-cw"></i>
+                                    Regenerate Code
+                                </button>
+                                <button className="invite-manager-modal-btn" onClick={viewDetails}>
+                                    <i data-lucide="eye"></i>
+                                    View Full Details
+                                </button>
+                                <button className="invite-manager-modal-btn" onClick={sendReminder}>
+                                    <i data-lucide="mail"></i>
+                                    Send Reminder (Coming Soon)
+                                </button>
+                                <button className="invite-manager-modal-btn invite-manager-danger" onClick={deleteCode}>
+                                    <i data-lucide="trash-2"></i>
+                                    Delete Code
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -5,9 +5,24 @@ import "../style/sidebar.css"
 const SidebarNav = ({ isOpen, onClose }) => {
     const [searchActive, setSearchActive] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const [isMobile, setIsMobile] = useState(false);
     const sidebarRef = useRef(null);
     const navigate = useNavigate();
     const location = useLocation();
+
+    // Check if mobile on mount and resize
+    useEffect(() => {
+        const checkMobile = () => {
+            setIsMobile(window.innerWidth < 768);
+        };
+
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+
+        return () => {
+            window.removeEventListener('resize', checkMobile);
+        };
+    }, []);
 
     // Close sidebar when clicking outside
     useEffect(() => {
@@ -51,8 +66,27 @@ const SidebarNav = ({ isOpen, onClose }) => {
         setSearchTerm('');
     };
 
+    // Enhanced search functionality
     const filterSidebarItems = (term) => {
-        console.log('Search term:', term);
+        if (!term.trim()) {
+            // Reset all items to visible when search is cleared
+            document.querySelectorAll('.sidebar-item').forEach(item => {
+                item.style.display = 'flex';
+            });
+            return;
+        }
+
+        const searchTerm = term.toLowerCase();
+        document.querySelectorAll('.sidebar-item').forEach(item => {
+            const select = item.querySelector('.sidebar-select');
+            if (select) {
+                const options = Array.from(select.options);
+                const hasMatch = options.some(option =>
+                    option.text.toLowerCase().includes(searchTerm)
+                );
+                item.style.display = hasMatch ? 'flex' : 'none';
+            }
+        });
     };
 
     const handleSearchChange = (e) => {
@@ -63,10 +97,15 @@ const SidebarNav = ({ isOpen, onClose }) => {
 
     const handleSelectChange = (e, menuSection) => {
         const value = e.target.value;
-        
+
+        // Reset select to default value after selection
+        setTimeout(() => {
+            e.target.value = menuSection;
+        }, 100);
+
         // Close sidebar immediately when any option is selected
         onClose();
-        
+
         // Handle navigation based on the selected value
         switch (menuSection) {
             case 'profile':
@@ -174,7 +213,7 @@ const SidebarNav = ({ isOpen, onClose }) => {
         <>
             {/* Overlay */}
             <div className={`sidebar-overlay ${isOpen ? 'active' : ''}`} onClick={onClose} />
-            
+
             {/* Sidebar */}
             <div ref={sidebarRef} className={`sidebar ${isOpen ? 'active' : ''}`}>
                 <div className="sidebar-header">
@@ -182,25 +221,25 @@ const SidebarNav = ({ isOpen, onClose }) => {
                         <i data-lucide="menu"></i>
                     </button>
                     <div className="sidebar-title">vDeskconnect</div>
-                    <button 
-                        className="search-btn" 
+                    <button
+                        className="search-btn"
                         onClick={searchActive ? closeSearch : openSearch}
                     >
                         <i data-lucide={searchActive ? "x" : "search"}></i>
                     </button>
-                    <div className={`search-container ${searchActive ? '' : 'hidden'}`}>
-                        <input 
-                            type="text" 
-                            className="search-input" 
+                    <div className={`search-container ${searchActive ? 'active' : 'hidden'}`}>
+                        <input
+                            type="text"
+                            className="search-input"
                             placeholder="Search menu..."
                             value={searchTerm}
                             onChange={handleSearchChange}
                         />
                     </div>
                 </div>
-                
+
                 <div className="sidebar-divider"></div>
-                
+
                 <div className="sidebar-content">
                     {/* Profile Section */}
                     <div className="sidebar-item profile-section">
@@ -208,7 +247,7 @@ const SidebarNav = ({ isOpen, onClose }) => {
                             <div className="profile-image">
                                 <i data-lucide="user"></i>
                             </div>
-                            <select 
+                            <select
                                 className="sidebar-select profile-select"
                                 onChange={(e) => handleSelectChange(e, 'profile')}
                                 defaultValue="profile"
@@ -220,12 +259,12 @@ const SidebarNav = ({ isOpen, onClose }) => {
                             </select>
                         </div>
                     </div>
-                    
+
                     {/* Analytics Section */}
                     <div className="sidebar-item">
                         <div className="sidebar-item-container">
                             <i data-lucide="bar-chart-3" className="sidebar-icon"></i>
-                            <select 
+                            <select
                                 className="sidebar-select"
                                 onChange={(e) => handleSelectChange(e, 'analytics')}
                                 defaultValue="analytics"
@@ -236,28 +275,28 @@ const SidebarNav = ({ isOpen, onClose }) => {
                             </select>
                         </div>
                     </div>
-                    
-                    {/* Dashboard Section */}
+
+                    {/* Dashboard Section - Hide Overview on mobile */}
                     <div className="sidebar-item">
                         <div className="sidebar-item-container">
                             <i data-lucide="layout-dashboard" className="sidebar-icon"></i>
-                            <select 
+                            <select
                                 className="sidebar-select"
                                 onChange={(e) => handleSelectChange(e, 'dashboard')}
                                 defaultValue="dashboard"
                             >
                                 <option value="dashboard">Dashboard</option>
-                                <option value="overview">Overview</option>
+                                {!isMobile && <option value="overview">Overview</option>}
                                 <option value="activity">Activity</option>
                             </select>
                         </div>
                     </div>
-                    
+
                     {/* Grades Section */}
                     <div className="sidebar-item">
                         <div className="sidebar-item-container">
                             <i data-lucide="graduation-cap" className="sidebar-icon"></i>
-                            <select 
+                            <select
                                 className="sidebar-select"
                                 onChange={(e) => handleSelectChange(e, 'grades')}
                                 defaultValue="grades"
@@ -268,12 +307,12 @@ const SidebarNav = ({ isOpen, onClose }) => {
                             </select>
                         </div>
                     </div>
-                    
+
                     {/* Invite Manager Section */}
                     <div className="sidebar-item">
                         <div className="sidebar-item-container">
                             <i data-lucide="user-plus" className="sidebar-icon"></i>
-                            <select 
+                            <select
                                 className="sidebar-select"
                                 onChange={(e) => handleSelectChange(e, 'invite-manager')}
                                 defaultValue="invite-manager"
@@ -285,12 +324,12 @@ const SidebarNav = ({ isOpen, onClose }) => {
                             </select>
                         </div>
                     </div>
-                    
+
                     {/* Lectures Section */}
                     <div className="sidebar-item">
                         <div className="sidebar-item-container">
                             <i data-lucide="book-open" className="sidebar-icon"></i>
-                            <select 
+                            <select
                                 className="sidebar-select"
                                 onChange={(e) => handleSelectChange(e, 'lectures')}
                                 defaultValue="lectures"
@@ -301,12 +340,12 @@ const SidebarNav = ({ isOpen, onClose }) => {
                             </select>
                         </div>
                     </div>
-                    
+
                     {/* Subjects Section */}
                     <div className="sidebar-item">
                         <div className="sidebar-item-container">
                             <i data-lucide="book" className="sidebar-icon"></i>
-                            <select 
+                            <select
                                 className="sidebar-select"
                                 onChange={(e) => handleSelectChange(e, 'subjects')}
                                 defaultValue="subjects"
@@ -317,12 +356,12 @@ const SidebarNav = ({ isOpen, onClose }) => {
                             </select>
                         </div>
                     </div>
-                    
+
                     {/* User Management Section */}
                     <div className="sidebar-item">
                         <div className="sidebar-item-container">
                             <i data-lucide="users" className="sidebar-icon"></i>
-                            <select 
+                            <select
                                 className="sidebar-select"
                                 onChange={(e) => handleSelectChange(e, 'user-management')}
                                 defaultValue="user-management"

@@ -9,7 +9,7 @@ import VerifyAccount from './auth/VerifyAccount';
 import ForgotPassword from './auth/ForgotPassword';
 import ResetPassword from './auth/ResetPassword';
 import Dashboard from './main/Dashboard';
-import InviteManager from './main/InviteManager'; // ADD THIS IMPORT
+import InviteManager from './main/InviteManager';
 import { SearchProvider } from './SearchManager';
 
 function App() {
@@ -30,9 +30,11 @@ function App() {
                         <Route path="/reset-password" element={<ResetPassword />} />
 
                         {/* Protected Routes - Each is standalone with Header/Sidebar */}
-                        <Route path="/dashboard" element={<Dashboard />} />
-                        <Route path="/invite-manager" element={<InviteManager />} />
-                        <Route path="/invite-manager/:section" element={<InviteManager />} />
+                        {/* Dashboard Routes - FIXED: Use nested routes for proper parameter capture */}
+                        <Route path="/dashboard/*" element={<Dashboard />} />
+                        
+                        {/* Invite Manager Routes */}
+                        <Route path="/invite-manager/*" element={<InviteManager />} />
                     </Routes>
                 </div>
             </Router>
