@@ -83,12 +83,11 @@ const InviteManager = () => {
 
     const [selectedInvite, setSelectedInvite] = useState(null);
     const [generatedCode, setGeneratedCode] = useState(null);
-    const [analyticsChart, setAnalyticsChart] = useState(null);
+    const analyticsChartRef = useRef(null);
     const [userTypeFilter, setUserTypeFilter] = useState('all');
     const [usageFilter, setUsageFilter] = useState('all');
     const [expiryFilter, setExpiryFilter] = useState('all');
     const [searchInput, setSearchInput] = useState('');
-    const chartInitialized = useRef(false);
 
     // Check if mobile on mount and resize
     useEffect(() => {
@@ -127,21 +126,20 @@ const InviteManager = () => {
         }
 
         // Initialize chart on component mount
-        if (!chartInitialized.current) {
-            createAnalyticsChart();
-            chartInitialized.current = true;
-        }
+        createAnalyticsChart();
 
         return () => {
-            if (analyticsChart) {
-                analyticsChart.destroy();
+            // Cleanup chart on component unmount
+            if (analyticsChartRef.current) {
+                analyticsChartRef.current.destroy();
+                analyticsChartRef.current = null;
             }
         };
     }, []);
 
     // Recreate chart when analytics section becomes visible
     useEffect(() => {
-        if (shouldShowSection('usage-analytics') && chartInitialized.current) {
+        if (shouldShowSection('usage-analytics')) {
             // Small delay to ensure DOM is ready
             setTimeout(() => {
                 createAnalyticsChart();
@@ -253,7 +251,7 @@ const InviteManager = () => {
         }
     };
 
-    // Modal functions - FIXED
+    // Modal functions
     const openModal = (invite) => {
         setSelectedInvite(invite);
     };
@@ -310,13 +308,14 @@ const InviteManager = () => {
     const createAnalyticsChart = () => {
         const ctx = document.getElementById('invite-manager-analytics-chart');
         if (!ctx) {
-            console.log('Chart canvas not found, retrying...');
+            console.log('Chart canvas not found');
             return;
         }
 
         // Clear existing chart if it exists
-        if (analyticsChart) {
-            analyticsChart.destroy();
+        if (analyticsChartRef.current) {
+            analyticsChartRef.current.destroy();
+            analyticsChartRef.current = null;
         }
 
         // Generate mock data for the last 7 days
@@ -395,7 +394,7 @@ const InviteManager = () => {
                 }
             });
 
-            setAnalyticsChart(newChart);
+            analyticsChartRef.current = newChart;
         } catch (error) {
             console.error('Error creating chart:', error);
         }
@@ -724,7 +723,7 @@ const InviteManager = () => {
                 </main>
             </div>
 
-            {/* Modal - PROPERLY FIXED VERSION */}
+            {/* Modal */}
             {selectedInvite && (
                 <div className="invite-manager-modal-overlay active" onClick={closeModal}>
                     <div className="invite-manager-modal-content" onClick={(e) => e.stopPropagation()}>
