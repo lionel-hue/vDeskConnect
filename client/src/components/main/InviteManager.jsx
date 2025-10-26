@@ -111,7 +111,7 @@ const InviteManager = () => {
             setTimeout(() => {
                 const element = document.getElementById(section);
                 if (element) {
-                    element.scrollIntoView({ 
+                    element.scrollIntoView({
                         behavior: 'smooth',
                         block: 'start'
                     });
@@ -446,7 +446,7 @@ const InviteManager = () => {
     return (
         <div className="invite-manager-layout">
             <SidebarNav isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-            
+
             <div className="invite-manager-main">
                 <Header
                     sidebarOpen={sidebarOpen}
@@ -724,17 +724,17 @@ const InviteManager = () => {
                 </main>
             </div>
 
-            {/* Modal - FIXED VERSION */}
+            {/* Modal - PROPERLY FIXED VERSION */}
             {selectedInvite && (
-                <div className="invite-manager-modal-overlay invite-manager-show" onClick={closeModal}>
-                    <div className="invite-manager-modal" onClick={(e) => e.stopPropagation()}>
+                <div className="invite-manager-modal-overlay active" onClick={closeModal}>
+                    <div className="invite-manager-modal-content" onClick={(e) => e.stopPropagation()}>
                         <div className="invite-manager-modal-header">
                             <h3 className="invite-manager-modal-title">Manage Invite Code: {selectedInvite.code}</h3>
                             <button className="invite-manager-modal-close" onClick={closeModal}>
                                 <i data-lucide="x"></i>
                             </button>
                         </div>
-                        <div className="invite-manager-modal-content">
+                        <div className="invite-manager-modal-body">
                             <div className="invite-manager-modal-info">
                                 <div className="invite-manager-modal-info-item">
                                     <span className="invite-manager-modal-info-label">User Type:</span>
@@ -764,7 +764,7 @@ const InviteManager = () => {
                                     <i data-lucide="mail"></i>
                                     Send Reminder (Coming Soon)
                                 </button>
-                                <button className="invite-manager-modal-btn invite-manager-danger" onClick={deleteCode}>
+                                <button className="invite-manager-modal-btn invite-manager-modal-btn-danger" onClick={deleteCode}>
                                     <i data-lucide="trash-2"></i>
                                     Delete Code
                                 </button>

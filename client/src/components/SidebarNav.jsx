@@ -122,7 +122,14 @@ const SidebarNav = ({ isOpen, onClose }) => {
                 break;
             case 'dashboard':
                 if (value === 'overview') {
-                    navigate('/dashboard/overview');
+                    // Only navigate to overview if not on mobile
+                    if (!isMobile) {
+                        navigate('/dashboard/overview');
+                    } else {
+                        // On mobile, default to activity or show message
+                        console.log('Overview not available on mobile');
+                        navigate('/dashboard/activity');
+                    }
                 } else if (value === 'activity') {
                     navigate('/dashboard/activity');
                 } else {
