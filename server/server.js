@@ -15,9 +15,9 @@ app.use(cors({
   origin: [`${process.env.HOST}`,
     `${process.env.FRONT}`, 
     'http://127.0.0.1:5173',
-    'http://10.236.190.77:5173'],
+    'http://10.132.235.77:5173'],
   credentials: true
-}))
+})) 
 
 app.use(express.json())
 
