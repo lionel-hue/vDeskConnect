@@ -29,56 +29,65 @@ const Dashboard = () => {
     // Get the current section from URL path - FIXED VERSION
     const getCurrentSection = () => {
         const path = location.pathname;
-        console.log('Current path:', path); // Debug log
-        
-        // Extract section from path
-        const pathParts = path.split('/').filter(part => part);
-        console.log('Path parts:', pathParts); // Debug log
-        
-        if (pathParts.length > 1) {
-            // If we have something after /dashboard/
-            const sectionFromPath = pathParts[1];
-            console.log('Section from path:', sectionFromPath); // Debug log
-            return sectionFromPath;
+        console.log('Dashboard path:', path);
+
+        // Handle nested routes properly
+        if (path === '/dashboard' || path === '/dashboard/') {
+            return 'overview';
         }
-        
-        return 'overview'; // default to overview
+
+        // Extract section from path like /dashboard/overview or /dashboard/activity
+        const pathParts = path.split('/').filter(part => part);
+        console.log('Path parts:', pathParts);
+
+        if (pathParts.length > 1) {
+            const section = pathParts[1];
+            console.log('Extracted section:', section);
+
+            // Validate section exists
+            const validSections = ['overview', 'activity'];
+            if (validSections.includes(section)) {
+                return section;
+            }
+        }
+
+        return 'overview'; // default fallback
     };
 
     const currentSection = getCurrentSection();
-    console.log('Final current section:', currentSection); // Debug log
+    console.log('Final current section:', currentSection);
 
-    // Scroll to section when URL changes - ENHANCED
     useEffect(() => {
         console.log('Scrolling to section:', currentSection);
-        
+
         const scrollToSection = () => {
-            // Wait for DOM to be fully ready
             setTimeout(() => {
+                // First try by ID
                 const element = document.getElementById(currentSection);
                 if (element) {
-                    console.log('Found element, scrolling...');
+                    console.log('Found element by ID, scrolling...');
                     element.scrollIntoView({
                         behavior: 'smooth',
                         block: 'start'
                     });
-                } else {
-                    console.log(`Section element with id '${currentSection}' not found, available IDs:`, 
-                        Array.from(document.querySelectorAll('[id]')).map(el => el.id));
-                    // Try alternative approach - find by data-section
-                    const altElement = document.querySelector(`[data-section="${currentSection}"]`);
-                    if (altElement) {
-                        console.log('Found element by data-section, scrolling...');
-                        altElement.scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'start'
-                        });
-                    } else {
-                        console.log('Scrolling to top as fallback');
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }
+                    return;
                 }
-            }, 1000); // Increased timeout to ensure everything is loaded
+
+                // Then try by data-section attribute
+                const altElement = document.querySelector(`[data-section="${currentSection}"]`);
+                if (altElement) {
+                    console.log('Found element by data-section, scrolling...');
+                    altElement.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                    return;
+                }
+
+                // Fallback: scroll to top
+                console.log('Scrolling to top as fallback');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, 500);
         };
 
         scrollToSection();
@@ -217,8 +226,10 @@ const Dashboard = () => {
         return shouldShowElement(element, searchTerm, searchResults, type);
     };
 
+    // UPDATED: Enhanced chart management to preserve charts during search
     useEffect(() => {
-        if (!isMobile) {
+        // Only initialize/destroy charts based on mobile state and search
+        if (!isMobile && !isSearching) {
             initializeCharts();
         }
 
@@ -227,68 +238,96 @@ const Dashboard = () => {
         }
 
         return () => {
-            if (studentsChartRef.current) studentsChartRef.current.destroy();
-            if (lecturesChartRef.current) lecturesChartRef.current.destroy();
-            if (attendanceChartRef.current) attendanceChartRef.current.destroy();
+            // Only destroy charts on component unmount, not during search
+            if (!isSearching) {
+                if (studentsChartRef.current) {
+                    studentsChartRef.current.destroy();
+                    studentsChartRef.current = null;
+                }
+                if (lecturesChartRef.current) {
+                    lecturesChartRef.current.destroy();
+                    lecturesChartRef.current = null;
+                }
+                if (attendanceChartRef.current) {
+                    attendanceChartRef.current.destroy();
+                    attendanceChartRef.current = null;
+                }
+            }
         };
-    }, [isMobile]);
+    }, [isMobile, isSearching]); // Added isSearching dependency
 
     // Add useEffect to recreate attendance chart when type changes
     useEffect(() => {
-        if (!isMobile) {
+        if (!isMobile && !isSearching) {
             createAttendanceChart();
         }
-    }, [attendanceChartType, isMobile]);
+    }, [attendanceChartType, isMobile, isSearching]);
 
+    // UPDATED: Enhanced initializeCharts to check if charts already exist
     const initializeCharts = () => {
-        createStudentsChart();
-        createLecturesChart();
-        createAttendanceChart();
+        // Only create charts if they don't exist and canvas elements are available
+        if (!studentsChartRef.current) {
+            createStudentsChart();
+        }
+        if (!lecturesChartRef.current) {
+            createLecturesChart();
+        }
+        if (!attendanceChartRef.current) {
+            createAttendanceChart();
+        }
     };
 
     const createStudentsChart = () => {
         const ctx = document.getElementById('studentsChart');
-        if (ctx) {
-            studentsChartRef.current = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Boys', 'Girls'],
-                    datasets: [{
-                        data: [687, 560],
-                        backgroundColor: ['#8b5cf6', '#3b82f6'],
-                        borderWidth: 0,
-                        cutout: '70%'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } }
-                }
-            });
+        if (ctx && !studentsChartRef.current) {
+            try {
+                studentsChartRef.current = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Boys', 'Girls'],
+                        datasets: [{
+                            data: [687, 560],
+                            backgroundColor: ['#8b5cf6', '#3b82f6'],
+                            borderWidth: 0,
+                            cutout: '70%'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            } catch (error) {
+                console.error('Error creating students chart:', error);
+            }
         }
     };
 
     const createLecturesChart = () => {
         const ctx = document.getElementById('lecturesChart');
-        if (ctx) {
-            lecturesChartRef.current = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Completed', 'Pending'],
-                    datasets: [{
-                        data: [89, 67],
-                        backgroundColor: ['#8b5cf6', '#3b82f6'],
-                        borderWidth: 0,
-                        cutout: '70%'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } }
-                }
-            });
+        if (ctx && !lecturesChartRef.current) {
+            try {
+                lecturesChartRef.current = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Completed', 'Pending'],
+                        datasets: [{
+                            data: [89, 67],
+                            backgroundColor: ['#8b5cf6', '#3b82f6'],
+                            borderWidth: 0,
+                            cutout: '70%'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            } catch (error) {
+                console.error('Error creating lectures chart:', error);
+            }
         }
     };
 
@@ -296,8 +335,10 @@ const Dashboard = () => {
         const ctx = document.getElementById('attendanceChart');
         if (!ctx) return;
 
+        // Only destroy and recreate if chart type changed or chart doesn't exist
         if (attendanceChartRef.current) {
             attendanceChartRef.current.destroy();
+            attendanceChartRef.current = null;
         }
 
         const labels = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
@@ -420,7 +461,11 @@ const Dashboard = () => {
                 break;
         }
 
-        attendanceChartRef.current = new Chart(ctx, chartConfig);
+        try {
+            attendanceChartRef.current = new Chart(ctx, chartConfig);
+        } catch (error) {
+            console.error('Error creating attendance chart:', error);
+        }
     };
 
     const handleAttendanceChartTypeChange = (e) => {
