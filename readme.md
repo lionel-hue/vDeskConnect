@@ -53,12 +53,15 @@ GitHub Repro : [http://lionel/vDeskConnect](https://github.com/lionel-hue/vDeskC
 ### 👤 Student
 - have classes
 - view profile
-- 
+- take exams
+- view announcements 
+- take assignments
 
 ###  🎓 Teacher
 - take classes
 - create classes
-- 
+- create exams
+- create assignments
 
 ### 🛡️ Admin 
 - View and Descide based on statsitical data
