@@ -19,28 +19,35 @@ Critical Points to Maintain:
    - Always destroy charts before recreating on same canvas
 
 4. Route Structure:
-   - Use nested routes (/dashboard/*) for main sections
-   - Handle route parameters consistently
+   - Use nested routes (/dashboard/*, /invite-manager/*) for main sections
+   - Handle route parameters consistently using useParams()
    - Maintain proper navigation flow between sections
+   - Use useLocation() for path-based logic
 
-5. Modal State Management:
+5. Scroll-to-Section Logic:
+   - Must work for both Dashboard and InviteManager
+   - Use both ID and data-section attributes for fallback
+   - Include proper timeouts for DOM readiness
+   - Add location.pathname as dependency for route changes
+
+6. Modal State Management:
    - Use proper conditional rendering for modals
    - Implement click-outside-to-close functionality
    - Manage modal state with React state hooks
    - Ensure CSS class names match between JSX and CSS files
 
-6. Search Integration:
+7. Search Integration:
    - Preserve component state during search
    - Don't destroy/recreate elements unnecessarily
    - Maintain chart and canvas integrity
 
-7. Performance Considerations:
+8. Performance Considerations:
    - Use useMemo for expensive computations
    - Implement proper cleanup in useEffect
    - Avoid unnecessary re-renders
    - Use useRef for DOM elements and chart instances
 
-8. CSS Architecture:
+9. CSS Architecture:
    - Each component has its own CSS file
    - Modal component has general modal styles
    - Component-specific modals use component-prefixed styles
@@ -50,6 +57,7 @@ Testing Checklist:
 
 ✅ Modal opens/closes properly in InviteManager
 ✅ Dashboard routes work: /dashboard, /dashboard/overview, /dashboard/activity
+✅ InviteManager routes work: /invite-manager, /invite-manager/generate-codes, /invite-manager/view-invites, /invite-manager/usage-analytics
 ✅ Overview section hidden on mobile, visible on desktop
 ✅ Charts don't disappear during search
 ✅ Sidebar navigation works correctly
@@ -57,3 +65,4 @@ Testing Checklist:
 ✅ No chart canvas reuse errors in console
 ✅ Modal overlay click-outside works
 ✅ Modal escape key close works
+✅ Scroll-to-section works for all subsections in both Dashboard and InviteManager
