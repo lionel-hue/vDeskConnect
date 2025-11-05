@@ -240,7 +240,7 @@ backend/
    - Always ensure to switch to a good and stable network
    - Don't turn off Network Acess midway during account creation
 
-2.. **JWT Error**
+2. **JWT Error**
    - Verify the Jwt key
    - Verify the token expiration
 
