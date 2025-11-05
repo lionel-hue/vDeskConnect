@@ -16,7 +16,7 @@
 This project has other educational goals like :
 - showing how reactJS & expressJS work,
 - revealing how statistical charts are integrated,
-- MVC model works etc.
+- implementation of MVC model etc.
 
 ---
 
