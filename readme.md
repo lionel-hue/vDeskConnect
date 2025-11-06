@@ -1,250 +1,219 @@
 # vDeskConnect
 
-![React](https://img.shields.io/badge/Frontend-React-blue?logo=react)
-![EXPRESS](https://img.shields.io/badge/Backend-EXPRESS-informational?logo=express)
-![License](https://img.shields.io/badge/License-MIT-green)
-![Deploy](https://img.shields.io/badge/Deployed-Vercel-blue?logo=vercel)
+A virtual learning platform connecting teachers and students, enabling virtual classes, progress tracking, analytics, and school‑specific customization.
 
-> A virtual platform to primarily take classes as a student or teacher,
-> Track student progress,
-> Make decisions based on statistical data.
+## ✅ Overview
 
-## 📝 Description
-
-**vDeskConnect** is a web application initially inspired by a need to create a means to continue the school activities during an economical crisis. This need was detected in a West African Nigerian Based School @ Lagos and since then efforts are being made to extend the avaliability of this app to other schools in the region. 
-
-This project has other educational goals like :
-- showing how reactJS & expressJS work,
-- revealing how statistical charts are integrated,
-- implementation of MVC model etc.
+vDeskConnect serves as the base system for building customized school learning portals. Schools can fork this base application and adapt:
+- 🎨 UI themes
+- 🔐 Access roles
+- ⚙️ Workflow requirements
+- 📊 Database rules
 
 ---
 
-## 👥 Test Accounts
+## ✅ Live Deployment
 
-Use these account with their details below to test the application according to thier different roles :
-
-| Role        | Email                    | Password   |
-|-------------|--------------------------|----------------|
-| 👑 Admin     | admin@admin.com         | 123456789       |
-| 🎓 Teacher | teacher@teach.com| 123456789   |
-| 🙋 Student | student@learn.com     | 123456789        |
-
-
-
-## 🌐 Demo
-
-Vercel Deployment : [https://vdeskconnect.vercel.app](link.link.com)
-
-GitHub Repro : [http://lionel/vDeskConnect](https://github.com/lionel-hue/vDeskConnect)
-
-
-# 🙌 Author
-
-- [Lionel SISSO](https://github.com/lionel-hue)
-
-
-
---- 
-
-
-## 🚀 Main Functionalities
-
-### 👤 Student
-- have classes
-- view profile
-- take exams
-- view announcements 
-- take assignments
-
-###  🎓 Teacher
-- take classes
-- create classes
-- create exams
-- create assignments
-
-### 🛡️ Admin 
-- View and Descide based on statsitical data
-- invite users
-- View app's activity
-- Students and Teachers (CRUD)
-- Promote other Teachers to Admin
+**Frontend (Vercel):**  
+https://vdeskconnect.vercel.app/
 
 ---
 
-## 📦 Prerequsite
-- Node.js >= 20.19.5
+## ✅ Features
 
+### 👨‍🏫 Teacher Tools
 
-## 🛠️ Technical Stack Stack 
+- Create/manage classes
+- Upload course materials
+- Review student submissions
+- Track student progress
 
-### Frontend
-- **React** (via vite)
-- **React Router**
-- **Dotenv**
-- **React Hot Toast**
-- **React Tooltip**
-- **Lucide React**
-- **React Icons**
+### 👩‍🎓 Student Tools
 
-### Styling
-- **Vanilla CSS**
+- Attend virtual classes
+- Access learning resources
+- Submit assignments
+- View performance statistics
+
+### 📊 Admin Features
+
+- Manage teachers & students
+- Monitor platform usage
+- Data‑driven insights
 
 ---
 
-## ▶️ Launching Locally 
+## ✅ Tech Stack
+
+| Layer        | Technology          |
+|--------------|---------------------|
+| Frontend     | React (Vite)        |
+| Backend      | Node.js, Express    |
+| Database     | MySQL               |
+| ORM (Planned)| Prisma              |
+| Auth         | JWT                 |
+| Deployment   | Vercel / Render     |
+| Styling      | Custom CSS          |
+
+---
+
+## ✅ How to Install Locally
+
+### 1. Clone the repository
 
 ```bash
-# Clone the repro
-git clone <https://github.com/lionel-hue/vDeskConnect>
-cd vDeskConnect/client
+git clone https://github.com/yourusername/vDeskConnect.git
+cd vDeskConnect
+```
 
-# Install all dependencies
+2. Install frontend dependencies
+
+```bash
+cd frontend
 npm install
+```
 
-# do the same in /server 
-cd ./../server/
+3. Install backend dependencies
+
+```bash
+cd ../backend
 npm install
+```
 
-# create the environment variables
-cp .env.example .env
-cd ./../client
-cp .env.example .env
+4. Configure environment variables
 
-# Launch the app's client
+Create a .env file in the backend folder:
+
+```env
+DB_HOST=localhost
+DB_USER=root
+DB_PASS=yourpassword
+DB_NAME=vdeskconnect
+JWT_SECRET=your_secret
+```
+
+5. Start backend
+
+```bash
 npm run dev
+```
 
-# Launch the app's server in a different terminal
-cd ./../server
+6. Start frontend
+
+```bash
+cd ../frontend
 npm run dev
-
 ```
 
-# Backend 
+---
 
-## 🏗️ Architecture
-
-### Structure du Projet
+✅ Frontend File Structure (React)
 
 ```
-backend/
-├── auth/               # Authentification and autorisation
-│
-├── routes/             # API entry points
-│   ├── auth/           # authentification entry point
-│   └── home/           # other entry points
-│
-├── model/              # App model 
-│
-└── utils/              # Utilities et helpers
+vDeskConnect-frontend/
+├── public/
+│   ├── index.html        # Main HTML entry file
+│   └── assets/           # Images, icons, static files
+├── src/
+│   ├── components/       # Reusable UI components
+│   │   ├── Navbar/       # Top navigation bar component
+│   │   ├── Sidebar/      # Dashboard sidebar navigation
+│   │   └── Cards/        # UI cards used in dashboards
+│   ├── pages/            # All frontend pages
+│   │   ├── Login/        # Login screen & logic
+│   │   ├── Dashboard/    # Main dashboard page
+│   │   ├── Students/     # Student dashboard & modules
+│   │   ├── Teachers/     # Teacher dashboard & modules
+│   │   └── Courses/      # Course listing and details
+│   ├── context/          # Global React context providers
+│   ├── hooks/            # Custom reusable React hooks
+│   ├── utils/            # Helper functions & constants
+│   ├── services/         # Handles API communication
+│   │   ├── auth.service.js
+│   │   ├── student.service.js
+│   │   └── teacher.service.js
+│   ├── App.jsx           # App root component
+│   └── main.jsx          # React entry point
+├── package.json
+└── vite.config.js
 ```
 
-## 🚀 Technologies Used
+---
 
-- **Javascript** - Langage principal
-- **Postgresql** - Base de données
-- **Node Pg** - Accès sécurisé à la base de données
-- **Node JWT** - Gestion des tokens d'authentification
-- **Node Mailer** - Envoi d'emails
-- **Node Bcrypt** - Password and senstivite credentails encryption
+✅ Backend File Structure (Node.js + Express)
 
-## 🔐 Security
+```
+vDeskConnect-backend/
+├── src/
+│   ├── config/
+│   │   ├── db.js              # MySQL database connection
+│   │   └── jwt.js             # JWT config & helper functions
+│   ├── middleware/
+│   │   └── auth.js            # Authentication middleware
+│   ├── controllers/
+│   │   ├── auth.controller.js # Login & registration logic
+│   │   ├── student.controller.js
+│   │   ├── teacher.controller.js
+│   │   └── course.controller.js
+│   ├── routes/
+│   │   ├── auth.routes.js     # Auth endpoints
+│   │   ├── student.routes.js  # Student management endpoints
+│   │   ├── teacher.routes.js  # Teacher management endpoints
+│   │   └── course.routes.js   # Course endpoints
+│   ├── models/
+│   │   ├── users.sql          # User table schema
+│   │   ├── courses.sql        # Course table schema
+│   │   └── progress.sql       # Student progress schema
+│   ├── utils/                 # Utility helpers
+│   └── server.js              # App entry point
+├── package.json
+└── .env
+```
 
-### Mesures de Sécurité Implémentées
+---
 
-1. **Authentification JWT**
+✅ Test Accounts
 
-   - Tokens avec expiration (3 jours pour l'auth, 15 min pour confirmation)
-   - Validation stricte des signatures
+Admin
 
-2. **Protection contre les Injections SQL**
+```text
+email: admin@vdesk.com
+password: AdminPass123
+```
 
-   - Utilisation exclusive de PDO avec requêtes préparées
-   - Validation et sanitisation des entrées
+Teacher
 
-3. **Protection XSS**
+```text
+email: teacher1@vdesk.com
+password: TeachPass123
+```
 
-   - `strip_tags()` sur toutes les entrées utilisateur
-   - Validation des types de données
+Student
 
-4. **Gestion Sécurisée des Fichiers**
+```text
+email: student1@vdesk.com
+password: StudPass123
+```
 
-   - Validation des types MIME
-   - Renommage sécurisé des fichiers
-   - Limitation de taille
+---
 
-5. **CORS Configuré**
-   - Headers de sécurité appropriés
-   - Gestion des credentials
+✅ Known Issues
 
-## 📚 API Endpoints
+1. Account Creation Fails With Poor Network
 
-### Authentification
+· Ensure a stable internet connection
+· Avoid disconnecting during registration
 
-- `POST /routes/users/user.create.php` - Créer un compte
-- `POST /routes/users/user.login.php` - Connexion
-- `POST /routes/users/user.logout.php` - Déconnexion
-- `POST /routes/users/user.confirm-email.php` - Confirmer email
-- `POST /routes/users/user.forgot-password.php` - Mot de passe oublié
-- `POST /routes/users/user.reset-code.php` - Réinitialiser le mot de passe
+2. JWT Errors
 
-### Utilisateurs
+· Confirm JWT secret
+· Confirm expiration time
 
-- `GET /routes/users/user.get.php` - Récupérer un utilisateur
-- `PUT /routes/users/user.update.php` - Mettre à jour un profil
-- `PUT /routes/users/user.change-pass.php` - Changer le mot de passe
+---
 
-### Articles
+✅ Future Plans
 
-- `GET /routes/articles/article.get.php` - Récupérer les articles
-- `POST /routes/articles/article.create.php` - Créer un article
-- `PUT /routes/articles/article.update.php` - Modifier un article
-- `DELETE /routes/articles/article.delete.php` - Supprimer un article
-- `POST /routes/articles/article.like.php` - Liker un article
-
-### Commentaires
-
-- `POST /routes/comments/comments.create.php` - Créer un commentaire
-- `DELETE /routes/comments/comments.delete.php` - Supprimer un commentaire
-
-### Amitiés
-
-- `POST /routes/friendship/friendship-send.php` - Envoyer une demande d'ami
-- `POST /routes/friendship/friendship-confirm.php` - Accepter une demande
-- `POST /routes/friendship/friendship-reject.php` - Refuser une demande
-- `GET /routes/friendship/friendship-get-all.php` - Liste des amis
-- `GET /routes/friendship/friendship-waiting-request.php` - Demandes en attente
-
-### Messages
-
-- `GET /routes/messages/message.get.php` - Récupérer les messages
-- `POST /routes/messages/message.create.php` - Envoyer un message
-- `PUT /routes/messages/message.update.php` - Modifier un message
-- `DELETE /routes/messages/message.delete.php` - Supprimer un message
-
-### Administration
-
-- `GET /routes/admin/get.admin.php` - Statistiques admin
-- `POST /routes/admin/admin.create.php` - Créer un admin
-- `DELETE /routes/admin/admin.delete.php` - Supprimer un admin
-
-### Modération
-
-- `GET /routes/moderator/users.get.php` - Liste des utilisateurs
-- `DELETE /routes/moderator/user-delete.php` - Supprimer un utilisateur
-- `GET /routes/articles/Moderator/article.get.php` - Articles pour modération
-- `DELETE /routes/articles/Moderator/article.delete.php` - Supprimer article (modo)
-
-
-### Current Problems
-
-1. **Account Creation with Bad Network**
-
-   - Always ensure to switch to a good and stable network
-   - Don't turn off Network Acess midway during account creation
-
-2. **JWT Error**
-   - Verify the Jwt key
-   - Verify the token expiration
-
------
+· Full Prisma migration
+· CI/CD for multi-school versions
+· Automated testing (Jest + SuperTest)
+· Plugin system for school modules
