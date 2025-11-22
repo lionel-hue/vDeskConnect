@@ -24,6 +24,8 @@ dist-ssr
 *.sln
 *.sw?
 
+client/.env
+
 
 # --client
 # Logs
