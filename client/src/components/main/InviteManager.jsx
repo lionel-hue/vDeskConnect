@@ -1,4 +1,4 @@
-// main/InviteManager.jsx - COMPLETE UPDATED VERSION WITH AUTH CHECKS
+// main/InviteManager.jsx - COMPLETE UPDATED VERSION WITH ENHANCED DEBUGGING
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Chart, registerables } from 'chart.js';
@@ -26,12 +26,14 @@ const InviteManager = () => {
     const { searchTerm, isSearching, setSearchTerm, setIsSearching } = useSearch();
     
     // Get auth data - this gives us access to the logged-in user
-    const { user, getToken, loading } = useAuth();
+    const { user, loading } = useAuth();
 
-    // NEW: Redirect to login if not authenticated
+    // NEW: Enhanced authentication check with better logging
     useEffect(() => {
+        console.log('🔄 InviteManager Auth Check:', { loading, user: user ? 'User exists' : 'No user' });
+        
         if (!loading && !user) {
-            console.log('No user found, redirecting to login...');
+            console.log('❌ No user found, redirecting to login...');
             navigate('/');
         }
     }, [user, loading, navigate]);
@@ -54,10 +56,11 @@ const InviteManager = () => {
     const [hasNext, setHasNext] = useState(false);
     const [hasPrev, setHasPrev] = useState(false);
 
-    // Get admin ID from auth context - THIS IS THE KEY EXTRACTION
+    // Get admin ID from auth context - ENHANCED DEBUGGING
     const adminId = user?.id;
-    console.log('Current Admin ID from Auth Context:', adminId);
-    console.log('Full user object:', user); // NEW: Debug log
+    console.log('🔑 Current Admin ID from Auth Context:', adminId);
+    console.log('👤 Full user object:', user);
+    console.log('🎯 User role:', user?.role);
 
     // If still loading or no user, show loading
     if (loading) {
@@ -82,11 +85,11 @@ const InviteManager = () => {
         };
     }, []);
 
-    // Fetch invites from backend with pagination and filtering - UPDATED with adminId
+    // ENHANCED: Fetch invites from backend with comprehensive debugging
     const fetchInvites = useCallback(async (page = 1, search = '', userType = 'all', usage = 'all', expiry = 'all') => {
         // Only fetch if we have an admin ID
         if (!adminId) {
-            console.log('No admin ID available, skipping fetch');
+            console.log('⚠️ No admin ID available, skipping fetch');
             return;
         }
 
@@ -99,45 +102,74 @@ const InviteManager = () => {
                 user_type: userType,
                 usage: usage,
                 expiry: expiry,
-                admin_id: adminId // Include admin ID to fetch only their invites
+                admin_id: adminId
             });
 
-            console.log('Fetching invites with admin_id:', adminId); // Debug log
+            const apiUrl = `${import.meta.env.VITE_HOST}:${import.meta.env.VITE_PORT}/home/invite_manager/all_invite_codes?${params}`;
+            console.log('🔄 Fetching invites:', {
+                adminId,
+                url: apiUrl,
+                params: Object.fromEntries(params)
+            });
 
-            // Use apiRequest which automatically includes the JWT token
-            const response = await apiRequest(`${import.meta.env.VITE_HOST}:${import.meta.env.VITE_PORT}/home/invite_manager/all_invite_codes?${params}`);
+            const response = await apiRequest(apiUrl);
             
+            console.log('📨 Response status:', response.status);
+            console.log('📨 Response headers:', Object.fromEntries(response.headers.entries()));
+            
+            // Read response as text first for debugging
+            const responseText = await response.text();
+            console.log('📨 Raw response text:', responseText);
+            
+            let data;
+            try {
+                data = JSON.parse(responseText);
+                console.log('✅ Parsed JSON data:', data);
+            } catch (parseError) {
+                console.error('❌ JSON parse error:', parseError);
+                console.error('❌ Response that failed to parse:', responseText);
+                throw new Error(`Invalid JSON response from server: ${responseText.substring(0, 100)}`);
+            }
+
             if (response.ok) {
-                const data = await response.json();
                 if (data.success) {
-                    setInvites(data.data);
-                    setCurrentPage(data.pagination.currentPage);
-                    setTotalPages(data.pagination.totalPages);
-                    setTotalCount(data.pagination.totalCount);
-                    setHasNext(data.pagination.hasNext);
-                    setHasPrev(data.pagination.hasPrev);
+                    console.log('✅ Invites fetched successfully. Count:', data.data?.length);
+                    setInvites(data.data || []);
+                    setCurrentPage(data.pagination?.currentPage || 1);
+                    setTotalPages(data.pagination?.totalPages || 1);
+                    setTotalCount(data.pagination?.totalCount || 0);
+                    setHasNext(data.pagination?.hasNext || false);
+                    setHasPrev(data.pagination?.hasPrev || false);
                 } else {
-                    throw new Error(data.message);
+                    console.error('❌ API returned success:false:', data.message);
+                    throw new Error(data.message || 'API returned unsuccessful response');
                 }
             } else {
-                throw new Error('Failed to fetch invites');
+                console.error('❌ HTTP error response:', response.status, data);
+                throw new Error(data.message || `HTTP ${response.status}: Failed to fetch invites`);
             }
         } catch (error) {
-            console.error('Error fetching invites:', error);
+            console.error('❌ Error fetching invites:', error);
             // Fallback to mock data if fetch fails - NOW USES ACTUAL ADMIN ID
+            console.log('🔄 Falling back to mock data...');
             const mockInvites = getMockInvites();
             setInvites(mockInvites);
             setTotalCount(mockInvites.length);
             setTotalPages(Math.ceil(mockInvites.length / 10));
+            setHasNext(false);
+            setHasPrev(false);
         } finally {
             setIsFetchingInvites(false);
         }
-    }, [adminId]); // Re-fetch when adminId changes
+    }, [adminId]);
 
     // Initial fetch and fetch when filters change - ONLY when adminId is available
     useEffect(() => {
         if (adminId) {
+            console.log('🔄 Triggering fetchInvites with adminId:', adminId);
             fetchInvites(1, searchInput, userTypeFilter, usageFilter, expiryFilter);
+        } else {
+            console.log('⏸️ Skipping fetchInvites - no adminId available');
         }
     }, [fetchInvites, searchInput, userTypeFilter, usageFilter, expiryFilter, adminId]);
 
@@ -152,7 +184,7 @@ const InviteManager = () => {
             used: true,
             used_by: 'John Smith',
             used_at: new Date('2024-01-16'),
-            admin_id: adminId // Uses actual admin ID from context
+            admin_id: adminId
         },
         {
             id: 2,
@@ -163,7 +195,7 @@ const InviteManager = () => {
             used: false,
             used_by: null,
             used_at: null,
-            admin_id: adminId // Uses actual admin ID from context
+            admin_id: adminId
         },
         {
             id: 3,
@@ -174,7 +206,7 @@ const InviteManager = () => {
             used: false,
             used_by: null,
             used_at: null,
-            admin_id: adminId // Uses actual admin ID from context
+            admin_id: adminId
         },
         {
             id: 4,
@@ -185,7 +217,7 @@ const InviteManager = () => {
             used: true,
             used_by: 'Sarah Johnson',
             used_at: new Date('2024-01-21'),
-            admin_id: adminId // Uses actual admin ID from context
+            admin_id: adminId
         },
         {
             id: 5,
@@ -196,14 +228,14 @@ const InviteManager = () => {
             used: false,
             used_by: null,
             used_at: null,
-            admin_id: adminId // Uses actual admin ID from context
+            admin_id: adminId
         }
     ];
 
-    // FIXED: Enhanced scroll to section when URL parameter changes
+    // Enhanced scroll to section with better logging
     useEffect(() => {
-        console.log('InviteManager section changed:', section);
-        console.log('Current path:', location.pathname);
+        console.log('📍 InviteManager section changed:', section);
+        console.log('📍 Current path:', location.pathname);
 
         const getCurrentSection = () => {
             const path = location.pathname;
@@ -213,11 +245,11 @@ const InviteManager = () => {
             }
             
             const pathParts = path.split('/').filter(part => part);
-            console.log('InviteManager path parts:', pathParts);
+            console.log('📍 Path parts:', pathParts);
             
             if (pathParts.length > 1) {
                 const sectionFromPath = pathParts[1];
-                console.log('Extracted section:', sectionFromPath);
+                console.log('📍 Extracted section:', sectionFromPath);
                 
                 const validSections = ['generate-codes', 'view-invites', 'usage-analytics'];
                 if (validSections.includes(sectionFromPath)) {
@@ -229,15 +261,15 @@ const InviteManager = () => {
         };
 
         const currentSection = getCurrentSection();
-        console.log('Final current section for scrolling:', currentSection);
+        console.log('📍 Final current section for scrolling:', currentSection);
 
         const scrollToSection = () => {
             setTimeout(() => {
-                console.log('Attempting to scroll to section:', currentSection);
+                console.log('🎯 Attempting to scroll to section:', currentSection);
                 
                 const element = document.getElementById(currentSection);
                 if (element) {
-                    console.log('Found element by ID, scrolling...');
+                    console.log('✅ Found element by ID, scrolling...');
                     element.scrollIntoView({
                         behavior: 'smooth',
                         block: 'start'
@@ -247,7 +279,7 @@ const InviteManager = () => {
                 
                 const altElement = document.querySelector(`[data-section="${currentSection}"]`);
                 if (altElement) {
-                    console.log('Found element by data-section, scrolling...');
+                    console.log('✅ Found element by data-section, scrolling...');
                     altElement.scrollIntoView({
                         behavior: 'smooth',
                         block: 'start'
@@ -255,7 +287,7 @@ const InviteManager = () => {
                     return;
                 }
                 
-                console.log('Scrolling to top as fallback');
+                console.log('⚠️ Scrolling to top as fallback');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }, 800);
         };
@@ -288,7 +320,7 @@ const InviteManager = () => {
         }
     }, [searchTerm]);
 
-    // FIXED: Search functionality - Added proper error handling
+    // Enhanced search functionality with error handling
     const searchResults = useMemo(() => {
         try {
             return searchInviteManagerData(searchTerm, {
@@ -297,7 +329,7 @@ const InviteManager = () => {
                 sections: ['generate-codes', 'view-invites', 'usage-analytics']
             });
         } catch (error) {
-            console.error('Search error:', error);
+            console.error('🔍 Search error:', error);
             return {
                 sections: ['generate-codes', 'view-invites', 'usage-analytics'],
                 elements: {}
@@ -336,7 +368,7 @@ const InviteManager = () => {
     const createAnalyticsChart = () => {
         const ctx = document.getElementById('invite-manager-analytics-chart');
         if (!ctx) {
-            console.log('Chart canvas not found');
+            console.log('📊 Chart canvas not found');
             return;
         }
 
@@ -422,8 +454,9 @@ const InviteManager = () => {
             });
 
             analyticsChartRef.current = newChart;
+            console.log('📊 Analytics chart created successfully');
         } catch (error) {
-            console.error('Error creating chart:', error);
+            console.error('❌ Error creating chart:', error);
         }
     };
 
@@ -444,46 +477,77 @@ const InviteManager = () => {
         fetchInvites(page, searchInput, userTypeFilter, usageFilter, expiryFilter);
     };
 
-    // Generate code function - UPDATED with admin ID and role check
+    // ENHANCED: Generate code function with comprehensive debugging
     const generateCode = async (userType) => {
+        console.log('🔄 Generating code for user type:', userType);
+        
         // Check if user is admin - only admins can generate codes
         if (user?.role !== 'admin') {
+            console.warn('🚫 Non-admin user attempted to generate code:', user?.role);
             await alert('Only administrators can generate invite codes.', 'Access Denied');
+            return;
+        }
+
+        if (!adminId) {
+            console.error('❌ No admin ID available for code generation');
+            await alert('Authentication error. Please log in again.', 'Error');
             return;
         }
 
         setIsLoading(true);
         try {
+            const requestBody = { 
+                user_type: userType,
+                admin_id: adminId
+            };
+            
+            console.log('🔄 Sending generate request:', requestBody);
+            
             const response = await apiRequest(`${import.meta.env.VITE_HOST}:${import.meta.env.VITE_PORT}/home/invite_manager/generate`, {
                 method: 'POST',
-                body: JSON.stringify({ 
-                    user_type: userType,
-                    admin_id: adminId // Include admin ID in the request
-                })
+                body: JSON.stringify(requestBody)
             });
 
+            console.log('📨 Generate response status:', response.status);
+            
+            const responseText = await response.text();
+            console.log('📨 Generate raw response:', responseText);
+            
+            let result;
+            try {
+                result = JSON.parse(responseText);
+            } catch (parseError) {
+                console.error('❌ JSON parse error in generate:', parseError);
+                throw new Error('Invalid response from server');
+            }
+
             if (response.ok) {
-                const result = await response.json();
                 if (result.success) {
                     const newInvite = result.data;
+                    console.log('✅ Code generated successfully:', newInvite);
+                    
                     setGeneratedCode({
                         code: newInvite.code,
                         userType: newInvite.user_type,
                         createdAt: new Date(newInvite.created_at),
                         expiresAt: new Date(newInvite.expires_at)
                     });
+                    
                     // Refresh the invites list
                     fetchInvites(currentPage, searchInput, userTypeFilter, usageFilter, expiryFilter);
                     showToast(`${userType.charAt(0).toUpperCase() + userType.slice(1)} code generated successfully!`);
                 } else {
+                    console.error('❌ Generate API returned success:false:', result.message);
                     throw new Error(result.message);
                 }
             } else {
-                throw new Error('Failed to generate code');
+                console.error('❌ Generate HTTP error:', response.status, result);
+                throw new Error(result.message || 'Failed to generate code');
             }
         } catch (error) {
-            console.error('Error generating code:', error);
-            // Fallback to local generation - UPDATED with admin ID
+            console.error('❌ Error generating code:', error);
+            // Fallback to local generation
+            console.log('🔄 Falling back to local code generation');
             const code = `${userType === 'teacher' ? 'TCH' : 'STD'}-${generateRandomCode()}`;
             const createdAt = new Date();
             const expiresAt = new Date(createdAt.getTime() + 7 * 24 * 60 * 60 * 1000);
@@ -545,7 +609,7 @@ const InviteManager = () => {
                 method: 'POST',
                 body: JSON.stringify({ 
                     user_type: selectedInvite.user_type,
-                    admin_id: adminId // Include admin ID in the request
+                    admin_id: adminId
                 })
             });
 
@@ -564,7 +628,7 @@ const InviteManager = () => {
             }
         } catch (error) {
             console.error('Error regenerating code:', error);
-            // Fallback to local regeneration - UPDATED with admin ID
+            // Fallback to local regeneration
             const newCode = `${selectedInvite.user_type === 'teacher' ? 'TCH' : 'STD'}-${generateRandomCode()}`;
             setInvites(prev => prev.map(invite =>
                 invite.id === selectedInvite.id
@@ -573,7 +637,7 @@ const InviteManager = () => {
                         code: newCode,
                         created_at: new Date(),
                         expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-                        admin_id: adminId // Update with current admin ID
+                        admin_id: adminId
                     }
                     : invite
             ));
@@ -745,16 +809,18 @@ const InviteManager = () => {
                                     <button
                                         className="invite-manager-generate-btn invite-manager-teacher-btn"
                                         onClick={() => generateCode('teacher')}
+                                        disabled={isLoading}
                                     >
                                         <i data-lucide="graduation-cap"></i>
-                                        Generate Teacher Code
+                                        {isLoading ? 'Generating...' : 'Generate Teacher Code'}
                                     </button>
                                     <button
                                         className="invite-manager-generate-btn invite-manager-student-btn"
                                         onClick={() => generateCode('student')}
+                                        disabled={isLoading}
                                     >
                                         <i data-lucide="users"></i>
-                                        Generate Student Code
+                                        {isLoading ? 'Generating...' : 'Generate Student Code'}
                                     </button>
                                 </div>
 
