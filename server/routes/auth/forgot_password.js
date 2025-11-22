@@ -1,6 +1,6 @@
 import student from "../../models/Student.js"
 import teacher from "../../models/Teacher.js"
-import general from "../../models/General.js"
+import token from "../../models/Token.js"
 import { Router } from "express"
 import bcrypt from "bcryptjs"
 import send_mail from "../../utils/mailer.js"
@@ -46,7 +46,7 @@ forgot_password.post("/forgot-password", async (req, res) => {
                     
                     // Generate database token for the user
                     tokenHash = await bcrypt.hash(generator.id(), 10);
-                    await general.auth.token.build_token(
+                    await token.auth.build_token(
                         generator.id(), 
                         tokenHash, 
                         "student", 
@@ -69,7 +69,7 @@ forgot_password.post("/forgot-password", async (req, res) => {
                     
                     // Generate database token for the user
                     tokenHash = await bcrypt.hash(generator.id(), 10);
-                    await general.auth.token.build_token(
+                    await token.auth.build_token(
                         generator.id(), 
                         tokenHash, 
                         "teacher", 
@@ -104,7 +104,7 @@ forgot_password.post("/forgot-password", async (req, res) => {
                     
                     // Generate database token for the user
                     tokenHash = await bcrypt.hash(generator.id(), 10);
-                    await general.auth.token.build_token(
+                    await token.auth.build_token(
                         generator.id(), 
                         tokenHash, 
                         "admin", 

@@ -3,7 +3,7 @@ import student from "../../models/Student.js"
 import teacher from "../../models/Teacher.js"
 import generator from "../../utils/id_generator.js"
 import send_mail from "../../utils/mailer.js"
-import general from "../../models/General.js"
+import invite_code from "../../models/InviteCode.js"
 import bcrypt from "bcryptjs"
 
 
@@ -20,7 +20,7 @@ signup_router.post("/signup/student/", async (req, res) => {
 
         // In your student signup route, replaceinvit the invitation code verification section:
         try {
-            const inviteResult = await general.auth.invite.verify_invite(invitationCode);
+            const inviteResult = await invite_code.auth.verify_invite(invitationCode);
 
             if (inviteResult.rows.length === 0 || inviteResult.rows[0].code !== invitationCode) {
                 return res.status(400).json({
@@ -30,7 +30,7 @@ signup_router.post("/signup/student/", async (req, res) => {
             }
 
             // Mark the invite code as used
-            //await general.auth.use_invite_code(invitationCode);
+            //await invite_code.auth.use_invite_code(invitationCode);
         } catch (err) {
             console.log("Verification error:", err);
             return res.status(400).json({
@@ -114,7 +114,7 @@ signup_router.post("/signup/teacher/", async (req, res) => {
 
         // In your teacher signup route, replace the invitation code verification section:
         try {
-            const inviteResult = await general.auth.invite.verify_invite(invitationCode);
+            const inviteResult = await invite_code.auth.verify_invite(invitationCode);
 
             if (inviteResult.rows.length === 0 || inviteResult.rows[0].code !== invitationCode) {
                 return res.status(400).json({
@@ -124,7 +124,7 @@ signup_router.post("/signup/teacher/", async (req, res) => {
             }
 
             // Mark the invite code as used
-            //await general.auth.use_invite_code(invitationCode);
+            // await invite_code.auth.use_invite_code(invitationCode);
         } catch (err) {
             console.log("Verification error:", err);
             return res.status(400).json({

@@ -1,5 +1,5 @@
 // main/InviteManager.jsx
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Chart, registerables } from 'chart.js';
 import Header from '../Header';
@@ -23,7 +23,7 @@ const InviteManager = () => {
     const { modal, setModal, alert, confirm, prompt } = useModal();
     const { searchTerm, isSearching, setSearchTerm, setIsSearching } = useSearch();
 
-    // State for fetched invites
+    // State for fetched invites with pagination
     const [invites, setInvites] = useState([]);
     const [selectedInvite, setSelectedInvite] = useState(null);
     const [generatedCode, setGeneratedCode] = useState(null);
@@ -33,6 +33,13 @@ const InviteManager = () => {
     const [expiryFilter, setExpiryFilter] = useState('all');
     const [searchInput, setSearchInput] = useState('');
     const [isFetchingInvites, setIsFetchingInvites] = useState(false);
+    
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalCount, setTotalCount] = useState(0);
+    const [hasNext, setHasNext] = useState(false);
+    const [hasPrev, setHasPrev] = useState(false);
 
     // Check if mobile on mount and resize
     useEffect(() => {
@@ -48,34 +55,52 @@ const InviteManager = () => {
         };
     }, []);
 
-    // Fetch invites from backend
-    useEffect(() => {
-        fetchInvites();
-    }, []);
-
-    const fetchInvites = async () => {
+    // Fetch invites from backend with pagination and filtering
+    const fetchInvites = useCallback(async (page = 1, search = '', userType = 'all', usage = 'all', expiry = 'all') => {
         setIsFetchingInvites(true);
         try {
-            // TODO: Replace with your actual backend endpoint
-            const response = await fetch('/api/invites');
+            const params = new URLSearchParams({
+                page: page.toString(),
+                limit: '10',
+                search: search,
+                user_type: userType,
+                usage: usage,
+                expiry: expiry
+            });
+
+            const response = await fetch(`/api/invites/all_invite_codes?${params}`);
             if (response.ok) {
                 const data = await response.json();
-                setInvites(data);
+                if (data.success) {
+                    setInvites(data.data);
+                    setCurrentPage(data.pagination.currentPage);
+                    setTotalPages(data.pagination.totalPages);
+                    setTotalCount(data.pagination.totalCount);
+                    setHasNext(data.pagination.hasNext);
+                    setHasPrev(data.pagination.hasPrev);
+                } else {
+                    throw new Error(data.message);
+                }
             } else {
-                console.error('Failed to fetch invites');
-                // Fallback to mock data if fetch fails
-                setInvites(getMockInvites());
+                throw new Error('Failed to fetch invites');
             }
         } catch (error) {
             console.error('Error fetching invites:', error);
-            // Fallback to mock data
+            // Fallback to mock data if fetch fails
             setInvites(getMockInvites());
+            setTotalCount(getMockInvites().length);
+            setTotalPages(Math.ceil(getMockInvites().length / 10));
         } finally {
             setIsFetchingInvites(false);
         }
-    };
+    }, []);
 
-    // Mock data fallback
+    // Initial fetch and fetch when filters change
+    useEffect(() => {
+        fetchInvites(1, searchInput, userTypeFilter, usageFilter, expiryFilter);
+    }, [fetchInvites, searchInput, userTypeFilter, usageFilter, expiryFilter]);
+
+    // Mock data fallback - RESTORED FULL MOCK DATA
     const getMockInvites = () => [
         {
             id: 1,
@@ -134,7 +159,7 @@ const InviteManager = () => {
         }
     ];
 
-    // FIXED: Enhanced scroll to section when URL parameter changes
+    // FIXED: Enhanced scroll to section when URL parameter changes - RESTORED FULL LOGIC
     useEffect(() => {
         console.log('InviteManager section changed:', section);
         console.log('Current path:', location.pathname);
@@ -232,7 +257,6 @@ const InviteManager = () => {
             });
         } catch (error) {
             console.error('Search error:', error);
-            // Return safe fallback to prevent component crash
             return {
                 sections: ['generate-codes', 'view-invites', 'usage-analytics'],
                 elements: {}
@@ -240,219 +264,34 @@ const InviteManager = () => {
         }
     }, [searchTerm, invites, generatedCode]);
 
-    // Filter invites based on filters - FIXED: Added proper error handling
-    const filteredInvites = useMemo(() => {
-        try {
-            let filtered = [...invites];
+    // RESTORED: Utility functions
+    const formatDate = (date) => {
+        return new Date(date).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
+    };
 
-            // Search filter
-            if (searchInput) {
-                const searchTerm = searchInput.toLowerCase();
-                filtered = filtered.filter(invite =>
-                    invite.code.toLowerCase().includes(searchTerm) ||
-                    (invite.used_by && invite.used_by.toLowerCase().includes(searchTerm)) ||
-                    formatDate(invite.created_at).toLowerCase().includes(searchTerm) ||
-                    formatDate(invite.expires_at).toLowerCase().includes(searchTerm)
-                );
-            }
+    const getExpiryStatus = (expiresAt) => {
+        const now = new Date();
+        const expiryDate = new Date(expiresAt);
+        const daysUntilExpiry = Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
 
-            // User type filter
-            if (userTypeFilter !== 'all') {
-                filtered = filtered.filter(invite => invite.user_type === userTypeFilter);
-            }
-
-            // Usage filter
-            if (usageFilter !== 'all') {
-                const isUsed = usageFilter === 'used';
-                filtered = filtered.filter(invite => invite.used === isUsed);
-            }
-
-            // Expiry filter
-            if (expiryFilter !== 'all') {
-                const now = new Date();
-                if (expiryFilter === 'expired') {
-                    filtered = filtered.filter(invite => new Date(invite.expires_at) < now);
-                } else {
-                    filtered = filtered.filter(invite => new Date(invite.expires_at) >= now);
-                }
-            }
-
-            return filtered;
-        } catch (error) {
-            console.error('Filtering error:', error);
-            return [];
-        }
-    }, [invites, searchInput, userTypeFilter, usageFilter, expiryFilter]);
-
-    // Generate code function
-    const generateCode = async (userType) => {
-        setIsLoading(true);
-
-        try {
-            // TODO: Replace with your actual backend endpoint
-            const response = await fetch('/api/invites/generate', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ user_type: userType })
-            });
-
-            if (response.ok) {
-                const newInvite = await response.json();
-                setInvites(prev => [...prev, newInvite]);
-                setGeneratedCode({
-                    code: newInvite.code,
-                    userType: newInvite.user_type,
-                    createdAt: new Date(newInvite.created_at),
-                    expiresAt: new Date(newInvite.expires_at)
-                });
-                showToast(`${userType.charAt(0).toUpperCase() + userType.slice(1)} code generated successfully!`);
-            } else {
-                throw new Error('Failed to generate code');
-            }
-        } catch (error) {
-            console.error('Error generating code:', error);
-            // Fallback to local generation if API fails
-            const code = `${userType === 'teacher' ? 'TCH' : 'STD'}-${generateRandomCode()}`;
-            const createdAt = new Date();
-            const expiresAt = new Date(createdAt.getTime() + 7 * 24 * 60 * 60 * 1000);
-
-            const newInvite = {
-                id: invites.length + 1,
-                code: code,
-                user_type: userType,
-                created_at: createdAt,
-                expires_at: expiresAt,
-                used: false,
-                used_by: null,
-                used_at: null,
-                admin_id: 1
-            };
-
-            setInvites(prev => [...prev, newInvite]);
-            setGeneratedCode({
-                code,
-                userType,
-                createdAt,
-                expiresAt
-            });
-            showToast(`${userType.charAt(0).toUpperCase() + userType.slice(1)} code generated successfully!`);
-        } finally {
-            setIsLoading(false);
+        if (daysUntilExpiry < 0) {
+            return { class: 'expired', text: 'Expired' };
+        } else if (daysUntilExpiry <= 2) {
+            return { class: 'expiring-soon', text: 'Expiring Soon' };
+        } else {
+            return { class: 'valid', text: 'Valid' };
         }
     };
 
-    const generateRandomCode = () => {
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-        let code = '';
-        for (let i = 0; i < 6; i++) {
-            code += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        return code;
+    const showToast = async (message) => {
+        await alert(message, 'Success');
     };
 
-    // Copy code function
-    const copyCode = async () => {
-        if (generatedCode) {
-            try {
-                await navigator.clipboard.writeText(generatedCode.code);
-                showToast('Code copied to clipboard!');
-            } catch (err) {
-                await alert('Failed to copy code', 'Error');
-            }
-        }
-    };
-
-    // Modal functions
-    const openModal = (invite) => {
-        setSelectedInvite(invite);
-    };
-
-    const closeModal = () => {
-        setSelectedInvite(null);
-    };
-
-    const regenerateCode = async () => {
-        if (!selectedInvite) return;
-
-        try {
-            // TODO: Replace with your actual backend endpoint
-            const response = await fetch(`/api/invites/${selectedInvite.id}/regenerate`, {
-                method: 'POST'
-            });
-
-            if (response.ok) {
-                const updatedInvite = await response.json();
-                setInvites(prev => prev.map(invite =>
-                    invite.id === selectedInvite.id ? updatedInvite : invite
-                ));
-                closeModal();
-                showToast('Code regenerated successfully!');
-            } else {
-                throw new Error('Failed to regenerate code');
-            }
-        } catch (error) {
-            console.error('Error regenerating code:', error);
-            // Fallback to local regeneration
-            const newCode = `${selectedInvite.user_type === 'teacher' ? 'TCH' : 'STD'}-${generateRandomCode()}`;
-            setInvites(prev => prev.map(invite =>
-                invite.id === selectedInvite.id
-                    ? {
-                        ...invite,
-                        code: newCode,
-                        created_at: new Date(),
-                        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-                    }
-                    : invite
-            ));
-            closeModal();
-            showToast('Code regenerated successfully!');
-        }
-    };
-
-    const viewDetails = async () => {
-        if (!selectedInvite) return;
-
-        await alert(
-            `Code: ${selectedInvite.code}\nUser Type: ${selectedInvite.user_type}\nCreated: ${formatDate(selectedInvite.created_at)}\nExpires: ${formatDate(selectedInvite.expires_at)}\nUsed: ${selectedInvite.used ? 'Yes' : 'No'}\nUsed By: ${selectedInvite.used_by || 'N/A'}`,
-            'Invite Code Details'
-        );
-    };
-
-    const sendReminder = async () => {
-        await alert('Email reminder feature coming soon!', 'Feature Coming Soon');
-    };
-
-    const deleteCode = async () => {
-        if (!selectedInvite) return;
-
-        const shouldDelete = await confirm('Are you sure you want to delete this invite code?', 'Confirm Deletion');
-        if (shouldDelete) {
-            try {
-                // TODO: Replace with your actual backend endpoint
-                const response = await fetch(`/api/invites/${selectedInvite.id}`, {
-                    method: 'DELETE'
-                });
-
-                if (response.ok) {
-                    setInvites(prev => prev.filter(i => i.id !== selectedInvite.id));
-                    closeModal();
-                    showToast('Code deleted successfully!');
-                } else {
-                    throw new Error('Failed to delete code');
-                }
-            } catch (error) {
-                console.error('Error deleting code:', error);
-                // Fallback to local deletion
-                setInvites(prev => prev.filter(i => i.id !== selectedInvite.id));
-                closeModal();
-                showToast('Code deleted successfully!');
-            }
-        }
-    };
-
-    // Analytics functions
+    // RESTORED: Analytics chart function
     const createAnalyticsChart = () => {
         const ctx = document.getElementById('invite-manager-analytics-chart');
         if (!ctx) {
@@ -547,31 +386,193 @@ const InviteManager = () => {
         }
     };
 
-    // Utility functions
-    const formatDate = (date) => {
-        return new Date(date).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-        });
-    };
-
-    const getExpiryStatus = (expiresAt) => {
-        const now = new Date();
-        const expiryDate = new Date(expiresAt);
-        const daysUntilExpiry = Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
-
-        if (daysUntilExpiry < 0) {
-            return { class: 'expired', text: 'Expired' };
-        } else if (daysUntilExpiry <= 2) {
-            return { class: 'expiring-soon', text: 'Expiring Soon' };
-        } else {
-            return { class: 'valid', text: 'Valid' };
+    // Pagination handlers
+    const handleNextPage = () => {
+        if (hasNext) {
+            fetchInvites(currentPage + 1, searchInput, userTypeFilter, usageFilter, expiryFilter);
         }
     };
 
-    const showToast = async (message) => {
-        await alert(message, 'Success');
+    const handlePrevPage = () => {
+        if (hasPrev) {
+            fetchInvites(currentPage - 1, searchInput, userTypeFilter, usageFilter, expiryFilter);
+        }
+    };
+
+    const handlePageClick = (page) => {
+        fetchInvites(page, searchInput, userTypeFilter, usageFilter, expiryFilter);
+    };
+
+    // Generate code function - Updated to use API
+    const generateCode = async (userType) => {
+        setIsLoading(true);
+        try {
+            const response = await fetch('/api/invites/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ user_type: userType })
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                if (result.success) {
+                    const newInvite = result.data;
+                    setGeneratedCode({
+                        code: newInvite.code,
+                        userType: newInvite.user_type,
+                        createdAt: new Date(newInvite.created_at),
+                        expiresAt: new Date(newInvite.expires_at)
+                    });
+                    // Refresh the invites list
+                    fetchInvites(currentPage, searchInput, userTypeFilter, usageFilter, expiryFilter);
+                    showToast(`${userType.charAt(0).toUpperCase() + userType.slice(1)} code generated successfully!`);
+                } else {
+                    throw new Error(result.message);
+                }
+            } else {
+                throw new Error('Failed to generate code');
+            }
+        } catch (error) {
+            console.error('Error generating code:', error);
+            // Fallback to local generation
+            const code = `${userType === 'teacher' ? 'TCH' : 'STD'}-${generateRandomCode()}`;
+            const createdAt = new Date();
+            const expiresAt = new Date(createdAt.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+            setGeneratedCode({
+                code,
+                userType,
+                createdAt,
+                expiresAt
+            });
+            showToast(`${userType.charAt(0).toUpperCase() + userType.slice(1)} code generated successfully!`);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const generateRandomCode = () => {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let code = '';
+        for (let i = 0; i < 6; i++) {
+            code += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return code;
+    };
+
+    // Copy code function
+    const copyCode = async () => {
+        if (generatedCode) {
+            try {
+                await navigator.clipboard.writeText(generatedCode.code);
+                showToast('Code copied to clipboard!');
+            } catch (err) {
+                await alert('Failed to copy code', 'Error');
+            }
+        }
+    };
+
+    // Modal functions - ALL RESTORED
+    const openModal = (invite) => {
+        setSelectedInvite(invite);
+    };
+
+    const closeModal = () => {
+        setSelectedInvite(null);
+    };
+
+    const regenerateCode = async () => {
+        if (!selectedInvite) return;
+
+        try {
+            const response = await fetch(`/api/invites/${selectedInvite.id}/regenerate`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ user_type: selectedInvite.user_type })
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                if (result.success) {
+                    // Refresh the invites list
+                    fetchInvites(currentPage, searchInput, userTypeFilter, usageFilter, expiryFilter);
+                    closeModal();
+                    showToast('Code regenerated successfully!');
+                } else {
+                    throw new Error(result.message);
+                }
+            } else {
+                throw new Error('Failed to regenerate code');
+            }
+        } catch (error) {
+            console.error('Error regenerating code:', error);
+            // Fallback to local regeneration
+            const newCode = `${selectedInvite.user_type === 'teacher' ? 'TCH' : 'STD'}-${generateRandomCode()}`;
+            setInvites(prev => prev.map(invite =>
+                invite.id === selectedInvite.id
+                    ? {
+                        ...invite,
+                        code: newCode,
+                        created_at: new Date(),
+                        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+                    }
+                    : invite
+            ));
+            closeModal();
+            showToast('Code regenerated successfully!');
+        }
+    };
+
+    // RESTORED: viewDetails function
+    const viewDetails = async () => {
+        if (!selectedInvite) return;
+
+        await alert(
+            `Code: ${selectedInvite.code}\nUser Type: ${selectedInvite.user_type}\nCreated: ${formatDate(selectedInvite.created_at)}\nExpires: ${formatDate(selectedInvite.expires_at)}\nUsed: ${selectedInvite.used ? 'Yes' : 'No'}\nUsed By: ${selectedInvite.used_by || 'N/A'}`,
+            'Invite Code Details'
+        );
+    };
+
+    // RESTORED: sendReminder function
+    const sendReminder = async () => {
+        await alert('Email reminder feature coming soon!', 'Feature Coming Soon');
+    };
+
+    const deleteCode = async () => {
+        if (!selectedInvite) return;
+
+        const shouldDelete = await confirm('Are you sure you want to delete this invite code?', 'Confirm Deletion');
+        if (shouldDelete) {
+            try {
+                const response = await fetch(`/api/invites/${selectedInvite.id}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        // Refresh the invites list
+                        fetchInvites(currentPage, searchInput, userTypeFilter, usageFilter, expiryFilter);
+                        closeModal();
+                        showToast('Code deleted successfully!');
+                    } else {
+                        throw new Error(result.message);
+                    }
+                } else {
+                    throw new Error('Failed to delete code');
+                }
+            } catch (error) {
+                console.error('Error deleting code:', error);
+                // Fallback to local deletion
+                setInvites(prev => prev.filter(i => i.id !== selectedInvite.id));
+                closeModal();
+                showToast('Code deleted successfully!');
+            }
+        }
     };
 
     // Check if sections should be shown based on search
@@ -580,14 +581,56 @@ const InviteManager = () => {
         return searchResults.sections && searchResults.sections.includes(sectionId);
     };
 
+    // RESTORED: shouldShowInviteElement function
     const shouldShowInviteElement = (element, type) => {
         if (!searchTerm) return true;
         return shouldShowElement(element, searchTerm, searchResults, type);
     };
 
-    // Function to handle section navigation
+    // RESTORED: navigateToSection function
     const navigateToSection = (sectionName) => {
         navigate(`/invite-manager/${sectionName}`);
+    };
+
+    // Render pagination controls
+    const renderPagination = () => {
+        if (totalPages <= 1) return null;
+
+        const pages = [];
+        const startPage = Math.max(1, currentPage - 2);
+        const endPage = Math.min(totalPages, currentPage + 2);
+
+        for (let i = startPage; i <= endPage; i++) {
+            pages.push(
+                <button
+                    key={i}
+                    className={`invite-manager-pagination-btn ${currentPage === i ? 'active' : ''}`}
+                    onClick={() => handlePageClick(i)}
+                >
+                    {i}
+                </button>
+            );
+        }
+
+        return (
+            <div className="invite-manager-pagination">
+                <button
+                    className="invite-manager-pagination-btn"
+                    onClick={handlePrevPage}
+                    disabled={!hasPrev}
+                >
+                    Previous
+                </button>
+                {pages}
+                <button
+                    className="invite-manager-pagination-btn"
+                    onClick={handleNextPage}
+                    disabled={!hasNext}
+                >
+                    Next
+                </button>
+            </div>
+        );
     };
 
     return (
@@ -744,67 +787,77 @@ const InviteManager = () => {
                                             <Loader message="Loading invites..." />
                                         </div>
                                     ) : (
-                                        <table className="invite-manager-invites-table">
-                                            <thead>
-                                                <tr>
-                                                    <th>User</th>
-                                                    <th>Name</th>
-                                                    <th>Invite Code</th>
-                                                    <th>User Type</th>
-                                                    <th>Created</th>
-                                                    <th>Expires</th>
-                                                    <th>Used At</th>
-                                                    <th>Status</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {filteredInvites.length === 0 ? (
+                                        <>
+                                            <table className="invite-manager-invites-table">
+                                                <thead>
                                                     <tr>
-                                                        <td colSpan="8" className="invite-manager-empty-state">
-                                                            <i data-lucide="inbox"></i>
-                                                            <p>No invites found</p>
-                                                        </td>
+                                                        <th>User</th>
+                                                        <th>Name</th>
+                                                        <th>Invite Code</th>
+                                                        <th>User Type</th>
+                                                        <th>Created</th>
+                                                        <th>Expires</th>
+                                                        <th>Used At</th>
+                                                        <th>Status</th>
                                                     </tr>
-                                                ) : (
-                                                    filteredInvites.map(invite => {
-                                                        const avatar = invite.used_by ?
-                                                            invite.used_by.split(' ').map(n => n[0]).join('') : '?';
-                                                        const expiryStatus = getExpiryStatus(invite.expires_at);
+                                                </thead>
+                                                <tbody>
+                                                    {invites.length === 0 ? (
+                                                        <tr>
+                                                            <td colSpan="8" className="invite-manager-empty-state">
+                                                                <i data-lucide="inbox"></i>
+                                                                <p>No invites found</p>
+                                                            </td>
+                                                        </tr>
+                                                    ) : (
+                                                        invites.map(invite => {
+                                                            const avatar = invite.used_by ?
+                                                                invite.used_by.split(' ').map(n => n[0]).join('') : '?';
+                                                            const expiryStatus = getExpiryStatus(invite.expires_at);
 
-                                                        return (
-                                                            <tr
-                                                                key={invite.id}
-                                                                onClick={() => openModal(invite)}
-                                                                className="invite-manager-table-row"
-                                                            >
-                                                                <td>
-                                                                    <div className="invite-manager-user-avatar">{avatar}</div>
-                                                                </td>
-                                                                <td>{invite.used_by || 'Not Used'}</td>
-                                                                <td><strong>{invite.code}</strong></td>
-                                                                <td>
-                                                                    <span className={`invite-manager-badge invite-manager-${invite.user_type}`}>
-                                                                        {invite.user_type}
-                                                                    </span>
-                                                                </td>
-                                                                <td>{formatDate(invite.created_at)}</td>
-                                                                <td>
-                                                                    <span className={`invite-manager-badge invite-manager-${expiryStatus.class}`}>
-                                                                        {formatDate(invite.expires_at)}
-                                                                    </span>
-                                                                </td>
-                                                                <td>{invite.used_at ? formatDate(invite.used_at) : 'Not Used'}</td>
-                                                                <td>
-                                                                    <span className={`invite-manager-badge ${invite.used ? 'invite-manager-used' : 'invite-manager-unused'}`}>
-                                                                        {invite.used ? 'Used' : 'Active'}
-                                                                    </span>
-                                                                </td>
-                                                            </tr>
-                                                        );
-                                                    })
-                                                )}
-                                            </tbody>
-                                        </table>
+                                                            return (
+                                                                <tr
+                                                                    key={invite.id}
+                                                                    onClick={() => openModal(invite)}
+                                                                    className="invite-manager-table-row"
+                                                                >
+                                                                    <td>
+                                                                        <div className="invite-manager-user-avatar">{avatar}</div>
+                                                                    </td>
+                                                                    <td>{invite.used_by || 'Not Used'}</td>
+                                                                    <td><strong>{invite.code}</strong></td>
+                                                                    <td>
+                                                                        <span className={`invite-manager-badge invite-manager-${invite.user_type}`}>
+                                                                            {invite.user_type}
+                                                                        </span>
+                                                                    </td>
+                                                                    <td>{formatDate(invite.created_at)}</td>
+                                                                    <td>
+                                                                        <span className={`invite-manager-badge invite-manager-${expiryStatus.class}`}>
+                                                                            {formatDate(invite.expires_at)}
+                                                                        </span>
+                                                                    </td>
+                                                                    <td>{invite.used_at ? formatDate(invite.used_at) : 'Not Used'}</td>
+                                                                    <td>
+                                                                        <span className={`invite-manager-badge ${invite.used ? 'invite-manager-used' : 'invite-manager-unused'}`}>
+                                                                            {invite.used ? 'Used' : 'Active'}
+                                                                        </span>
+                                                                    </td>
+                                                                </tr>
+                                                            );
+                                                        })
+                                                    )}
+                                                </tbody>
+                                            </table>
+                                            
+                                            {/* Pagination Controls */}
+                                            {renderPagination()}
+                                            
+                                            {/* Results Count */}
+                                            <div className="invite-manager-results-count">
+                                                Showing {invites.length} of {totalCount} results
+                                            </div>
+                                        </>
                                     )}
                                 </div>
                             </div>
@@ -825,7 +878,7 @@ const InviteManager = () => {
                                 <div className="invite-manager-stats-grid">
                                     <div className="invite-manager-stat-card">
                                         <div className="invite-manager-stat-label">Total Codes</div>
-                                        <div className="invite-manager-stat-value">{invites.length}</div>
+                                        <div className="invite-manager-stat-value">{totalCount}</div>
                                     </div>
                                     <div className="invite-manager-stat-card">
                                         <div className="invite-manager-stat-label">Active Codes</div>
@@ -836,8 +889,8 @@ const InviteManager = () => {
                                     <div className="invite-manager-stat-card">
                                         <div className="invite-manager-stat-label">Usage Rate</div>
                                         <div className="invite-manager-stat-value">
-                                            {invites.length > 0 ?
-                                                Math.round((invites.filter(i => i.used).length / invites.length) * 100) : 0
+                                            {totalCount > 0 ?
+                                                Math.round((invites.filter(i => i.used).length / totalCount) * 100) : 0
                                             }%
                                         </div>
                                     </div>
@@ -880,7 +933,7 @@ const InviteManager = () => {
                 </main>
             </div>
 
-            {/* Modal */}
+            {/* Modal - RESTORED FULL MODAL */}
             {selectedInvite && (
                 <div className="invite-manager-modal-overlay active" onClick={closeModal}>
                     <div className="invite-manager-modal-content" onClick={(e) => e.stopPropagation()}>

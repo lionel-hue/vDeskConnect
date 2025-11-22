@@ -1,12 +1,7 @@
-import pg from "pg"
+import { postgres } from "../database/postgres.js"
 
-const pool = new pg.Pool({
-    user: "postgres",
-    host: "localhost",
-    database: "vDesk_DB",
-    password: "0000",
-    port: 5432
-})
+postgres()
+
 
 const student = {
     auth: {
