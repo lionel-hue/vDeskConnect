@@ -1,4 +1,4 @@
-// App.jsx - UPDATED
+// App.jsx - UPDATED with AuthProvider
 import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import Login from './auth/Login';
@@ -11,34 +11,37 @@ import ResetPassword from './auth/ResetPassword';
 import Dashboard from './main/Dashboard';
 import InviteManager from './main/InviteManager';
 import { SearchProvider } from './SearchManager';
+import { AuthProvider } from './contexts/AuthContext'; // NEW IMPORT
 
 function App() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
 
     return (
-        <SearchProvider>
-            <Router>
-                <div className="app">
-                    <Routes>
-                        {/* Public Routes - No Header/Sidebar */}
-                        <Route path="/" element={<LoginWrapper onLogin={() => setIsAuthenticated(true)} />} />
-                        <Route path="/signup-selection" element={<SignupSelectionWrapper />} />
-                        <Route path="/signup-teacher" element={<SignupTeacherWrapper />} />
-                        <Route path="/signup-student" element={<SignupStudentWrapper />} />
-                        <Route path="/verify-account" element={<VerifyAccountWrapper onVerify={() => setIsAuthenticated(true)} />} />
-                        <Route path="/forgot-password" element={<ForgotPassword />} />
-                        <Route path="/reset-password" element={<ResetPassword />} />
+        <AuthProvider> {/* NEW: Wrap everything with AuthProvider */}
+            <SearchProvider>
+                <Router>
+                    <div className="app">
+                        <Routes>
+                            {/* Public Routes - No Header/Sidebar */}
+                            <Route path="/" element={<LoginWrapper onLogin={() => setIsAuthenticated(true)} />} />
+                            <Route path="/signup-selection" element={<SignupSelectionWrapper />} />
+                            <Route path="/signup-teacher" element={<SignupTeacherWrapper />} />
+                            <Route path="/signup-student" element={<SignupStudentWrapper />} />
+                            <Route path="/verify-account" element={<VerifyAccountWrapper onVerify={() => setIsAuthenticated(true)} />} />
+                            <Route path="/forgot-password" element={<ForgotPassword />} />
+                            <Route path="/reset-password" element={<ResetPassword />} />
 
-                        {/* Protected Routes - Each is standalone with Header/Sidebar */}
-                        {/* Dashboard Routes - FIXED: Use nested routes for proper parameter capture */}
-                        <Route path="/dashboard/*" element={<Dashboard />} />
-                        
-                        {/* Invite Manager Routes */}
-                        <Route path="/invite-manager/*" element={<InviteManager />} />
-                    </Routes>
-                </div>
-            </Router>
-        </SearchProvider>
+                            {/* Protected Routes - Each is standalone with Header/Sidebar */}
+                            {/* Dashboard Routes - FIXED: Use nested routes for proper parameter capture */}
+                            <Route path="/dashboard/*" element={<Dashboard />} />
+                            
+                            {/* Invite Manager Routes */}
+                            <Route path="/invite-manager/*" element={<InviteManager />} />
+                        </Routes>
+                    </div>
+                </Router>
+            </SearchProvider>
+        </AuthProvider> // NEW: Close AuthProvider
     );
 }
 

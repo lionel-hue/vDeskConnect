@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken"
-import general from "../../models/General.js";
+import token from "../../models/Token.js";
 import student from "../../models/Student.js";
 import teacher from "../../models/Teacher.js"
 import { Router } from "express";
@@ -16,10 +16,10 @@ reset_password.post("/reset-password", async (req, res) => {
 
         //If the token hash we stored in the database exists for this user then we use the token
         //by setting it's used attribute in the token table to "true"
-        if ((await general.auth.token.get_token(decoded.id)).rows[0] !== undefined) {
+        if ((await token.auth.get_token(decoded.id)).rows[0] !== undefined) {
 
             //use the token.. never to be used again...
-            await general.auth.token.use_token(decoded.id, new Date(Date.now()))
+            await token.auth.use_token(decoded.id, new Date(Date.now()))
 
             //if the decoded token was from a student...
             if (decoded.type === "student") {

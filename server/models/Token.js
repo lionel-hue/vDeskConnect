@@ -1,28 +1,10 @@
-import pg from "pg"
+import { postgres } from "../database/postgres.js"
 
-const pool = new pg.Pool({
-    user: "postgres",
-    host: "localhost",
-    database: "vDesk_DB",
-    password: "0000",
-    port: 5432
-})
+postgres()
 
-const general = {
+
+const token = {
     auth: {
-
-        invite: {
-
-            async verify_invite(code) {
-                return pool.query(`SELECT * FROM Public."InviteCode" WHERE code = $1 AND NOT used  AND expires_at > NOW();`, [code])
-            },
-
-            async use_invite_code(code) {
-                return pool.query(`UPDATE Public."InviteCode" SET used = TRUE WHERE code = $1`, [code])
-            }
-        },
-
-        token: {
 
             async get_token(used_by) {
                 return pool.query(`SELECT * FROM Public."Token" WHERE used_by = $1 AND NOT used  AND expires_at > NOW();`, [used_by])
@@ -38,8 +20,6 @@ const general = {
                     `, [id, token, user_type, exipres_at, used_by])
             }
         }
-
-    }
 }
 
-export default general
+export default token
