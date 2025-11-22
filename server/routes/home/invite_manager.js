@@ -1,4 +1,4 @@
-    // routes/invite_manager.js - UPDATED WITH DYNAMIC ADMIN ID
+// routes/invite_manager.js - UPDATED WITH DYNAMIC ADMIN ID
 import { Router } from "express";
 import invite_code from "../../models/InviteCode.js";
 import generator from "../../utils/id_generator.js";
