@@ -1,4 +1,4 @@
-// main/InviteManager.jsx
+// main/InviteManager.jsx - COMPLETE UPDATED VERSION WITH AUTH CHECKS
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Chart, registerables } from 'chart.js';
@@ -8,6 +8,8 @@ import Loader from '../Loader';
 import Modal, { useModal } from '../Modal';
 import { useSearch } from '../SearchManager';
 import { searchInviteManagerData, shouldShowElement } from '../../utils/searchUtils';
+import { useAuth } from '../../contexts/AuthContext';
+import { apiRequest } from '../../utils/api';
 import '../../style/invite-manager.css';
 
 Chart.register(...registerables);
@@ -22,6 +24,17 @@ const InviteManager = () => {
 
     const { modal, setModal, alert, confirm, prompt } = useModal();
     const { searchTerm, isSearching, setSearchTerm, setIsSearching } = useSearch();
+    
+    // Get auth data - this gives us access to the logged-in user
+    const { user, getToken, loading } = useAuth();
+
+    // NEW: Redirect to login if not authenticated
+    useEffect(() => {
+        if (!loading && !user) {
+            console.log('No user found, redirecting to login...');
+            navigate('/');
+        }
+    }, [user, loading, navigate]);
 
     // State for fetched invites with pagination
     const [invites, setInvites] = useState([]);
@@ -41,6 +54,20 @@ const InviteManager = () => {
     const [hasNext, setHasNext] = useState(false);
     const [hasPrev, setHasPrev] = useState(false);
 
+    // Get admin ID from auth context - THIS IS THE KEY EXTRACTION
+    const adminId = user?.id;
+    console.log('Current Admin ID from Auth Context:', adminId);
+    console.log('Full user object:', user); // NEW: Debug log
+
+    // If still loading or no user, show loading
+    if (loading) {
+        return <Loader message="Checking authentication..." />;
+    }
+
+    if (!user) {
+        return <Loader message="Redirecting to login..." />;
+    }
+
     // Check if mobile on mount and resize
     useEffect(() => {
         const checkMobile = () => {
@@ -55,8 +82,14 @@ const InviteManager = () => {
         };
     }, []);
 
-    // Fetch invites from backend with pagination and filtering
+    // Fetch invites from backend with pagination and filtering - UPDATED with adminId
     const fetchInvites = useCallback(async (page = 1, search = '', userType = 'all', usage = 'all', expiry = 'all') => {
+        // Only fetch if we have an admin ID
+        if (!adminId) {
+            console.log('No admin ID available, skipping fetch');
+            return;
+        }
+
         setIsFetchingInvites(true);
         try {
             const params = new URLSearchParams({
@@ -65,10 +98,15 @@ const InviteManager = () => {
                 search: search,
                 user_type: userType,
                 usage: usage,
-                expiry: expiry
+                expiry: expiry,
+                admin_id: adminId // Include admin ID to fetch only their invites
             });
 
-            const response = await fetch(`/api/invites/all_invite_codes?${params}`);
+            console.log('Fetching invites with admin_id:', adminId); // Debug log
+
+            // Use apiRequest which automatically includes the JWT token
+            const response = await apiRequest(`${import.meta.env.VITE_HOST}:${import.meta.env.VITE_PORT}/home/invite_manager/all_invite_codes?${params}`);
+            
             if (response.ok) {
                 const data = await response.json();
                 if (data.success) {
@@ -86,21 +124,24 @@ const InviteManager = () => {
             }
         } catch (error) {
             console.error('Error fetching invites:', error);
-            // Fallback to mock data if fetch fails
-            setInvites(getMockInvites());
-            setTotalCount(getMockInvites().length);
-            setTotalPages(Math.ceil(getMockInvites().length / 10));
+            // Fallback to mock data if fetch fails - NOW USES ACTUAL ADMIN ID
+            const mockInvites = getMockInvites();
+            setInvites(mockInvites);
+            setTotalCount(mockInvites.length);
+            setTotalPages(Math.ceil(mockInvites.length / 10));
         } finally {
             setIsFetchingInvites(false);
         }
-    }, []);
+    }, [adminId]); // Re-fetch when adminId changes
 
-    // Initial fetch and fetch when filters change
+    // Initial fetch and fetch when filters change - ONLY when adminId is available
     useEffect(() => {
-        fetchInvites(1, searchInput, userTypeFilter, usageFilter, expiryFilter);
-    }, [fetchInvites, searchInput, userTypeFilter, usageFilter, expiryFilter]);
+        if (adminId) {
+            fetchInvites(1, searchInput, userTypeFilter, usageFilter, expiryFilter);
+        }
+    }, [fetchInvites, searchInput, userTypeFilter, usageFilter, expiryFilter, adminId]);
 
-    // Mock data fallback - RESTORED FULL MOCK DATA
+    // Mock data fallback - UPDATED to use actual admin ID from context
     const getMockInvites = () => [
         {
             id: 1,
@@ -111,7 +152,7 @@ const InviteManager = () => {
             used: true,
             used_by: 'John Smith',
             used_at: new Date('2024-01-16'),
-            admin_id: 1
+            admin_id: adminId // Uses actual admin ID from context
         },
         {
             id: 2,
@@ -122,7 +163,7 @@ const InviteManager = () => {
             used: false,
             used_by: null,
             used_at: null,
-            admin_id: 1
+            admin_id: adminId // Uses actual admin ID from context
         },
         {
             id: 3,
@@ -133,7 +174,7 @@ const InviteManager = () => {
             used: false,
             used_by: null,
             used_at: null,
-            admin_id: 1
+            admin_id: adminId // Uses actual admin ID from context
         },
         {
             id: 4,
@@ -144,7 +185,7 @@ const InviteManager = () => {
             used: true,
             used_by: 'Sarah Johnson',
             used_at: new Date('2024-01-21'),
-            admin_id: 1
+            admin_id: adminId // Uses actual admin ID from context
         },
         {
             id: 5,
@@ -155,11 +196,11 @@ const InviteManager = () => {
             used: false,
             used_by: null,
             used_at: null,
-            admin_id: 1
+            admin_id: adminId // Uses actual admin ID from context
         }
     ];
 
-    // FIXED: Enhanced scroll to section when URL parameter changes - RESTORED FULL LOGIC
+    // FIXED: Enhanced scroll to section when URL parameter changes
     useEffect(() => {
         console.log('InviteManager section changed:', section);
         console.log('Current path:', location.pathname);
@@ -264,7 +305,7 @@ const InviteManager = () => {
         }
     }, [searchTerm, invites, generatedCode]);
 
-    // RESTORED: Utility functions
+    // Utility functions
     const formatDate = (date) => {
         return new Date(date).toLocaleDateString('en-US', {
             year: 'numeric',
@@ -291,7 +332,7 @@ const InviteManager = () => {
         await alert(message, 'Success');
     };
 
-    // RESTORED: Analytics chart function
+    // Analytics chart function
     const createAnalyticsChart = () => {
         const ctx = document.getElementById('invite-manager-analytics-chart');
         if (!ctx) {
@@ -403,16 +444,22 @@ const InviteManager = () => {
         fetchInvites(page, searchInput, userTypeFilter, usageFilter, expiryFilter);
     };
 
-    // Generate code function - Updated to use API
+    // Generate code function - UPDATED with admin ID and role check
     const generateCode = async (userType) => {
+        // Check if user is admin - only admins can generate codes
+        if (user?.role !== 'admin') {
+            await alert('Only administrators can generate invite codes.', 'Access Denied');
+            return;
+        }
+
         setIsLoading(true);
         try {
-            const response = await fetch('/api/invites/generate', {
+            const response = await apiRequest(`${import.meta.env.VITE_HOST}:${import.meta.env.VITE_PORT}/home/invite_manager/generate`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ user_type: userType })
+                body: JSON.stringify({ 
+                    user_type: userType,
+                    admin_id: adminId // Include admin ID in the request
+                })
             });
 
             if (response.ok) {
@@ -436,7 +483,7 @@ const InviteManager = () => {
             }
         } catch (error) {
             console.error('Error generating code:', error);
-            // Fallback to local generation
+            // Fallback to local generation - UPDATED with admin ID
             const code = `${userType === 'teacher' ? 'TCH' : 'STD'}-${generateRandomCode()}`;
             const createdAt = new Date();
             const expiresAt = new Date(createdAt.getTime() + 7 * 24 * 60 * 60 * 1000);
@@ -474,7 +521,7 @@ const InviteManager = () => {
         }
     };
 
-    // Modal functions - ALL RESTORED
+    // Modal functions
     const openModal = (invite) => {
         setSelectedInvite(invite);
     };
@@ -483,16 +530,23 @@ const InviteManager = () => {
         setSelectedInvite(null);
     };
 
+    // Regenerate code function - UPDATED with admin ID and role check
     const regenerateCode = async () => {
         if (!selectedInvite) return;
 
+        // Check if user is admin - only admins can regenerate codes
+        if (user?.role !== 'admin') {
+            await alert('Only administrators can regenerate invite codes.', 'Access Denied');
+            return;
+        }
+
         try {
-            const response = await fetch(`/api/invites/${selectedInvite.id}/regenerate`, {
+            const response = await apiRequest(`${import.meta.env.VITE_HOST}:${import.meta.env.VITE_PORT}/home/invite_manager/${selectedInvite.id}/regenerate`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ user_type: selectedInvite.user_type })
+                body: JSON.stringify({ 
+                    user_type: selectedInvite.user_type,
+                    admin_id: adminId // Include admin ID in the request
+                })
             });
 
             if (response.ok) {
@@ -510,7 +564,7 @@ const InviteManager = () => {
             }
         } catch (error) {
             console.error('Error regenerating code:', error);
-            // Fallback to local regeneration
+            // Fallback to local regeneration - UPDATED with admin ID
             const newCode = `${selectedInvite.user_type === 'teacher' ? 'TCH' : 'STD'}-${generateRandomCode()}`;
             setInvites(prev => prev.map(invite =>
                 invite.id === selectedInvite.id
@@ -518,7 +572,8 @@ const InviteManager = () => {
                         ...invite,
                         code: newCode,
                         created_at: new Date(),
-                        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+                        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+                        admin_id: adminId // Update with current admin ID
                     }
                     : invite
             ));
@@ -527,28 +582,35 @@ const InviteManager = () => {
         }
     };
 
-    // RESTORED: viewDetails function
+    // View details function
     const viewDetails = async () => {
         if (!selectedInvite) return;
 
         await alert(
-            `Code: ${selectedInvite.code}\nUser Type: ${selectedInvite.user_type}\nCreated: ${formatDate(selectedInvite.created_at)}\nExpires: ${formatDate(selectedInvite.expires_at)}\nUsed: ${selectedInvite.used ? 'Yes' : 'No'}\nUsed By: ${selectedInvite.used_by || 'N/A'}`,
+            `Code: ${selectedInvite.code}\nUser Type: ${selectedInvite.user_type}\nCreated: ${formatDate(selectedInvite.created_at)}\nExpires: ${formatDate(selectedInvite.expires_at)}\nUsed: ${selectedInvite.used ? 'Yes' : 'No'}\nUsed By: ${selectedInvite.used_by || 'N/A'}\nAdmin ID: ${selectedInvite.admin_id}`,
             'Invite Code Details'
         );
     };
 
-    // RESTORED: sendReminder function
+    // Send reminder function
     const sendReminder = async () => {
         await alert('Email reminder feature coming soon!', 'Feature Coming Soon');
     };
 
+    // Delete code function - UPDATED with admin ID and role check
     const deleteCode = async () => {
         if (!selectedInvite) return;
+
+        // Check if user is admin - only admins can delete codes
+        if (user?.role !== 'admin') {
+            await alert('Only administrators can delete invite codes.', 'Access Denied');
+            return;
+        }
 
         const shouldDelete = await confirm('Are you sure you want to delete this invite code?', 'Confirm Deletion');
         if (shouldDelete) {
             try {
-                const response = await fetch(`/api/invites/${selectedInvite.id}`, {
+                const response = await apiRequest(`${import.meta.env.VITE_HOST}:${import.meta.env.VITE_PORT}/home/invite_manager/${selectedInvite.id}`, {
                     method: 'DELETE'
                 });
 
@@ -581,13 +643,13 @@ const InviteManager = () => {
         return searchResults.sections && searchResults.sections.includes(sectionId);
     };
 
-    // RESTORED: shouldShowInviteElement function
+    // shouldShowInviteElement function
     const shouldShowInviteElement = (element, type) => {
         if (!searchTerm) return true;
         return shouldShowElement(element, searchTerm, searchResults, type);
     };
 
-    // RESTORED: navigateToSection function
+    // navigateToSection function
     const navigateToSection = (sectionName) => {
         navigate(`/invite-manager/${sectionName}`);
     };
@@ -933,7 +995,7 @@ const InviteManager = () => {
                 </main>
             </div>
 
-            {/* Modal - RESTORED FULL MODAL */}
+            {/* Modal */}
             {selectedInvite && (
                 <div className="invite-manager-modal-overlay active" onClick={closeModal}>
                     <div className="invite-manager-modal-content" onClick={(e) => e.stopPropagation()}>

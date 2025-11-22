@@ -1,8 +1,8 @@
 import pg from "pg"
 
-export const postgres = () => {
+export const postgres = {
 
-    const pool = new pg.Pool({
+    pool: new pg.Pool({
         user: "postgres",
         host: "localhost",
         database: "vDesk_DB",

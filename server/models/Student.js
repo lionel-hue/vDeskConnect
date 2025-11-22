@@ -1,14 +1,12 @@
 import { postgres } from "../database/postgres.js"
 
-postgres()
-
 
 const student = {
     auth: {
         async add(
             id, name, email, password, dob, soo, sex, prev_addr, curr_addr, blood_g, geno, height, weight, disability, par_guard_type, par_guard_phone, par_guard_email, par_guard_addr
         ) {
-            return await pool.query(
+            return await postgres.pool.query(
                 `INSERT INTO Public."Student"(
                     "Stu_id", "Stu_name", "email", "password", "dateofbirth", "stateoforigin", "sex", "previous_address", "current_address", "blood_group", "genotype", "height", "weight", "disability", "parent_guardian_type", "parent_guardian_phone", "parent_guardian_email", "parent_guardian_address"
                 ) VALUES (
@@ -18,17 +16,17 @@ const student = {
             )
         },
 
-        async getByEmail(email){ return await pool.query( `SELECT * FROM Public."Student" WHERE email = $1`, [email])},
+        async getByEmail(email){ return await postgres.pool.query( `SELECT * FROM Public."Student" WHERE email = $1`, [email])},
 
-        async getById(id){ return await pool.query( `SELECT * FROM Public."Student" WHERE "Stu_id = $1`, [id])},
+        async getById(id){ return await postgres.pool.query( `SELECT * FROM Public."Student" WHERE "Stu_id = $1`, [id])},
 
-        async getAllEmails(){ return await pool.query(` SELECT email FROM Public."Student" `)},
+        async getAllEmails(){ return await postgres.pool.query(` SELECT email FROM Public."Student" `)},
 
-        async changePassword(id, password){ return await pool.query( `UPDATE public."Student" SET password = $2 WHERE "Stu_id" = $1`, [id, password] )},
+        async changePassword(id, password){ return await postgres.pool.query( `UPDATE public."Student" SET password = $2 WHERE "Stu_id" = $1`, [id, password] )},
 
         junior: {
             async add(id, grade_num) {
-                return await pool.query(
+                return await postgres.pool.query(
                     `INSERT INTO Public."Junior"( "Stu_id", "Grade_num") VALUES($1, $2)`,
                     [id, grade_num]
                 )
@@ -37,7 +35,7 @@ const student = {
 
         senior: {
             async add(id, role, dep_code, grade_num) {
-                return await pool.query(
+                return await postgres.pool.query(
                     `INSERT INTO Public."Senior"( "Stu_id", "Role", "Dep_code", "Grade_num") VALUES($1, $2, $3, $4)`,
                     [id, role, dep_code, grade_num]
                 )

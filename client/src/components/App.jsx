@@ -11,7 +11,7 @@ import ResetPassword from './auth/ResetPassword';
 import Dashboard from './main/Dashboard';
 import InviteManager from './main/InviteManager';
 import { SearchProvider } from './SearchManager';
-import { AuthProvider } from './contexts/AuthContext'; // NEW IMPORT
+import { AuthProvider } from '../contexts/AuthContext'; // NEW IMPORT
 
 function App() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);

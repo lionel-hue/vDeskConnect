@@ -1,16 +1,15 @@
 // models/InviteCode.js
 import { postgres } from "../database/postgres.js"
 
-postgres()
 
 const invite_code = {
     auth: {
         async verify_invite(code) {
-            return pool.query(`SELECT * FROM Public."InviteCode" WHERE code = $1 AND NOT used AND expires_at > NOW();`, [code])
+            return postgres.pool.query(`SELECT * FROM Public."InviteCode" WHERE code = $1 AND NOT used AND expires_at > NOW();`, [code])
         },
 
         async use_invite_code(code) {
-            return pool.query(`UPDATE Public."InviteCode" SET used = TRUE WHERE code = $1`, [code])
+            return postgres.pool.query(`UPDATE Public."InviteCode" SET used = TRUE WHERE code = $1`, [code])
         }
     },
 
@@ -63,7 +62,7 @@ const invite_code = {
             
             params.push(limit, offset);
 
-            return pool.query(query, params);
+            return postgres.pool.query(query, params);
         },
 
         async get_total_count(admin_id, search = '', filters = {}) {
@@ -103,12 +102,12 @@ const invite_code = {
                 }
             }
 
-            return pool.query(query, params);
+            return postgres.pool.query(query, params);
         },
 
         async create_code(code_data) {
             const { id, code, user_type, expires_at, used_by, used_at, admin_id } = code_data;
-            return pool.query(
+            return postgres.pool.query(
                 `INSERT INTO Public."InviteCode" (id, code, user_type, expires_at, used_by, used_at, admin_id) 
                  VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
                 [id, code, user_type, expires_at, used_by, used_at, admin_id]
@@ -116,7 +115,7 @@ const invite_code = {
         },
 
         async regenerate_code(id, new_code) {
-            return pool.query(
+            return postgres.pool.query(
                 `UPDATE Public."InviteCode" 
                  SET code = $1, created_at = NOW(), expires_at = NOW() + INTERVAL '7 days', used = false, used_by = NULL, used_at = NULL 
                  WHERE id = $2 RETURNING *`,
@@ -125,7 +124,7 @@ const invite_code = {
         },
 
         async delete_code(id) {
-            return pool.query(`DELETE FROM Public."InviteCode" WHERE id = $1`, [id]);
+            return postgres.pool.query(`DELETE FROM Public."InviteCode" WHERE id = $1`, [id]);
         }
     }
 }
