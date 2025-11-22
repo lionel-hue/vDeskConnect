@@ -1,9 +1,11 @@
+// auth/Login.jsx - COMPLETE UPDATED VERSION WITH AUTH CONTEXT
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import { useForm } from '../../hooks/useForm'
 import { validateLogin } from '../../utils/validation'
 import { usePasswordToggle } from '../../hooks/usePasswordToggle'
+import { useAuth } from '../../contexts/AuthContext';
 import '../../style/auth.css';
 
 function Login({ onSignupClick, onLoginSuccess }) {
@@ -14,6 +16,7 @@ function Login({ onSignupClick, onLoginSuccess }) {
   })
 
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [passwordType, passwordIcon, togglePassword] = usePasswordToggle()
   const [visibleErrors, setVisibleErrors] = useState({});
 
@@ -78,6 +81,11 @@ function Login({ onSignupClick, onLoginSuccess }) {
         // Handle successful login (account is verified)
         else if (response.ok) {
           console.log('User logged in successfully:', data)
+
+          // Store user data in AuthContext
+          if (data.success && data.data) {
+            login(data.data); // This stores the user in context and localStorage
+          }
 
           // Call the onLoginSuccess prop to update authentication state
           if (onLoginSuccess) {
