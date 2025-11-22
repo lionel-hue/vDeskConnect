@@ -1,6 +1,6 @@
-// main/Dashboard.jsx
+// main/Dashboard.jsx - COMPLETE UPDATED VERSION WITH AUTH CHECK
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { useParams, useLocation } from 'react-router-dom';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { Chart, registerables } from 'chart.js';
 import Header from '../Header';
 import SidebarNav from '../SidebarNav';
@@ -8,6 +8,7 @@ import Loader from '../Loader';
 import Modal, { useModal } from '../Modal';
 import { useSearch } from '../SearchManager';
 import { searchDashboardData, shouldShowElement } from '../../utils/searchUtils';
+import { useAuth } from '../../contexts/AuthContext';
 import '../../style/dashboard.css';
 
 Chart.register(...registerables);
@@ -19,6 +20,28 @@ const Dashboard = () => {
     const [isMobile, setIsMobile] = useState(false);
     const { section } = useParams();
     const location = useLocation();
+    const navigate = useNavigate();
+
+    // Auth check implementation
+    const { user, loading } = useAuth();
+
+    // Redirect to login if not authenticated
+    useEffect(() => {
+        if (!loading && !user) {
+            console.log('No user found in Dashboard, redirecting to login...');
+            navigate('/');
+        }
+    }, [user, loading, navigate]);
+
+    // If still loading or no user, show loading
+    if (loading) {
+        return <Loader message="Checking authentication..." />;
+    }
+
+    if (!user) {
+        return <Loader message="Redirecting to login..." />;
+    }
+
     const studentsChartRef = useRef(null);
     const lecturesChartRef = useRef(null);
     const attendanceChartRef = useRef(null);
