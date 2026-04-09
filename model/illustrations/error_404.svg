@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" fill="none">
+  <!-- Background -->
+  <rect width="400" height="300" rx="16" fill="#F0EEF7"/>
+  
+  <!-- Decorative -->
+  <circle cx="80" cy="70" r="35" fill="#EF4444" opacity="0.08"/>
+  <circle cx="330" cy="240" r="40" fill="#A99DDB" opacity="0.1"/>
+  
+  <!-- 404 Text -->
+  <text x="115" y="140" font-family="sans-serif" font-size="72" font-weight="bold" fill="#7C6BC4" opacity="0.15">404</text>
+  
+  <!-- Broken link chain -->
+  <rect x="120" y="150" width="60" height="30" rx="15" fill="#FFFFFF" stroke="#EF4444" stroke-width="2"/>
+  <rect x="200" y="150" width="60" height="30" rx="15" fill="#FFFFFF" stroke="#EF4444" stroke-width="2"/>
+  <line x1="180" y1="165" x2="185" y2="165" stroke="#EF4444" stroke-width="2" stroke-dasharray="3 3"/>
+  <line x1="178" y1="170" x2="183" y2="170" stroke="#EF4444" stroke-width="2" stroke-dasharray="3 3"/>
+  
+  <!-- Sad robot -->
+  <rect x="160" y="200" width="60" height="50" rx="10" fill="#FFFFFF" stroke="#7C6BC4" stroke-width="2"/>
+  
+  <!-- Robot eyes -->
+  <circle cx="180" cy="220" r="6" fill="#EF4444" opacity="0.3"/>
+  <circle cx="200" cy="220" r="6" fill="#EF4444" opacity="0.3"/>
+  <circle cx="180" cy="220" r="3" fill="#2D2B55"/>
+  <circle cx="200" cy="220" r="3" fill="#2D2B55"/>
+  
+  <!-- Sad mouth -->
+  <path d="M182 238 Q190 232 198 238" stroke="#2D2B55" stroke-width="2" stroke-linecap="round" fill="none"/>
+  
+  <!-- Robot antenna -->
+  <line x1="190" y1="200" x2="190" y2="185" stroke="#7C6BC4" stroke-width="2"/>
+  <circle cx="190" cy="182" r="5" fill="#EF4444"/>
+  
+  <!-- Warning triangle -->
+  <polygon points="320,100 340,70 360,100" fill="#FBBF24" opacity="0.3"/>
+  <polygon points="323,98 340,73 357,98" fill="#FBBF24"/>
+  <line x1="340" y1="80" x2="340" y2="90" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="340" cy="95" r="2" fill="#FFFFFF"/>
+  
+  <!-- Decorative -->
+  <circle cx="80" cy="200" r="6" fill="#A99DDB" opacity="0.2"/>
+  <circle cx="330" cy="160" r="5" fill="#7C6BC4" opacity="0.15"/>
+</svg>

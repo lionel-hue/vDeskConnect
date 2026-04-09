@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" fill="none">
+  <!-- Background -->
+  <rect width="400" height="300" rx="16" fill="#F0EEF7"/>
+  
+  <!-- Decorative -->
+  <circle cx="80" cy="70" r="35" fill="#7C6BC4" opacity="0.08"/>
+  <circle cx="330" cy="240" r="40" fill="#A99DDB" opacity="0.1"/>
+  
+  <!-- Empty screen -->
+  <rect x="100" y="60" width="200" height="140" rx="10" fill="#FFFFFF" stroke="#E5E4F0" stroke-width="2" stroke-dasharray="6 4"/>
+  
+  <!-- Empty icon in center -->
+  <rect x="170" y="100" width="60" height="40" rx="6" fill="#F0EEF7"/>
+  <circle cx="200" cy="120" r="15" fill="#E5E4F0"/>
+  
+  <!-- Plus icon -->
+  <line x1="195" y1="115" x2="205" y2="115" stroke="#A99DDB" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="200" y1="110" x2="200" y2="120" stroke="#A99DDB" stroke-width="2.5" stroke-linecap="round"/>
+  
+  <!-- Floating plus signs -->
+  <g transform="translate(120, 80)">
+    <line x1="-4" y1="0" x2="4" y2="0" stroke="#7C6BC4" stroke-width="1.5" stroke-linecap="round" opacity="0.3"/>
+    <line x1="0" y1="-4" x2="0" y2="4" stroke="#7C6BC4" stroke-width="1.5" stroke-linecap="round" opacity="0.3"/>
+  </g>
+  
+  <g transform="translate(290, 100)">
+    <line x1="-3" y1="0" x2="3" y2="0" stroke="#A99DDB" stroke-width="1.5" stroke-linecap="round" opacity="0.3"/>
+    <line x1="0" y1="-3" x2="0" y2="3" stroke="#A99DDB" stroke-width="1.5" stroke-linecap="round" opacity="0.3"/>
+  </g>
+  
+  <!-- Sparkle dots -->
+  <circle cx="140" cy="220" r="4" fill="#7C6BC4" opacity="0.2"/>
+  <circle cx="280" cy="220" r="5" fill="#A99DDB" opacity="0.15"/>
+  <circle cx="320" cy="150" r="3" fill="#7C6BC4" opacity="0.1"/>
+</svg>

@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" fill="none">
+  <!-- Background -->
+  <rect width="400" height="300" rx="16" fill="#F0EEF7"/>
+  
+  <!-- Decorative -->
+  <circle cx="340" cy="70" r="40" fill="#7C6BC4" opacity="0.08"/>
+  <circle cx="60" cy="240" r="35" fill="#A99DDB" opacity="0.1"/>
+  
+  <!-- ID Card -->
+  <rect x="100" y="80" width="200" height="140" rx="12" fill="#FFFFFF" stroke="#7C6BC4" stroke-width="2"/>
+  
+  <!-- Card header -->
+  <rect x="100" y="80" width="200" height="50" rx="12" fill="#7C6BC4"/>
+  <rect x="100" y="110" width="200" height="20" fill="#7C6BC4"/>
+  
+  <!-- Avatar -->
+  <circle cx="150" cy="115" r="22" fill="#F0EEF7" stroke="#FFFFFF" stroke-width="3"/>
+  <circle cx="146" cy="110" r="3" fill="#7C6BC4"/>
+  <circle cx="154" cy="110" r="3" fill="#7C6BC4"/>
+  <path d="M146 120 Q150 124 154 120" stroke="#7C6BC4" stroke-width="2" stroke-linecap="round"/>
+  
+  <!-- Card details -->
+  <rect x="185" y="95" width="80" height="8" rx="4" fill="#FFFFFF" opacity="0.6"/>
+  <rect x="185" y="110" width="60" height="6" rx="3" fill="#FFFFFF" opacity="0.4"/>
+  <rect x="185" y="120" width="70" height="6" rx="3" fill="#FFFFFF" opacity="0.4"/>
+  
+  <!-- Card body details -->
+  <rect x="120" y="145" width="160" height="8" rx="4" fill="#E5E4F0"/>
+  <rect x="120" y="162" width="120" height="8" rx="4" fill="#E5E4F0"/>
+  <rect x="120" y="179" width="140" height="8" rx="4" fill="#E5E4F0"/>
+  <rect x="120" y="196" width="100" height="8" rx="4" fill="#E5E4F0"/>
+  
+  <!-- User icon floating -->
+  <circle cx="330" cy="180" r="25" fill="#FFFFFF" stroke="#7C6BC4" stroke-width="2"/>
+  <circle cx="330" cy="172" r="10" fill="#7C6BC4" opacity="0.3"/>
+  <path d="M315 190 Q330 200 345 190" stroke="#7C6BC4" stroke-width="3" stroke-linecap="round"/>
+  
+  <!-- Decorative dots -->
+  <circle cx="80" cy="100" r="5" fill="#7C6BC4" opacity="0.2"/>
+  <circle cx="320" cy="250" r="6" fill="#A99DDB" opacity="0.3"/>
+  <rect x="340" y="130" width="8" height="8" rx="2" fill="#7C6BC4" opacity="0.15" transform="rotate(45 344 134)"/>
+</svg>

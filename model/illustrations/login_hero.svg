@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" fill="none">
+  <!-- Background -->
+  <rect width="400" height="300" rx="16" fill="#F0EEF7"/>
+  
+  <!-- Decorative circles -->
+  <circle cx="320" cy="60" r="40" fill="#7C6BC4" opacity="0.1"/>
+  <circle cx="60" cy="240" r="50" fill="#A99DDB" opacity="0.1"/>
+  <circle cx="350" cy="220" r="25" fill="#7C6BC4" opacity="0.08"/>
+  
+  <!-- Desk -->
+  <rect x="80" y="200" width="240" height="12" rx="6" fill="#5E4FA2"/>
+  <rect x="100" y="212" width="8" height="40" rx="4" fill="#5E4FA2"/>
+  <rect x="292" y="212" width="8" height="40" rx="4" fill="#5E4FA2"/>
+  
+  <!-- Laptop -->
+  <rect x="130" y="140" width="140" height="60" rx="6" fill="#FFFFFF" stroke="#7C6BC4" stroke-width="2"/>
+  <rect x="110" y="196" width="180" height="8" rx="4" fill="#E5E4F0"/>
+  
+  <!-- Screen content -->
+  <rect x="140" y="150" width="60" height="4" rx="2" fill="#7C6BC4" opacity="0.6"/>
+  <rect x="140" y="160" width="90" height="3" rx="1.5" fill="#A99DDB" opacity="0.5"/>
+  <rect x="140" y="168" width="70" height="3" rx="1.5" fill="#A99DDB" opacity="0.5"/>
+  <rect x="140" y="176" width="100" height="3" rx="1.5" fill="#A99DDB" opacity="0.5"/>
+  
+  <!-- Person -->
+  <circle cx="280" cy="120" r="24" fill="#F0EEF7" stroke="#7C6BC4" stroke-width="3"/>
+  <circle cx="275" cy="115" r="3" fill="#2D2B55"/>
+  <circle cx="285" cy="115" r="3" fill="#2D2B55"/>
+  <path d="M275 125 Q280 130 285 125" stroke="#2D2B55" stroke-width="2" stroke-linecap="round"/>
+  
+  <!-- Person body -->
+  <rect x="262" y="145" width="36" height="50" rx="12" fill="#7C6BC4"/>
+  
+  <!-- Floating elements -->
+  <circle cx="100" cy="80" r="6" fill="#7C6BC4" opacity="0.3"/>
+  <circle cx="320" cy="140" r="4" fill="#A99DDB" opacity="0.4"/>
+  <rect x="340" y="100" width="8" height="8" rx="2" fill="#7C6BC4" opacity="0.2" transform="rotate(45 344 104)"/>
+  
+  <!-- School building small -->
+  <rect x="60" y="140" width="40" height="50" rx="4" fill="#FFFFFF" stroke="#A99DDB" stroke-width="2"/>
+  <polygon points="60,140 80,120 100,140" fill="#7C6BC4" opacity="0.3"/>
+  <rect x="75" y="160" width="10" height="20" rx="2" fill="#7C6BC4" opacity="0.5"/>
+  
+  <!-- Welcome text hint -->
+  <rect x="150" y="230" width="100" height="8" rx="4" fill="#7C6BC4" opacity="0.2"/>
+</svg>

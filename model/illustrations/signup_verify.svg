@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" fill="none">
+  <!-- Background -->
+  <rect width="400" height="300" rx="16" fill="#F0EEF7"/>
+  
+  <!-- Decorative -->
+  <circle cx="80" cy="70" r="35" fill="#7C6BC4" opacity="0.08"/>
+  <circle cx="330" cy="240" r="40" fill="#A99DDB" opacity="0.1"/>
+  
+  <!-- Envelope -->
+  <rect x="100" y="100" width="200" height="120" rx="10" fill="#FFFFFF" stroke="#7C6BC4" stroke-width="2"/>
+  
+  <!-- Envelope flap -->
+  <polygon points="100,100 200,160 300,100" fill="#7C6BC4" opacity="0.15"/>
+  <polygon points="100,100 200,150 300,100" fill="#7C6BC4" opacity="0.3"/>
+  
+  <!-- Letter inside -->
+  <rect x="120" y="115" width="160" height="80" rx="4" fill="#F0EEF7" stroke="#A99DDB" stroke-width="1.5"/>
+  
+  <!-- Verification code on letter -->
+  <rect x="140" y="130" width="30" height="10" rx="5" fill="#7C6BC4" opacity="0.2"/>
+  <rect x="180" y="130" width="30" height="10" rx="5" fill="#7C6BC4" opacity="0.2"/>
+  <rect x="220" y="130" width="30" height="10" rx="5" fill="#7C6BC4" opacity="0.2"/>
+  
+  <!-- Checkmark badge -->
+  <circle cx="280" cy="80" r="28" fill="#34D399" opacity="0.2"/>
+  <circle cx="280" cy="80" r="20" fill="#34D399"/>
+  <path d="M272 80 L277 85 L288 74" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Floating elements -->
+  <circle cx="70" cy="180" r="12" fill="#7C6BC4" opacity="0.15"/>
+  <circle cx="340" cy="150" r="8" fill="#A99DDB" opacity="0.2"/>
+  <rect x="350" y="200" width="6" height="6" rx="1" fill="#7C6BC4" opacity="0.15" transform="rotate(45 353 203)"/>
+  
+  <!-- @ symbol hint -->
+  <circle cx="80" cy="240" r="18" fill="#FFFFFF" stroke="#7C6BC4" stroke-width="2"/>
+  <text x="72" y="247" font-family="sans-serif" font-size="18" font-weight="bold" fill="#7C6BC4">@</text>
+</svg>

@@ -20,14 +20,21 @@ class ApiClient {
 
   async request(endpoint, options = {}) {
     const url = `${this.baseURL}/api${endpoint}`;
+    const isFormData = options.body instanceof FormData;
     const headers = {
-      'Content-Type': 'application/json',
       'Accept': 'application/json',
       ...options.headers,
     };
+    if (!isFormData) {
+      headers['Content-Type'] = 'application/json';
+    }
     if (this.token) headers['Authorization'] = `Bearer ${this.token}`;
 
-    const response = await fetch(url, { ...options, headers, body: options.body ? JSON.stringify(options.body) : undefined });
+    const response = await fetch(url, {
+      ...options,
+      headers,
+      body: isFormData ? options.body : (options.body ? JSON.stringify(options.body) : undefined),
+    });
     const data = await response.json();
 
     if (!response.ok) {

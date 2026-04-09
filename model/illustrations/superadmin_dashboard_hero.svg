@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" fill="none">
+  <!-- Background -->
+  <rect width="400" height="300" rx="16" fill="#F0EEF7"/>
+  
+  <!-- Decorative -->
+  <circle cx="80" cy="70" r="35" fill="#7C6BC4" opacity="0.08"/>
+  <circle cx="330" cy="240" r="40" fill="#A99DDB" opacity="0.1"/>
+  
+  <!-- Dashboard screen -->
+  <rect x="80" y="50" width="240" height="160" rx="10" fill="#FFFFFF" stroke="#7C6BC4" stroke-width="2"/>
+  
+  <!-- Screen header -->
+  <rect x="80" y="50" width="240" height="30" rx="10" fill="#7C6BC4"/>
+  <rect x="80" y="65" width="240" height="15" fill="#7C6BC4"/>
+  
+  <!-- Header dots -->
+  <circle cx="100" cy="65" r="4" fill="#FFFFFF" opacity="0.5"/>
+  <circle cx="112" cy="65" r="4" fill="#FFFFFF" opacity="0.5"/>
+  <circle cx="124" cy="65" r="4" fill="#FFFFFF" opacity="0.5"/>
+  
+  <!-- Chart area -->
+  <rect x="100" y="95" width="100" height="60" rx="6" fill="#F0EEF7"/>
+  <polyline points="110,145 130,120 150,135 170,110 190,125" stroke="#7C6BC4" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Stats cards -->
+  <rect x="215" y="95" width="85" height="25" rx="4" fill="#7C6BC4" opacity="0.15"/>
+  <rect x="215" y="128" width="85" height="25" rx="4" fill="#34D399" opacity="0.15"/>
+  
+  <!-- Globe with schools -->
+  <circle cx="200" cy="240" r="35" fill="#FFFFFF" stroke="#7C6BC4" stroke-width="2"/>
+  <ellipse cx="200" cy="240" rx="18" ry="35" fill="none" stroke="#7C6BC4" stroke-width="1" opacity="0.3"/>
+  <line x1="165" y1="240" x2="235" y2="240" stroke="#7C6BC4" stroke-width="1" opacity="0.3"/>
+  
+  <!-- School dots on globe -->
+  <circle cx="190" cy="225" r="4" fill="#7C6BC4"/>
+  <circle cx="210" cy="235" r="3" fill="#A99DDB"/>
+  <circle cx="195" cy="250" r="3" fill="#34D399"/>
+  
+  <!-- Decorative -->
+  <circle cx="80" cy="200" r="6" fill="#A99DDB" opacity="0.2"/>
+  <circle cx="330" cy="100" r="8" fill="#7C6BC4" opacity="0.15"/>
+</svg>

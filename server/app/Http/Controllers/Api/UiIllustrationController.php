@@ -36,15 +36,15 @@ class UiIllustrationController extends Controller
 
     /**
      * Upload a new illustration pack (Super Admin only).
+     * Accepts files via FormData: pack_name + illustrations[] (files).
+     * Filename determines the key (e.g., "login_hero.svg" → key="login_hero").
      */
     public function uploadPack(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
             'pack_name' => 'required|string|max:255',
             'illustrations' => 'required|array|min:1',
-            'illustrations.*.key' => 'required|string|max:100',
-            'illustrations.*.section' => 'required|string|in:login,signup,dashboard,errors,empty_states',
-            'illustrations.*.file' => 'required|file|mimes:svg,png,jpg,jpeg,webp|max:5120',
+            'illustrations.*' => 'required|file|mimes:svg,png,jpg,jpeg,webp|max:5120',
         ]);
 
         if ($validator->fails()) {
@@ -57,22 +57,24 @@ class UiIllustrationController extends Controller
         $packName = $request->input('pack_name');
         $uploaded = [];
 
-        foreach ($request->input('illustrations') as $illustration) {
-            $file = $illustration['file'];
-
-            // Generate unique filename
+        foreach ($request->file('illustrations') as $file) {
+            // Derive key from filename (strip extension)
+            $filename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
             $extension = $file->getClientOriginalExtension();
-            $filename = sprintf('%s/%s.%s', $packName, $illustration['key'], $extension);
 
-            // Store in public disk
-            $path = $file->storeAs('illustrations', $filename, 'public');
+            // Determine section from key prefix
+            $section = $this->detectSection($filename);
+
+            // Generate storage path
+            $storageFilename = sprintf('%s/%s.%s', $packName, $filename, $extension);
+            $path = $file->storeAs('illustrations', $storageFilename, 'public');
             $url = Storage::url($path);
 
             $uiIllustration = UiIllustration::create([
                 'pack_name' => $packName,
-                'key' => $illustration['key'],
-                'url' => $url,
-                'section' => $illustration['section'],
+                'key'       => $filename,
+                'url'       => $url,
+                'section'   => $section,
                 'is_active' => false,
                 'created_by' => $request->user()->id,
             ]);
@@ -81,10 +83,30 @@ class UiIllustrationController extends Controller
         }
 
         return response()->json([
-            'message' => 'Illustration pack uploaded successfully',
-            'pack_name' => $packName,
+            'message'     => 'Illustration pack uploaded successfully',
+            'pack_name'   => $packName,
             'illustrations' => $uploaded,
         ], 201);
+    }
+
+    /**
+     * Detect section from illustration key.
+     */
+    private function detectSection(string $key): string
+    {
+        if (in_array($key, ['login_hero', 'signup_school', 'signup_admin', 'signup_verify', 'signup_password', 'email_verification', 'forgot_password', 'password_reset_sent', 'set_new_password', 'password_reset_success'])) {
+            return 'auth';
+        }
+        if (str_starts_with($key, 'dashboard') || str_starts_with($key, 'superadmin')) {
+            return 'dashboard';
+        }
+        if (str_starts_with($key, 'error')) {
+            return 'errors';
+        }
+        if ($key === 'welcome_hero') {
+            return 'landing';
+        }
+        return 'other';
     }
 
     /**
@@ -117,23 +139,23 @@ class UiIllustrationController extends Controller
      */
     public function listPacks(): JsonResponse
     {
-        $packs = UiIllustration::select('pack_name')
+        $packNames = UiIllustration::select('pack_name')
             ->distinct()
-            ->withCount(['illustrations' => function ($query) {
-                $query->where('is_active', true);
-            }])
-            ->get()
-            ->map(function ($item) {
-                return [
-                    'pack_name' => $item->pack_name,
-                    'total_illustrations' => UiIllustration::where('pack_name', $item->pack_name)->count(),
-                    'active_count' => UiIllustration::where('pack_name', $item->pack_name)->where('is_active', true)->count(),
-                    'is_active' => UiIllustration::where('pack_name', $item->pack_name)->where('is_active', true)->exists(),
-                    'created_at' => UiIllustration::where('pack_name', $item->pack_name)->min('created_at'),
-                ];
-            });
+            ->pluck('pack_name');
 
-        return response()->json($packs);
+        $packs = $packNames->map(function ($packName) {
+            $total = UiIllustration::where('pack_name', $packName)->count();
+            $activeCount = UiIllustration::where('pack_name', $packName)->where('is_active', true)->count();
+            return [
+                'pack_name' => $packName,
+                'total_illustrations' => $total,
+                'active_count' => $activeCount,
+                'is_active' => $activeCount > 0,
+                'created_at' => UiIllustration::where('pack_name', $packName)->min('created_at'),
+            ];
+        });
+
+        return response()->json($packs->values()->toArray());
     }
 
     /**

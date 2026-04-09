@@ -8,10 +8,14 @@ class DatabaseSeeder extends Seeder
 {
     /**
      * Seed the application's database.
-     * Seeders will be added here as modules are built (v3.0).
+     * This is the ONLY seeder for the entire vDeskConnect application.
+     *
+     * Run with: php artisan db:seed
      */
     public function run(): void
     {
-        //
+        $this->call([
+            VDeskConnectSeeder::class,
+        ]);
     }
 }
