@@ -109,6 +109,12 @@ class AuthController extends Controller
 
         // Check if user exists and is banned BEFORE attempting auth
         $checkUser = User::where('email', $request->email)->first();
+
+        // Also check for soft-deleted (banned/deleted) users
+        if (!$checkUser) {
+            $checkUser = User::withTrashed()->where('email', $request->email)->first();
+        }
+
         if ($checkUser && $checkUser->banned) {
             $banRecord = \App\Models\UserBan::where('user_id', $checkUser->id)
                 ->where('action_type', 'ban')
@@ -122,8 +128,8 @@ class AuthController extends Controller
             ], 403);
         }
 
-        // Check if user was deleted
-        if ($checkUser && $checkUser->banned === false && $checkUser->deleted_at) {
+        // Check if user was soft-deleted
+        if ($checkUser && $checkUser->trashed()) {
             $banRecord = \App\Models\UserBan::where('user_id', $checkUser->id)
                 ->where('action_type', 'delete')
                 ->latest()
