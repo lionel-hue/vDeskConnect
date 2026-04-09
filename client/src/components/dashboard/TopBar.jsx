@@ -1,15 +1,23 @@
 'use client';
 
-import { Bell, Search, User, Settings } from 'lucide-react';
+import { Bell, Search, User, Settings, Menu } from 'lucide-react';
 
-export default function TopBar({ title, subtitle, user }) {
+export default function TopBar({ title, subtitle, user, onMobileMenuToggle }) {
   return (
     <header className="sticky top-0 z-30 bg-bg-card/80 backdrop-blur-xl border-b border-border px-6 py-4">
       <div className="flex items-center justify-between">
-        {/* Left: Title */}
-        <div>
-          <h1 className="text-xl font-bold text-text-primary">{title}</h1>
-          {subtitle && <p className="text-sm text-text-secondary mt-0.5">{subtitle}</p>}
+        {/* Left: Title + Mobile Menu */}
+        <div className="flex items-center gap-4">
+          <button
+            onClick={onMobileMenuToggle}
+            className="lg:hidden p-2 rounded-lg hover:bg-bg-main transition-colors"
+          >
+            <Menu size={20} className="text-text-secondary" />
+          </button>
+          <div>
+            <h1 className="text-xl font-bold text-text-primary">{title}</h1>
+            {subtitle && <p className="text-sm text-text-secondary mt-0.5">{subtitle}</p>}
+          </div>
         </div>
 
         {/* Right: Actions */}

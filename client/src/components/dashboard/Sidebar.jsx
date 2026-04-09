@@ -46,10 +46,9 @@ const SCHOOL_ADMIN_NAV = [
   { label: 'Settings', icon: Settings, href: '/dashboard/settings' },
 ];
 
-export default function Sidebar({ role = 'admin', user, onLogout, collapsed: initialCollapsed = false, onToggle }) {
+export default function Sidebar({ role = 'admin', user, onLogout, collapsed: initialCollapsed = false, onToggle, mobileOpen, onMobileClose }) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(initialCollapsed);
-  const [mobileOpen, setMobileOpen] = useState(false);
 
   const navItems = role === 'super_admin' ? SUPER_ADMIN_NAV : SCHOOL_ADMIN_NAV;
 
@@ -62,7 +61,9 @@ export default function Sidebar({ role = 'admin', user, onLogout, collapsed: ini
     setCollapsed(newState);
     onToggle?.(newState);
   };
-  const toggleMobile = () => setMobileOpen(!mobileOpen);
+  const closeMobile = () => {
+    onMobileClose?.();
+  };
 
   return (
     <>
@@ -70,17 +71,9 @@ export default function Sidebar({ role = 'admin', user, onLogout, collapsed: ini
       {mobileOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-          onClick={toggleMobile}
+          onClick={closeMobile}
         />
       )}
-
-      {/* Mobile menu button */}
-      <button
-        onClick={toggleMobile}
-        className="fixed top-4 left-4 z-50 lg:hidden w-10 h-10 bg-sidebar rounded-lg flex items-center justify-center text-white shadow-soft"
-      >
-        {mobileOpen ? <X size={20} /> : <Menu size={20} />}
-      </button>
 
       {/* Sidebar */}
       <aside
@@ -144,7 +137,7 @@ export default function Sidebar({ role = 'admin', user, onLogout, collapsed: ini
               <Link
                 key={item.href}
                 href={item.href}
-                onClick={() => setMobileOpen(false)}
+                onClick={closeMobile}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-250 group
                   ${isActive
                     ? 'bg-primary text-white shadow-soft'

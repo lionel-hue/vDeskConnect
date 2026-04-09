@@ -11,6 +11,7 @@ export default function DashboardLayout({ children, title, subtitle, role = 'adm
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const token = api.getToken();
@@ -39,6 +40,10 @@ export default function DashboardLayout({ children, title, subtitle, role = 'adm
     setSidebarCollapsed(collapsed);
   };
 
+  const handleMobileMenuToggle = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-bg-main flex items-center justify-center">
@@ -54,9 +59,11 @@ export default function DashboardLayout({ children, title, subtitle, role = 'adm
         user={user}
         onLogout={handleLogout}
         onToggle={handleSidebarToggle}
+        mobileOpen={mobileMenuOpen}
+        onMobileClose={() => setMobileMenuOpen(false)}
       />
       <div className={`transition-all duration-300 ${sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'}`}>
-        <TopBar title={title} subtitle={subtitle} user={user} />
+        <TopBar title={title} subtitle={subtitle} user={user} onMobileMenuToggle={handleMobileMenuToggle} />
         <main className="p-6">
           {children}
         </main>
