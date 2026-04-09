@@ -55,7 +55,9 @@ export default function LoginPage() {
         setShowChangePassword(true);
       } else {
         toast.success('Welcome back! Redirecting...');
-        setTimeout(() => router.push('/dashboard'), 800);
+        // Redirect based on role
+        const redirectPath = data.user?.role === 'super_admin' ? '/admin/dashboard' : '/dashboard';
+        setTimeout(() => router.push(redirectPath), 800);
       }
     } catch (err) {
       // Check for ban error
