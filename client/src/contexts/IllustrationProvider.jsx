@@ -14,9 +14,10 @@ export function IllustrationProvider({ children }) {
       setLoading(true);
       const data = await api.get('/ui/illustrations');
       const keyed = {};
-      data.forEach((ill) => { keyed[ill.key] = ill.url; });
+      (data || []).forEach((ill) => { if (ill && ill.key && ill.url) keyed[ill.key] = ill.url; });
       setIllustrations(keyed);
     } catch {
+      // Backend not ready yet — use fallback illustrations silently
       setIllustrations({});
     } finally {
       setLoading(false);
@@ -26,7 +27,11 @@ export function IllustrationProvider({ children }) {
   useEffect(() => { fetchIllustrations(); }, [fetchIllustrations]);
 
   const getIllustration = useCallback(
-    (key, fallback = null) => illustrations[key] || fallback,
+    (key, fallback = null) => {
+      const url = illustrations[key];
+      // Only return a string URL (or the fallback which could be a string or JSX)
+      return (typeof url === 'string' && url) ? url : fallback;
+    },
     [illustrations]
   );
 
