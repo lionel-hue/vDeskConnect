@@ -10,6 +10,12 @@ use App\Http\Controllers\Api\UiIllustrationController;
 |--------------------------------------------------------------------------
 */
 
+// Public UI Illustrations (must be outside auth middleware)
+Route::prefix('ui')->group(function () {
+    Route::get('/illustrations', [UiIllustrationController::class, 'index']);
+    Route::get('/illustrations/active/{section}', [UiIllustrationController::class, 'bySection']);
+});
+
 // Auth routes (public)
 Route::prefix('auth')->group(function () {
     Route::post('/send-verification', [AuthController::class, 'sendVerification']);
@@ -27,12 +33,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::put('/auth/change-password', [AuthController::class, 'changePassword']);
 
-    // UI Illustrations (public for reading, protected for management)
+    // UI Illustrations management (Super Admin only)
     Route::prefix('ui')->group(function () {
-        Route::get('/illustrations', [UiIllustrationController::class, 'index']);
-        Route::get('/illustrations/active/{section}', [UiIllustrationController::class, 'bySection']);
-
-        // Super Admin only routes (TODO: Add role-based middleware)
         Route::post('/illustrations/packs', [UiIllustrationController::class, 'uploadPack']);
         Route::put('/illustrations/packs/{packName}/activate', [UiIllustrationController::class, 'activatePack']);
         Route::get('/illustrations/packs', [UiIllustrationController::class, 'listPacks']);

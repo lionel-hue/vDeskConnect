@@ -44,7 +44,7 @@ function VerifyEmailContent() {
     setError('');
 
     try {
-      await api.post('/auth/verify-email', {
+      await api.post('/auth/verify', {
         email: email,
         code: verificationCode,
       });

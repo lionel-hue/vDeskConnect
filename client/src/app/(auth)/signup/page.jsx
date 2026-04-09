@@ -141,7 +141,7 @@ export default function SignupPage() {
   const handleVerifyCode = async (code) => {
     setVerifying(true);
     try {
-      await api.post('/auth/verify-email', {
+      await api.post('/auth/verify', {
         email: form.adminEmail,
         code: code,
       });
