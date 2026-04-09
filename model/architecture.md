@@ -343,7 +343,7 @@ const { illustrations } = useIllustrations();
 #### **B. Authentication & Users**
 | Table | Columns | Description |
 | :--- | :--- | :--- |
-| **users** | `id`, `school_id`, `email`, `password`, `role` (student, teacher, admin), `verified`, `last_login` | Central auth table. |
+| **users** | `id`, `school_id`, `email`, `password`, `role` (super_admin, admin, principal, admin_staff, receptionist, teacher, student), `verified`, `must_change_password`, `last_login_at`, `banned` | Central auth table. |
 | **profiles** | `id`, `user_id`, `type` (student, teacher), `data` (JSONB), `avatar_url` | Polymorphic profile data (medical, contact, etc.). |
 | **invite_codes** | `id`, `school_id`, `code`, `type`, `created_by`, `used_by`, `expires_at`, `used_at` | Secure onboarding. |
 
@@ -401,7 +401,7 @@ const { illustrations } = useIllustrations();
 | :--- | :--- | :--- |
 | **notices** | `id`, `school_id`, `title`, `content`, `visibility`, `created_by` | Official school announcements. |
 | **syllabuses** | `id`, `school_id`, `course_id`, `grade_level_id`, `file_url`, `version` | Subject/Course curriculum. |
-| **routines** | `id`, `school_id`, `class_id`, `section_id`, `subject_id`, `day`, `start_time`, `end_time` | Timetable/Routine. |
+| **routines** | `id`, `school_id`, `grade_level_id`, `section_id`, `subject_id`, `day`, `start_time`, `end_time`, `created_by` | Timetable/Routine. |
 | **promotions** | `id`, `school_id`, `student_id`, `from_grade_id`, `to_grade_id`, `session_id` | Student tracking of year-to-year progress. |
 
 #### **K. Admin & Finance** ⭐ **NEW**
@@ -416,10 +416,11 @@ const { illustrations } = useIllustrations();
 #### **L. Subscriptions & Marketplace** ⭐ **NEW**
 | Table | Columns | Description |
 | :--- | :--- | :--- |
-| **subscriptions** | `id`, `school_id`, `plan_id`, `starts_at`, `expires_at`, `status` | Manages 14-day trials and accumulative plans. |
+| **plans** | `id`, `name` (Basic, Standard, Premium, Enterprise, Hidden Forever), `price`, `duration_days`, `features` (JSONB), `is_hidden` | Subscription plan definitions. |
+| **subscriptions** | `id`, `school_id`, `plan_id`, `starts_at`, `expires_at`, `status` (trial, active, expired), `remaining_days` | Manages 14-day trials and accumulative plans. |
 | **textbooks** | `id`, `school_id`, `title`, `grade_level_id`, `price`, `file_url` | Electronic books for Receptionist market. |
 | **marketplace_orders** | `id`, `student_id`, `textbook_id`, `amount`, `status`, `payment_ref` | Sales tracking for student purchases. |
-| **user_bans** | `id`, `user_id`, `banned_by`, `reason` | Record of bans and deletions. |
+| **user_bans** | `id`, `user_id`, `banned_by`, `action_type` (ban/delete), `reason`, `timestamp` | Record of bans and deletions. |
 
 #### **M. UI Illustrations System** ⭐ **NEW**
 | Table | Columns | Description |
@@ -476,14 +477,47 @@ const { illustrations } = useIllustrations();
 | **Theory** | Essay/Short Answer | ❌ No (Manual) | ✅ Yes (PNG, JPG, PDF) |
 | **Mixed** | Combination of Both | ⚠️ Partial | ✅ Yes |
 
-#### **4.2.2 Exam Flow**
+#### **4.2.2 Exam Creation — Two Paths**
+
+Teachers can set exams using **two methods**:
+
+**Path A: Manual Exam Creation**
+*   Teacher manually adds each question, sets options, marks, and correct answers.
+*   Full control over every question.
+*   Suitable for custom or highly specific assessments.
+
+**Path B: AI Exam Generator (Static Tools Interface)**
+*   Teacher does **NOT** write natural language prompts. Instead, they use a **static tools UI** (dropdowns, checkboxes, sliders, number inputs) to define the exam criteria:
+    *   **Select Weeks:** Choose which weeks from the Scheme of Work to draw questions from (e.g., Week 1–4, Week 5–8).
+    *   **Select Topics:** Choose specific topics within those weeks.
+    *   **Question Types:** Toggle OBJ (MCQ), Theory, or Mixed.
+    *   **Mark Allocation:** Set total marks or marks per question type.
+    *   **Difficulty Level:** Easy / Medium / Hard selector.
+    *   **Number of Variants:** Specify how many variant sets to generate (e.g., Variant A, B, C for different classes to prevent cheating).
+    *   **Duration:** Set exam time limit.
+*   **School AI Service:** Based on these criteria, the school's assigned AI model generates:
+    *   OBJ (MCQ) questions with options and correct answers.
+    *   Theory questions with model answers.
+    *   The requested number of variants (each variant has different questions but same difficulty and topic coverage).
+*   **Teacher Review & Edit:** Before publishing, the teacher reviews all AI-generated questions, can edit or remove individual questions, and validates the exam.
+*   **Exam Settings:** Title, Subject, Grade Level, Term, Duration, Start/End Time Window.
+
+#### **4.2.3 Exam Flow**
 ```
-1. Teacher Creates Exam (Manual or AI-Generated)
-   ├── Set Title, Subject, Grade Level
+1. Teacher Creates Exam (Manual OR AI-Generated via Static Tools)
+   ├── Set Title, Subject, Grade Level, Term
    ├── Set Duration (e.g., 60 minutes)
    ├── Set Start/End Time Window
-   ├── Add Questions Manually OR
-   └── Use AI Exam Generator: Utilize static tools (dropdowns/checkboxes) to select weeks, topics, mark allocation, and criteria. The school AI supplies OBJ and Theory questions, supporting multiple generated variants!
+   ├── Path A: Add Questions Manually (question by question)
+   └── Path B: AI Exam Generator
+       ├── Select weeks from Scheme of Work (checkboxes)
+       ├── Select topics (dropdown multi-select)
+       ├── Choose question types (OBJ / Theory / Mixed toggles)
+       ├── Set mark allocation (number input)
+       ├── Set difficulty (Easy/Medium/Hard selector)
+       ├── Set number of variants (number input, e.g., 3)
+       ├── Set duration (number input in minutes)
+       └── AI generates questions → Teacher reviews, edits, validates → Publish
 
 2. Student Takes Exam
    ├── Timer Starts (Countdown)
@@ -497,7 +531,12 @@ const { illustrations } = useIllustrations();
    └── Results: Published to Student Portal
 ```
 
-#### **4.2.3 Security Features**
+#### **4.2.4 Variant System**
+*   When the teacher requests **N variants**, the AI generates N distinct question sets covering the same topics and difficulty but with different questions.
+*   Variants are assigned to different sections or shuffled among students to prevent collusion.
+*   Each variant maintains the same total marks and question count.
+
+#### **4.2.5 Security Features**
 *   **Timer Enforcement:** Exam auto-submits when time expires.
 *   **File Validation:** Only allowed file types (PNG, JPG, PDF) accepted.
 *   **Plagiarism Check:** (Future) Integration with plagiarism APIs.
@@ -560,23 +599,44 @@ const { illustrations } = useIllustrations();
 
 ---
 
-### **4.5 Invitation & Onboarding**
+### **4.5 Account Creation & Onboarding**
 
-#### **4.5.1 Invitation Codes**
-*   **Generated By:** Admins only.
-*   **Types:** Student, Teacher.
-*   **Limits:** Single-use, Expiry Date, Max Uses.
-*   **Security:** Codes are hashed in database.
+#### **4.5.1 Public Signup — School Admin Only**
+*   **Only** the **School Admin (Director)** can register from the public login/signup pages.
+*   On registration, the admin provides basic school info (name, country, timezone, currency) and their own account credentials.
+*   A **14-day free trial** is automatically activated. The app displays a trial banner/indicator.
+*   The admin is redirected to the **Subscription Plans** section where they can view and choose between 3–4 monthly plans (Basic, Standard, Premium, Enterprise).
 
-#### **4.5.2 Signup Flow**
-```
-1. User Selects Role (Student/Teacher)
-2. Enters Invitation Code
-3. Fills Multi-Step Form (Personal, Academic, Medical)
-4. Email Verification (6-digit code)
-5. Admin Approval (Optional for Teachers)
-6. Account Active
-```
+#### **4.5.2 Subscription Plans & Trial Logic**
+*   **Free Trial:** 14 days for all new schools. Full access during trial period.
+*   **Monthly Plans:** All paid plans expire in 1 month.
+*   **Duration Accumulation:**
+    *   If the admin purchases a plan while still on the free trial, the plan's duration is **added to the remaining trial days**.
+    *   If the admin purchases another plan before the current one expires, durations **stack** (remaining days + new plan duration).
+*   **Hidden Forever Plan:** The Super Admin (platform owner) is automatically assigned a **"Forever & All Unlocked"** plan upon creating or logging into their admin account. No other plans, trials, or payment prompts are shown to them.
+*   **Plan Visibility:** When a School Admin logs in, they see their current plan status, remaining days, and available upgrade options in the Subscription section.
+
+#### **4.5.3 Internal User Creation**
+*   All users below the School Admin (Principal, Admin Staff, Receptionist, Teachers, Students) are created **inside the app** by authorized roles.
+*   **School Admin** creates: Principal, Admin Staff (with optional Receptionist role assignment), and optionally Teachers/Students.
+*   **Principal** creates: Teachers, Students.
+*   **Admin Staff** creates: Teachers, Students.
+*   **Receptionist** creates: Teachers, Students.
+
+#### **4.5.4 First Login — Mandatory Password Change**
+*   Every user created internally by an Admin/Staff **must change their password on first login**.
+*   A **full-screen modal prompt** blocks all app access until the password is changed.
+*   After changing the password, the user is redirected to their role-specific dashboard.
+
+#### **4.5.5 Ban & Delete System**
+*   **Ban (Soft Block):** Account remains but login is denied. User sees a validation error on the login page with the ban reason.
+    *   Any role can ban users **strictly below them** in the hierarchy.
+    *   **No role can ban peers or anyone above them.**
+*   **Delete (Hard Removal):** Account is permanently removed.
+    *   **School Admin** can delete anyone below them.
+    *   **Other roles** can only delete users below them.
+    *   **Email Notification:** When an account is deleted, the user receives an email with the **reason for deletion** provided by the Admin.
+*   **Audit Trail:** All ban/delete actions logged in `user_bans` table with `user_id`, `banned_by`, `action_type` (ban/delete), `reason`, `timestamp`.
 
 ---
 
@@ -596,10 +656,13 @@ const { illustrations } = useIllustrations();
 ### **4.7 Routine & Timetable Module** ⭐ **NEW**
 
 #### **4.7.1 Class Routines**
-*   **Generation:** Admin or Admin Staff can explicitly build tables, or rely on the system to generate them dynamically based on the periods specified.
-*   **Scheduling:** Weekly timetable showing subjects, teachers, and time slots.
+*   **Who Can Generate:** **School Admin** or **Admin Staff** can generate timetables.
+*   **Two Methods:**
+    *   **Static Builder:** Admin/Admin Staff explicitly builds the timetable by selecting days, time slots, subjects, teachers, and rooms through a visual table interface.
+    *   **Dynamic Generation:** The system auto-generates a timetable based on specified parameters: number of periods per day, subjects per grade level, teacher availability, and room constraints.
+*   **Scheduling:** Weekly timetable showing subjects, teachers, and time slots per grade level and section.
 *   **Sections:** Different routines for different sections (e.g., JSS1-A vs JSS1-B).
-*   **Conflict Detection:** (Future) System warns if a teacher is double-booked.
+*   **Conflict Detection:** (Future) System warns if a teacher is double-booked or a room is over-allocated.
 
 ---
 
@@ -624,28 +687,65 @@ const { illustrations } = useIllustrations();
 *   **Due Dates:** Automated tracking of overdue books.
 
 #### **4.9.3 Fee & Payment Processing**
-*   **Stuctures:** Define fees per grade level (Tuition, Uniform, Books).
+*   **Structures:** Define fees per grade level (Tuition, Uniform, Books).
+*   **Receptionist Role:** The Receptionist records fee payments (cash, bank, online), publishes payment/fee announcements, emails parents about outstanding fees, and publishes salary announcements to teachers.
+*   **Financial Reports:** The Receptionist generates financial reports and sends them **directly to the School Admin only** (not to Principal or anyone else).
 *   **Online Payments:** Integration with payment gateways (Paystack/Flutterwave).
 *   **Manual Entry:** Bursars can record offline cash/bank payments.
 *   **Receipts:** Auto-generated PDF receipts for every transaction.
 
 #### **4.9.4 Textbook Marketplace**
-*   **Digital Store:** The Receptionist manages a marketplace containing electronic books and literature based on grade level needs.
-*   **Purchasing:** Students can purchase necessary texts directly through the app.
-*   **Analytics:** All financial records are tracked so the Admin can analyze them.
+*   **Purpose:** Students need to buy electronic textbooks and literature for their grade level from the school.
+*   **Receptionist Management:** The Receptionist lists electronic books and literature in the marketplace, organized by grade level.
+*   **Student Purchasing:** Students browse the marketplace, view available books for their grade, and purchase them directly through the app.
+*   **Payment System:** Integrated payment processing for marketplace purchases (same gateways as fee payments).
+*   **Records & Analytics:** All marketplace sales records are kept. The School Admin can analyze sales data, revenue, and purchase trends.
+*   **Access Control:** Only the Receptionist can add/remove books and manage listings. Students can only view and purchase. Admin can view analytics.
 
 ---
 
 ### **4.10 AI-Driven Builder Modules** ⭐ **NEW**
 
-#### **4.10.1 Scheme of Work & Lesson Note Builders**
-*   **Static Tools Approach:** Admins and teachers use static UI tools (not raw language prompts) to carefully select weeks, topics, and aspects.
-*   **AI Engine:** The school's assigned AI model generates the Scheme of Work or Lesson Note based on these hardcore configurations, which the user then validates and publishes.
+All AI builders use a **Static Tools Interface** — users do NOT write natural language prompts. Instead, they use dropdowns, checkboxes, sliders, and number inputs to define criteria. The school's assigned AI model generates content based on these configurations.
 
-#### **4.10.2 Lecture Builder**
-*   **Multi-Media Assembly:** Teachers generate a lecture walkthrough manually or with AI, specifying for how many students.
-*   **Attachments:** Embed PDF documents and Video links seamlessly using the builder.
-*   **Video Conferencing:** If a lecture involves a live conference, it runs outside the app, but the teacher will still mark the lecture as complete inside the platform.
+#### **4.10.1 Scheme of Work Builder**
+*   **Two Paths:**
+    *   **Manual Entry:** Admin/Teacher manually enters weeks, topics, and aspects one by one.
+    *   **AI Builder (Static Tools):**
+        *   **Select Subject:** Dropdown to choose the subject.
+        *   **Select Grade Level:** Dropdown to choose the class.
+        *   **Select Term:** Dropdown to choose the term.
+        *   **Select Weeks:** Number input or range selector (e.g., Week 1–12).
+        *   **Select Topics per Week:** Multi-select dropdown of available topics from the curriculum database.
+        *   **Select Aspects:** Checkboxes for aspects (objectives, activities, resources, evaluation).
+        *   **AI Generates:** The AI produces a complete Scheme of Work with weekly topics, aspects, and objectives based on the selected criteria.
+    *   **Validation:** After AI generation, the Admin/Teacher reviews, edits, and validates the Scheme of Work before publishing.
+
+#### **4.10.2 Lesson Note Builder**
+*   **Two Paths:**
+    *   **Manual Entry:** Teacher manually writes lesson notes section by section.
+    *   **AI Builder (Static Tools):**
+        *   **Select Scheme of Work:** Dropdown to link to an existing scheme entry.
+        *   **Select Week/Topic:** Auto-populated from the linked scheme.
+        *   **Select Aspects to Generate:** Checkboxes (objective, content, methodology, evaluation, materials).
+        *   **Target Audience Size:** Number input for how many students the lesson is designed for.
+        *   **AI Generates:** The AI produces a detailed Lesson Note based on the scheme topic, selected aspects, and audience size.
+    *   **Validation:** Teacher reviews, edits, and validates the Lesson Note before publishing.
+
+#### **4.10.3 Lecture Builder**
+*   **Two Paths:**
+    *   **Manual Assembly:** Teacher manually assembles lecture components.
+    *   **AI Builder (Static Tools):**
+        *   **Select Subject & Topic:** Dropdowns for subject and topic.
+        *   **Generate Walkthrough/Subject:** Toggle to generate the lecture walkthrough using AI or write manually.
+        *   **Target Student Count:** Number input for how many students the lecture is for.
+        *   **Attachments:** Upload or link PDF documents, video files, or external video links.
+        *   **Video Conference Toggle:** If the lecture involves a live video conference, the teacher toggles this on. The conference runs **outside the app** (via Zoom, Google Meet, etc.). The teacher provides the external meeting link.
+        *   **Completion Marking:** After the lecture (whether in-person, video-based, or async), the teacher marks the lecture as **complete** inside the app.
+    *   **Validation:** Teacher reviews the assembled lecture and publishes it.
+
+#### **4.10.4 Exam AI Generator**
+*   Covered in **Section 4.2**. Teachers use static tools to select weeks, topics, criteria, and variant count. AI generates OBJ and Theory questions. Teacher validates and publishes.
 
 ---
 

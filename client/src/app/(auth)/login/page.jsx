@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Mail, Lock, LogIn } from 'lucide-react';
+import { Mail, Lock, LogIn, Globe, MapPin } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useToast } from '@/contexts/ToastProvider';
 import Input from '@/components/ui/Input';
@@ -16,11 +16,17 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ email: '', password: '' });
   const [errors, setErrors] = useState({});
+  const [banError, setBanError] = useState('');
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [changingPassword, setChangingPassword] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: '' }));
+    setBanError('');
   };
 
   const validate = () => {
@@ -40,15 +46,97 @@ export default function LoginPage() {
     try {
       const data = await api.post('/auth/login', form);
       api.setToken(data.token);
-      toast.success('Welcome back! Redirecting...');
-      setTimeout(() => router.push('/dashboard'), 800);
+
+      // Check if user must change password on first login
+      if (data.user?.must_change_password) {
+        setShowChangePassword(true);
+      } else {
+        toast.success('Welcome back! Redirecting...');
+        setTimeout(() => router.push('/dashboard'), 800);
+      }
     } catch (err) {
-      toast.error(err.data?.message || 'Login failed. Please try again.');
+      // Check for ban error
+      if (err.status === 403 && err.data?.banned) {
+        setBanError(err.data.reason || 'Your account has been banned.');
+        return;
+      }
+      if (err.status === 401) {
+        toast.error('Invalid email or password.');
+      } else {
+        toast.error(err.data?.message || 'Login failed. Please try again.');
+      }
       if (err.status === 422) setErrors(err.data?.errors || {});
     } finally {
       setLoading(false);
     }
   };
+
+  const handlePasswordChange = async (e) => {
+    e.preventDefault();
+    if (newPassword.length < 8) {
+      toast.error('Password must be at least 8 characters');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error('Passwords do not match');
+      return;
+    }
+
+    setChangingPassword(true);
+    try {
+      await api.put('/auth/change-password', {
+        current_password: form.password,
+        new_password: newPassword,
+      });
+      toast.success('Password changed successfully!');
+      setShowChangePassword(false);
+      setTimeout(() => router.push('/dashboard'), 800);
+    } catch (err) {
+      toast.error(err.data?.message || 'Failed to change password');
+    } finally {
+      setChangingPassword(false);
+    }
+  };
+
+  // Forced password change modal
+  if (showChangePassword) {
+    return (
+      <div className="auth-page items-center justify-center">
+        <div className="auth-card max-w-md animate-scale-in">
+          <div className="text-center mb-6">
+            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Lock size={28} className="text-primary" />
+            </div>
+            <h2 className="text-xl font-bold text-text-primary">Change Your Password</h2>
+            <p className="text-text-secondary text-sm mt-1">
+              For security, you must change your password before continuing.
+            </p>
+          </div>
+
+          <form onSubmit={handlePasswordChange} className="space-y-4">
+            <Input
+              label="New password"
+              type="password"
+              placeholder="Min. 8 characters"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+            />
+            <Input
+              label="Confirm new password"
+              type="password"
+              placeholder="Re-enter your new password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
+            <Button type="submit" variant="primary" fullWidth loading={changingPassword}>
+              <Lock size={18} />
+              Change Password & Continue
+            </Button>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -87,6 +175,15 @@ export default function LoginPage() {
         <div className="auth-card">
           <h1 className="auth-title">Welcome back</h1>
           <p className="auth-subtitle">Sign in to your account to continue</p>
+
+          {/* Ban Error Display */}
+          {banError && (
+            <div className="mb-4 p-4 bg-error/10 border border-error/20 rounded-btn animate-fade-in">
+              <p className="text-error text-sm font-medium">Account Banned</p>
+              <p className="text-error/80 text-xs mt-1">{banError}</p>
+              <p className="text-error/60 text-xs mt-2">Contact your school administrator for more information.</p>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4" noValidate>
             <Input
@@ -128,9 +225,9 @@ export default function LoginPage() {
           <div className="auth-divider">or</div>
 
           <p className="text-center text-sm text-text-secondary">
-            Don't have an account?{' '}
+            Register your school?{' '}
             <Link href="/signup" className="auth-link">
-              Sign up
+              Get started
             </Link>
           </p>
         </div>
