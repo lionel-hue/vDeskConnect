@@ -46,7 +46,7 @@ const SCHOOL_ADMIN_NAV = [
   { label: 'Settings', icon: Settings, href: '/dashboard/settings' },
 ];
 
-export default function Sidebar({ role = 'admin', user, onLogout, collapsed: initialCollapsed = false }) {
+export default function Sidebar({ role = 'admin', user, onLogout, collapsed: initialCollapsed = false, onToggle }) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(initialCollapsed);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -57,7 +57,11 @@ export default function Sidebar({ role = 'admin', user, onLogout, collapsed: ini
     onLogout?.();
   };
 
-  const toggleSidebar = () => setCollapsed(!collapsed);
+  const toggleSidebar = () => {
+    const newState = !collapsed;
+    setCollapsed(newState);
+    onToggle?.(newState);
+  };
   const toggleMobile = () => setMobileOpen(!mobileOpen);
 
   return (

@@ -10,6 +10,7 @@ export default function DashboardLayout({ children, title, subtitle, role = 'adm
   const router = useRouter();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   useEffect(() => {
     const token = api.getToken();
@@ -34,6 +35,10 @@ export default function DashboardLayout({ children, title, subtitle, role = 'adm
     router.push('/login');
   };
 
+  const handleSidebarToggle = (collapsed) => {
+    setSidebarCollapsed(collapsed);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-bg-main flex items-center justify-center">
@@ -48,8 +53,9 @@ export default function DashboardLayout({ children, title, subtitle, role = 'adm
         role={role}
         user={user}
         onLogout={handleLogout}
+        onToggle={handleSidebarToggle}
       />
-      <div className="lg:ml-64 transition-all duration-300">
+      <div className={`transition-all duration-300 ${sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'}`}>
         <TopBar title={title} subtitle={subtitle} user={user} />
         <main className="p-6">
           {children}
