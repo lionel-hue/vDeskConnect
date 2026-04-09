@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -19,6 +20,7 @@ class User extends Authenticatable
         'verified',
         'must_change_password',
         'last_login_at',
+        'banned',
     ];
 
     protected $hidden = [
@@ -29,39 +31,56 @@ class User extends Authenticatable
     protected $casts = [
         'verified' => 'boolean',
         'must_change_password' => 'boolean',
+        'banned' => 'boolean',
         'last_login_at' => 'datetime',
         'email_verified_at' => 'datetime',
     ];
 
     /**
-     * Check if user is a super admin.
+     * Role hierarchy ranks (higher number = higher authority).
      */
-    public function isSuperAdmin(): bool
+    public static function roleRank(string $role): int
     {
-        return $this->role === 'super_admin';
+        return match ($role) {
+            'super_admin' => 0,
+            'admin' => 1,
+            'principal' => 2,
+            'admin_staff' => 3,
+            'receptionist' => 3,
+            'teacher' => 4,
+            'student' => 5,
+            default => 99,
+        };
     }
 
     /**
-     * Check if user is a school admin.
+     * Check if this user can ban/delete the target user.
      */
-    public function isSchoolAdmin(): bool
+    public function canManage(User $target): bool
     {
-        return $this->role === 'admin';
+        // Super admin cannot manage school users
+        if ($this->isSuperAdmin()) return false;
+        // Cannot manage self
+        if ($this->id === $target->id) return false;
+        // Can only manage users with a lower rank (higher number)
+        return self::roleRank($this->role) < self::roleRank($target->role);
     }
 
-    /**
-     * Check if user is a teacher.
-     */
-    public function isTeacher(): bool
+    public function isSuperAdmin(): bool { return $this->role === 'super_admin'; }
+    public function isSchoolAdmin(): bool { return $this->role === 'admin'; }
+    public function isPrincipal(): bool { return $this->role === 'principal'; }
+    public function isAdminStaff(): bool { return in_array($this->role, ['admin_staff', 'receptionist']); }
+    public function isReceptionist(): bool { return $this->role === 'receptionist'; }
+    public function isTeacher(): bool { return $this->role === 'teacher'; }
+    public function isStudent(): bool { return $this->role === 'student'; }
+
+    public function profile(): HasOne
     {
-        return $this->role === 'teacher';
+        return $this->hasOne(Profile::class);
     }
 
-    /**
-     * Check if user is a student.
-     */
-    public function isStudent(): bool
+    public function school()
     {
-        return $this->role === 'student';
+        return $this->belongsTo(School::class);
     }
 }
