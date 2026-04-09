@@ -197,13 +197,128 @@ const { illustrations } = useIllustrations();
 **Tenancy Strategy:** **Database-level isolation** via `school_id` on all tables (Single Database, Multi-Tenant).
 
 ### **2.3 User Roles & Hierarchy**
-1.  **Super Admin (Service Provider):** Platform owner holding a "hidden forever & all unlocked" plan. Cannot view private school data, sees only advanced charts, widgets, activity statistics, and basic school bio-data.
-2.  **School Admin (Director):** Configures the school and starts with an automatic 14-day free trial. Purchases monthly plans (3-4 tiers). Plan durations accumulate with remaining trial days. Has full authority to create principals and admin staff, and can ban or delete (with email reason sent) anyone below them.
-3.  **Principal:** Performs most administrative duties but cannot handle financial reports or create other admin staff (only the Admin handles this).
-4.  **Admin Staff / Receptionist:** Staff ranked above teachers. The **Receptionist** receives school fees, publishes payment/salary announcements, emails parents, manages the textbook marketplace, and feeds financial reports directly to the School Admin. Admin Staff can create teacher/student accounts and ban users below them.
-5.  **Teacher:** Academic role. Excluded from taking exams.
-6.  **Student:** Learner role. Excluded from taking exams (only allowed to take them as test subjects). *Note: Teachers and Admin Staff are never allowed to write exams.*
-*Note: Public account creation is disabled. The Admin/Staff must create users, and every user must change their password on their first login.*
+
+#### **2.3.1 Role Chain (Top → Bottom)**
+
+| Rank | Role | Created By | Can Create | Can Ban/Delete | Exam Writing? | Financial Access |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| 0 | **Super Admin** | N/A (platform owner) | N/A | N/A | ❌ | Platform-wide analytics only |
+| 1 | **School Admin (Director)** | Auth page (signup) | Principal, Admin Staff, Teachers, Students | Everyone below (all ranks) | ❌ | Full — receives financial reports from Receptionist |
+| 2 | **Principal** | School Admin | Teachers, Students | Teachers, Students (not Admin Staff, not peers) | ❌ | ❌ Cannot see financial reports from Receptionist |
+| 3 | **Admin Staff** | School Admin or Principal | Teachers, Students | Teachers, Students (not peers, not above) | ❌ | ❌ Unless assigned Receptionist role |
+| 3a | **Receptionist** *(role assigned to Admin Staff)* | School Admin assigns role | Teachers, Students | Teachers, Students (not peers, not above) | ❌ | ✅ Manages fees, salary announcements, emails parents, feeds financial reports to Admin |
+| 4 | **Teacher** | Admin, Principal, Admin Staff, or Receptionist | N/A | ❌ Cannot ban anyone | ❌ **Never writes exams** | ❌ |
+| 5 | **Student** | Admin, Principal, Admin Staff, or Receptionist | N/A | ❌ | ✅ **Only role that writes exams** | ❌ |
+
+#### **2.3.2 Super Admin (Platform Owner)**
+*   **Identity:** The email address that registered the vDeskConnect platform itself.
+*   **Hidden Forever Plan:** Automatically assigned a **"Forever & All Unlocked"** plan upon creating or logging into their admin account. No other plans are shown to them.
+*   **Visibility Restrictions:**
+    *   ❌ **Cannot** view private school data (students, teachers, exams, grades, finances, etc.).
+    *   ✅ **Can** view: Admin user info, brief school bio-data (name, country, plan, active status), advanced charts/widgets/tables, activity statistics (how often schools use the app, login frequency, feature usage per subscription tier).
+*   **Dashboard:** Analytics-focused — subscription plan distribution, school activity heatmaps, revenue charts, retention metrics.
+
+#### **2.3.3 School Admin (Director)**
+*   **Registration:** The **only** role that can create an account from the **public auth/signup page**. All other users are created **inside the app** by authorized roles.
+*   **Free Trial:** Automatically starts a **14-day free trial** upon school registration.
+*   **Subscription Plans:** Can choose between **3–4 monthly plans** (e.g., Basic, Standard, Premium, Enterprise). All plans expire in 1 month.
+*   **Duration Accumulation:** If the admin purchases a plan while on the free trial, the plan's duration is **added to the remaining trial days**. If they purchase another plan before the current one expires, durations stack.
+*   **Full Authority:** Can create Principal, Admin Staff (including assigning Receptionist role), Teachers, and Students. Can ban or delete anyone below them.
+*   **Deletion with Reason:** When deleting a user account, the Admin **must provide a reason** which is emailed to the user.
+*   **Ban Behavior:** Banned users cannot log in. They see a validation error stating the ban reason.
+
+#### **2.3.4 Principal**
+*   **Capabilities:** Can perform **most administrative duties** that the School Admin can (build classes, create teachers/students, manage academic settings, generate timetables, etc.).
+*   **Restrictions:**
+    *   ❌ **Cannot** create Admin Staff or other Principals (only School Admin does this).
+    *   ❌ **Cannot** handle financial reports (Receptionist feeds reports only to School Admin).
+    *   ❌ **Cannot** ban School Admin or other Principals.
+
+#### **2.3.5 Admin Staff**
+*   **Rank:** Above Teachers and Students, below Principal and School Admin.
+*   **Capabilities:** Can create Teachers and Students. Can ban users below them (Teachers, Students).
+*   **Restrictions:**
+    *   ❌ Cannot ban or delete peers (other Admin Staff) or anyone above them.
+    *   ❌ Cannot create other Admin Staff or Principals.
+    *   ❌ Cannot access financial reports unless assigned the Receptionist role.
+
+#### **2.3.6 Receptionist (Assigned Role)**
+*   **Assignment:** A **role tag** assigned to any Admin Staff member by the School Admin. One school can have one or multiple Receptionists.
+*   **Responsibilities:**
+    *   Receives and records school fee payments (cash, bank, online).
+    *   Publishes payment/fee announcements and salary announcements to students and teachers.
+    *   Emails parents about outstanding fees.
+    *   Manages the **Textbook Marketplace** (lists electronic books/literature for student purchase).
+    *   Generates financial reports and sends them **directly to the School Admin** (not to Principal or anyone else).
+*   **Restrictions:** Same as Admin Staff — cannot ban peers or anyone above.
+
+#### **2.3.7 Teacher**
+*   **Academic Role:** Creates lectures, sets exams, grades submissions, writes lesson notes and schemes of work.
+*   **Key Restriction:** ❌ **Never writes exams.** Teachers are completely excluded from exam-taking (not even as test subjects).
+*   **Restrictions:** Cannot ban anyone. Cannot create other users. Cannot access financial data.
+
+#### **2.3.8 Student**
+*   **Learner Role:** Attends lectures, takes exams, views results, purchases textbooks from the marketplace.
+*   **Key Privilege:** ✅ **The only role that can write exams.**
+*   **Restrictions:** Cannot ban anyone. Cannot create other users. Cannot access admin features.
+
+#### **2.3.9 Account Creation Rules**
+*   **Public Auth Page:** **Only** School Admin registration is allowed from the login/signup pages.
+*   **Internal User Creation:** All other users (Principal, Admin Staff, Receptionist, Teachers, Students) are created **inside the app** by authorized roles as defined in the hierarchy table above.
+*   **First Login — Password Change:** Every user created internally by an Admin/Staff **must change their password on first login.** A full-screen prompt blocks all app access until the password is changed.
+*   **No Self-Signup:** Students, Teachers, Admin Staff, and Principals **cannot** create their own accounts from the auth page.
+
+#### **2.3.10 Ban & Delete System**
+*   **Ban:** A soft block. The user's account remains but login is denied. The ban reason is displayed as a validation error on the login page.
+    *   Any role can ban users **below them** in the hierarchy.
+    *   No role can ban peers or anyone above them.
+*   **Delete:** Hard removal of the user account.
+    *   Only School Admin can delete anyone.
+    *   Other roles can only delete users below them.
+    *   **Email Notification:** When an account is deleted, the user receives an email with the **reason for deletion** provided by the Admin.
+*   **Audit Trail:** All ban/delete actions are logged in the `user_bans` table with `banned_by`, `reason`, `action_type` (ban/delete), and `timestamp`.
+
+#### **2.3.7 Account Creation & Signup Rules**
+
+*   **Public Signup (Auth Page):** **Only** the **School Admin (Director)** can create an account from the login/signup pages. This is the only publicly accessible registration path.
+*   **Internal User Creation:** All other users (Principal, Admin Staff, Receptionist, Teachers, Students) are created **inside the app** by authorized roles. Nobody else can self-register.
+    *   **School Admin** creates: Principal, Admin Staff (and assigns Receptionist role), and optionally Teachers/Students.
+    *   **Principal** creates: Teachers, Students.
+    *   **Admin Staff** creates: Teachers, Students.
+    *   **Receptionist** creates: Teachers, Students.
+*   **First Login — Mandatory Password Change:** Every user created internally by an Admin/Staff **must change their password on first login**. A full-screen modal prompt blocks all app access until the password is changed. This applies to Principal, Admin Staff, Receptionist, Teachers, and Students.
+*   **No Self-Service Registration:** Students, Teachers, Admin Staff, and Principals **cannot** create their own accounts. Attempting to access the signup page without valid admin credentials will redirect to login.
+
+#### **2.3.8 Ban & Delete System**
+
+*   **Ban (Soft Block):**
+    *   The user's account remains in the database but login is denied.
+    *   On the login page, banned users see a **validation error displaying the ban reason** (e.g., *"Your account has been banned. Reason: [admin-provided reason]"*).
+    *   Any role can ban users **strictly below them** in the hierarchy.
+    *   **No role can ban peers** (e.g., Admin Staff cannot ban other Admin Staff, Teachers cannot ban Teachers).
+    *   **No role can ban anyone above them.**
+*   **Delete (Hard Removal):**
+    *   **School Admin** can delete any user below them (everyone except Super Admin).
+    *   **Principal** can delete Teachers and Students only.
+    *   **Admin Staff / Receptionist** can delete Teachers and Students only.
+    *   **Email Notification on Deletion:** When an account is deleted, the system **automatically sends an email to the deleted user's email address** containing the **reason for deletion** provided by the Admin at deletion time.
+*   **Audit Trail:** All ban and delete actions are logged in the `user_bans` table with: `user_id`, `banned_by` (FK to users), `action_type` (`ban`, `delete`), `reason` (text), `timestamp`.
+*   **Restoration:** (Future) Banned users can be unbanned by the same or higher-ranking role. Deleted accounts cannot be restored.
+
+#### **2.3.9 Super Admin Visibility Restrictions**
+
+*   **No Private School Data:** The Super Admin **cannot** view:
+    *   Student records, grades, exam results, or personal data.
+    *   Teacher assignments, lesson notes, or schemes of work.
+    *   Financial reports, fee payments, or marketplace sales of individual schools.
+    *   Internal messages, notices, or event details of schools.
+*   **Allowed Visibility:**
+    *   ✅ School Admin user info (name, email, registration date).
+    *   ✅ Brief school bio-data (school name, country, timezone, currency, active status).
+    *   ✅ Aggregated analytics: subscription plan distribution, total schools, churn rate.
+    *   ✅ Activity statistics: how often schools log in, feature usage frequency, app engagement heatmaps.
+    *   ✅ Revenue charts, retention metrics, growth trends.
+*   **Hidden Forever Plan:** When the Super Admin creates their own admin account (or logs into it), they are **automatically assigned a "Forever & All Unlocked" plan**. No subscription plans, no trial banners, and no payment prompts are ever shown to them.
 
 ---
 
