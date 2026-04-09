@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Your Email - vDeskconnect</title>
+    <style>
+        /* Reset styles */
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #F0EEF7;
+            color: #2D2B55;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #FFFFFF;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 24px rgba(124, 107, 196, 0.08);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #7C6BC4 0%, #5E4FA2 100%);
+            padding: 40px 30px;
+            text-align: center;
+        }
+        
+        .logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background-color: #FFFFFF;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .logo-text {
+            color: #FFFFFF;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .header-title {
+            color: #FFFFFF;
+            font-size: 28px;
+            font-weight: bold;
+            margin: 0;
+        }
+        
+        .header-subtitle {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 16px;
+            margin-top: 8px;
+        }
+        
+        .content {
+            padding: 40px 30px;
+        }
+        
+        .greeting {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #2D2B55;
+        }
+        
+        .message {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #6B6B8D;
+            margin-bottom: 30px;
+        }
+        
+        .code-container {
+            background-color: #F0EEF7;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .code-label {
+            font-size: 14px;
+            color: #6B6B8D;
+            margin-bottom: 12px;
+        }
+        
+        .code {
+            font-size: 36px;
+            font-weight: bold;
+            letter-spacing: 8px;
+            color: #7C6BC4;
+            font-family: monospace;
+        }
+        
+        .school-info {
+            background-color: #F0EEF7;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .school-info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            font-size: 14px;
+        }
+        
+        .school-info-label {
+            color: #6B6B8D;
+        }
+        
+        .school-info-value {
+            color: #2D2B55;
+            font-weight: 600;
+        }
+        
+        .warning-box {
+            background-color: #FFF3CD;
+            border-left: 4px solid #FBBF24;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 30px 0;
+        }
+        
+        .warning-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #856404;
+            margin-bottom: 8px;
+        }
+        
+        .warning-text {
+            font-size: 14px;
+            color: #856404;
+            line-height: 1.5;
+        }
+        
+        .footer {
+            background-color: #F0EEF7;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .footer-text {
+            font-size: 14px;
+            color: #6B6B8D;
+            margin-bottom: 16px;
+        }
+        
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 16px;
+        }
+        
+        .footer-link {
+            color: #7C6BC4;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        .footer-link:hover {
+            text-decoration: underline;
+        }
+        
+        .copyright {
+            font-size: 12px;
+            color: #9B9BB4;
+        }
+        
+        .divider {
+            height: 1px;
+            background-color: #E5E4F0;
+            margin: 30px 0;
+        }
+        
+        @media only screen and (max-width: 600px) {
+            .container {
+                border-radius: 0;
+            }
+            
+            .header {
+                padding: 30px 20px;
+            }
+            
+            .content {
+                padding: 30px 20px;
+            }
+            
+            .code {
+                font-size: 28px;
+                letter-spacing: 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div style="padding: 20px;">
+        <div class="container">
+            <!-- Header -->
+            <div class="header">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <!-- vDeskconnect Logo SVG -->
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                            <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#7C6BC4" />
+                            <path d="M2 17L12 22L22 17" stroke="#7C6BC4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            <path d="M2 12L12 17L22 12" stroke="#7C6BC4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </div>
+                    <span class="logo-text">vDeskconnect</span>
+                </div>
+                <h1 class="header-title">Verify Your Email</h1>
+                <p class="header-subtitle">Complete your school registration</p>
+            </div>
+            
+            <!-- Content -->
+            <div class="content">
+                <p class="greeting">Hello {{first_name}},</p>
+                
+                <p class="message">
+                    Thank you for registering <strong>{{school_name}}</strong> on vDeskconnect! 
+                    We're excited to help you manage your school with our complete school management solution.
+                </p>
+                
+                <p class="message">
+                    To complete your registration and activate your <strong>14-day free trial</strong>, 
+                    please verify your email address by entering the following verification code:
+                </p>
+                
+                <!-- Verification Code -->
+                <div class="code-container">
+                    <p class="code-label">Your verification code</p>
+                    <p class="code">{{verification_code}}</p>
+                </div>
+                
+                <!-- School Information -->
+                <div class="school-info">
+                    <div class="school-info-item">
+                        <span class="school-info-label">School Name:</span>
+                        <span class="school-info-value">{{school_name}}</span>
+                    </div>
+                    <div class="school-info-item">
+                        <span class="school-info-label">Country:</span>
+                        <span class="school-info-value">{{country}}</span>
+                    </div>
+                    <div class="school-info-item">
+                        <span class="school-info-label">Admin Email:</span>
+                        <span class="school-info-value">{{email}}</span>
+                    </div>
+                </div>
+                
+                <div class="divider"></div>
+                
+                <!-- Warning Box -->
+                <div class="warning-box">
+                    <p class="warning-title">⚠️ Important</p>
+                    <p class="warning-text">
+                        This verification code will expire in <strong>10 minutes</strong>. 
+                        If you didn't request this verification, please ignore this email. 
+                        Your account will not be created until you verify your email.
+                    </p>
+                </div>
+                
+                <p class="message">
+                    After verification, you'll be able to set your password and start exploring 
+                    vDeskconnect's powerful features:
+                </p>
+                
+                <ul style="color: #6B6B8D; font-size: 14px; line-height: 1.8; padding-left: 20px;">
+                    <li>✅ Complete school administration dashboard</li>
+                    <li>✅ Student and teacher management</li>
+                    <li>✅ Exam engine with AI-powered question generation</li>
+                    <li>✅ Results and report cards</li>
+                    <li>✅ Events calendar and notices</li>
+                    <li>✅ And much more!</li>
+                </ul>
+                
+                <p class="message">
+                    If you have any questions or need assistance, feel free to reach out to our support team.
+                </p>
+                
+                <p class="message">
+                    Best regards,<br>
+                    <strong>The vDeskconnect Team</strong>
+                </p>
+            </div>
+            
+            <!-- Footer -->
+            <div class="footer">
+                <p class="footer-text">
+                    This email was sent to {{email}} because you initiated a school registration on vDeskconnect.
+                </p>
+                
+                <div class="footer-links">
+                    <a href="{{privacy_url}}" class="footer-link">Privacy Policy</a>
+                    <a href="{{terms_url}}" class="footer-link">Terms of Service</a>
+                    <a href="{{support_url}}" class="footer-link">Support</a>
+                </div>
+                
+                <p class="copyright">
+                    © 2026 vDeskconnect. All rights reserved.
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

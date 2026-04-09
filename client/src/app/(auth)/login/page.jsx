@@ -3,12 +3,14 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Mail, Lock, LogIn, Globe, MapPin } from 'lucide-react';
+import { Mail, Lock, LogIn, Globe, MapPin, ArrowLeft } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useToast } from '@/contexts/ToastProvider';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import IllustrationDisplay from '@/components/ui/IllustrationDisplay';
+import GoogleAuthButton from '@/components/ui/GoogleAuthButton';
+import PasswordStrengthMeter from '@/components/ui/PasswordStrengthMeter';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -21,6 +23,7 @@ export default function LoginPage() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [changingPassword, setChangingPassword] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -98,13 +101,23 @@ export default function LoginPage() {
     }
   };
 
+  const handleGoogleAuth = () => {
+    setGoogleLoading(true);
+    // TODO: Implement Google OAuth flow
+    // window.location.href = `${API_BASE}/auth/google`;
+    setTimeout(() => {
+      setGoogleLoading(false);
+      toast.info('Google authentication coming soon!');
+    }, 1000);
+  };
+
   // Forced password change modal
   if (showChangePassword) {
     return (
       <div className="auth-page items-center justify-center">
         <div className="auth-card max-w-md animate-scale-in">
           <div className="text-center mb-6">
-            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse-slow">
               <Lock size={28} className="text-primary" />
             </div>
             <h2 className="text-xl font-bold text-text-primary">Change Your Password</h2>
@@ -121,6 +134,7 @@ export default function LoginPage() {
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
             />
+            <PasswordStrengthMeter password={newPassword} />
             <Input
               label="Confirm new password"
               type="password"
@@ -145,8 +159,8 @@ export default function LoginPage() {
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary-light/10" />
         <div className="relative z-10 flex flex-col items-center gap-8 animate-fade-in">
           {/* Brand */}
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-soft">
+          <div className="flex items-center gap-3 group cursor-pointer" onClick={() => router.push('/')}>
+            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-soft transition-all duration-300 group-hover:scale-110 group-hover:rotate-6">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                 <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="white" />
                 <path d="M2 17L12 22L22 17" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -157,14 +171,26 @@ export default function LoginPage() {
           </div>
 
           {/* Illustration */}
-          <IllustrationDisplay
-            name="login_hero"
-            alt="Welcome to vDeskconnect"
-            className="max-w-md"
-            fallback="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300'%3E%3Crect fill='%23E5E4F0' width='400' height='300' rx='16'/%3E%3Ctext x='200' y='150' text-anchor='middle' fill='%239B9BB4' font-size='16'%3EIllustration%3C/text%3E%3C/svg%3E"
-          />
+          <div className="relative">
+            <div className="absolute -inset-4 bg-primary/5 rounded-hero blur-2xl" />
+            <IllustrationDisplay
+              name="login_hero"
+              alt="Welcome to vDeskconnect"
+              className="max-w-md relative"
+              fallback={
+                <div className="max-w-md aspect-[4/3] bg-gradient-to-br from-primary/10 to-primary-light/10 rounded-hero flex items-center justify-center">
+                  <div className="text-center space-y-4 p-8">
+                    <div className="w-20 h-20 bg-primary/20 rounded-full flex items-center justify-center mx-auto animate-bounce-subtle">
+                      <LogIn size={40} className="text-primary" />
+                    </div>
+                    <p className="text-text-secondary font-medium">Welcome Back!</p>
+                  </div>
+                </div>
+              }
+            />
+          </div>
 
-          <p className="text-text-secondary text-center text-sm max-w-xs">
+          <p className="text-text-secondary text-center text-sm max-w-xs animate-slide-up">
             Your complete school management solution — configurable, global, and always evolving.
           </p>
         </div>
@@ -173,6 +199,14 @@ export default function LoginPage() {
       {/* Right side - Login Form */}
       <div className="auth-right">
         <div className="auth-card">
+          <button
+            onClick={() => router.push('/')}
+            className="flex items-center gap-2 text-text-muted hover:text-primary transition-colors duration-200 mb-6 group"
+          >
+            <ArrowLeft size={16} className="transition-transform duration-300 group-hover:-translate-x-1" />
+            <span className="text-sm">Back to home</span>
+          </button>
+
           <h1 className="auth-title">Welcome back</h1>
           <p className="auth-subtitle">Sign in to your account to continue</p>
 
@@ -210,8 +244,8 @@ export default function LoginPage() {
                 autoComplete="current-password"
               />
               <div className="flex justify-end mt-2">
-                <Link href="/forgot-password" className="auth-link">
-                  Forgot password?
+                <Link href="/forgot-password" className="auth-link group">
+                  <span className="transition-transform duration-200 group-hover:translate-x-0.5 inline-block">Forgot password?</span>
                 </Link>
               </div>
             </div>
@@ -222,12 +256,23 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          <div className="auth-divider">or</div>
+          {/* Divider with "or continue with" */}
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-border" />
+            </div>
+            <div className="relative flex justify-center text-xs">
+              <span className="px-4 bg-bg-card text-text-muted">or continue with</span>
+            </div>
+          </div>
 
-          <p className="text-center text-sm text-text-secondary">
+          {/* Google Auth Button */}
+          <GoogleAuthButton onClick={handleGoogleAuth} loading={googleLoading} />
+
+          <p className="text-center text-sm text-text-secondary mt-6">
             Register your school?{' '}
-            <Link href="/signup" className="auth-link">
-              Get started
+            <Link href="/signup" className="auth-link group">
+              <span className="transition-transform duration-200 group-hover:translate-x-0.5 inline-block">Get started</span>
             </Link>
           </p>
         </div>
