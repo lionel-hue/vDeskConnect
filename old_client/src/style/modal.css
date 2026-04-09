@@ -1,0 +1,236 @@
+/* style/modal.css */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    padding: 1rem;
+    animation: fadeIn 0.2s ease-out;
+}
+
+.modal-container {
+    background: linear-gradient(135deg, #1e293b, #374151);
+    border: 1px solid #4b5563;
+    border-radius: 1rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    width: 100%;
+    max-width: 400px;
+    animation: slideUp 0.3s ease-out;
+    overflow: hidden;
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1.5rem 1.5rem 1rem;
+    border-bottom: 1px solid #374151;
+}
+
+.modal-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.icon-alert {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+}
+
+.icon-confirm {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    color: white;
+}
+
+.icon-prompt {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+}
+
+.modal-title {
+    color: #f8fafc;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+    flex: 1;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 0.25rem;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-close:hover {
+    color: #e2e8f0;
+    background-color: #374151;
+}
+
+.modal-content {
+    padding: 1.5rem;
+}
+
+.modal-message {
+    color: #e2e8f0;
+    font-size: 1rem;
+    line-height: 1.5;
+    margin: 0 0 1rem 0;
+}
+
+.modal-input-container {
+    margin-top: 1rem;
+}
+
+.modal-input {
+    width: 100%;
+    background-color: #374151;
+    border: 1px solid #4b5563;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    color: #f8fafc;
+    font-size: 1rem;
+    transition: all 0.2s;
+}
+
+.modal-input:focus {
+    outline: none;
+    border-color: #8b5cf6;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+}
+
+.modal-input::placeholder {
+    color: #9ca3af;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem 1.5rem;
+    justify-content: flex-end;
+}
+
+.modal-btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    border: none;
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 80px;
+}
+
+.modal-btn-primary {
+    background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+    color: white;
+}
+
+.modal-btn-primary:hover {
+    background: linear-gradient(135deg, #7c3aed, #2563eb);
+    transform: translateY(-1px);
+}
+
+.modal-btn-primary:active {
+    transform: translateY(0);
+}
+
+.modal-btn-secondary {
+    background-color: #374151;
+    color: #e2e8f0;
+    border: 1px solid #4b5563;
+}
+
+.modal-btn-secondary:hover {
+    background-color: #475569;
+    border-color: #6b7280;
+}
+
+.modal-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Responsive design */
+@media (max-width: 640px) {
+    .modal-overlay {
+        padding: 0.5rem;
+    }
+    
+    .modal-container {
+        max-width: 100%;
+        margin: 0.5rem;
+    }
+    
+    .modal-header {
+        padding: 1.25rem 1.25rem 0.75rem;
+    }
+    
+    .modal-content {
+        padding: 1.25rem;
+    }
+    
+    .modal-actions {
+        padding: 1rem 1.25rem 1.25rem;
+        flex-direction: column-reverse;
+    }
+    
+    .modal-btn {
+        width: 100%;
+    }
+    
+    .modal-title {
+        font-size: 1.125rem;
+    }
+    
+    .modal-message {
+        font-size: 0.95rem;
+    }
+}
+
+/* Focus management */
+.modal-container:focus {
+    outline: none;
+}
+
+/* Backdrop animation */
+@keyframes backdropBlur {
+    from { backdrop-filter: blur(0px); }
+    to { backdrop-filter: blur(4px); }
+}
