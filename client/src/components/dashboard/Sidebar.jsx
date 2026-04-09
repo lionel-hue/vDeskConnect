@@ -1,0 +1,215 @@
+'use client';
+
+import { useState } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import {
+  LayoutGrid,
+  Users,
+  School,
+  BookOpen,
+  Calendar,
+  FileText,
+  Settings,
+  ChevronLeft,
+  ChevronRight,
+  LogOut,
+  BarChart3,
+  Shield,
+  Package,
+  GraduationCap,
+  CreditCard,
+  Menu,
+  X,
+} from 'lucide-react';
+
+// Super Admin navigation items
+const SUPER_ADMIN_NAV = [
+  { label: 'Dashboard', icon: LayoutGrid, href: '/admin/dashboard' },
+  { label: 'Schools', icon: School, href: '/admin/schools' },
+  { label: 'Subscriptions', icon: CreditCard, href: '/admin/subscriptions' },
+  { label: 'Illustrations', icon: Package, href: '/admin/illustrations' },
+  { label: 'Analytics', icon: BarChart3, href: '/admin/analytics' },
+  { label: 'Settings', icon: Settings, href: '/admin/settings' },
+];
+
+// School Admin navigation items
+const SCHOOL_ADMIN_NAV = [
+  { label: 'Dashboard', icon: LayoutGrid, href: '/dashboard' },
+  { label: 'Students', icon: GraduationCap, href: '/dashboard/students' },
+  { label: 'Teachers', icon: Users, href: '/dashboard/teachers' },
+  { label: 'Classes', icon: School, href: '/dashboard/classes' },
+  { label: 'Exams', icon: FileText, href: '/dashboard/exams' },
+  { label: 'Events', icon: Calendar, href: '/dashboard/events' },
+  { label: 'Reports', icon: BarChart3, href: '/dashboard/reports' },
+  { label: 'Fees', icon: CreditCard, href: '/dashboard/fees' },
+  { label: 'Settings', icon: Settings, href: '/dashboard/settings' },
+];
+
+export default function Sidebar({ role = 'admin', user, onLogout, collapsed: initialCollapsed = false }) {
+  const pathname = usePathname();
+  const [collapsed, setCollapsed] = useState(initialCollapsed);
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  const navItems = role === 'super_admin' ? SUPER_ADMIN_NAV : SCHOOL_ADMIN_NAV;
+
+  const handleLogout = () => {
+    onLogout?.();
+  };
+
+  const toggleSidebar = () => setCollapsed(!collapsed);
+  const toggleMobile = () => setMobileOpen(!mobileOpen);
+
+  return (
+    <>
+      {/* Mobile overlay */}
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={toggleMobile}
+        />
+      )}
+
+      {/* Mobile menu button */}
+      <button
+        onClick={toggleMobile}
+        className="fixed top-4 left-4 z-50 lg:hidden w-10 h-10 bg-sidebar rounded-lg flex items-center justify-center text-white shadow-soft"
+      >
+        {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+      </button>
+
+      {/* Sidebar */}
+      <aside
+        className={`fixed top-0 left-0 h-full bg-sidebar text-white z-50 transition-all duration-300 ease-out flex flex-col
+          ${collapsed ? 'w-20' : 'w-64'}
+          ${mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        `}
+      >
+        {/* Logo */}
+        <div className={`flex items-center ${collapsed ? 'justify-center' : 'justify-between'} p-4 border-b border-white/10`}>
+          {!collapsed && (
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="white" />
+                  <path d="M2 17L12 22L22 17" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M2 12L12 17L22 12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
+              <span className="font-bold text-lg">vDeskconnect</span>
+            </div>
+          )}
+          {collapsed && (
+            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="white" />
+                <path d="M2 17L12 22L22 17" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M2 12L12 17L22 12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+          )}
+          {!collapsed && (
+            <button
+              onClick={toggleSidebar}
+              className="text-white/50 hover:text-white transition-colors hidden lg:flex"
+            >
+              <ChevronLeft size={18} />
+            </button>
+          )}
+        </div>
+
+        {/* Role badge */}
+        {!collapsed && (
+          <div className="px-4 py-3">
+            <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
+              role === 'super_admin'
+                ? 'bg-warning/20 text-warning'
+                : 'bg-primary/20 text-primary-light'
+            }`}>
+              <Shield size={12} />
+              {role === 'super_admin' ? 'Super Admin' : 'School Admin'}
+            </div>
+          </div>
+        )}
+
+        {/* Navigation */}
+        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+          {navItems.map((item) => {
+            const isActive = pathname === item.href || pathname?.startsWith(item.href + '/');
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setMobileOpen(false)}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-250 group
+                  ${isActive
+                    ? 'bg-primary text-white shadow-soft'
+                    : 'text-white/60 hover:text-white hover:bg-white/5'
+                  }
+                  ${collapsed ? 'justify-center' : ''}
+                `}
+                title={collapsed ? item.label : undefined}
+              >
+                <item.icon size={20} className="flex-shrink-0" />
+                {!collapsed && <span>{item.label}</span>}
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* Collapse toggle (bottom) */}
+        {!collapsed && (
+          <div className="px-3 pb-4 hidden lg:block">
+            <button
+              onClick={toggleSidebar}
+              className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-white/50 hover:text-white hover:bg-white/5 transition-all duration-250 text-sm"
+            >
+              <ChevronLeft size={16} />
+              <span>Collapse</span>
+            </button>
+          </div>
+        )}
+        {collapsed && (
+          <div className="px-3 pb-4 hidden lg:block">
+            <button
+              onClick={toggleSidebar}
+              className="w-full flex items-center justify-center p-2 rounded-lg text-white/50 hover:text-white hover:bg-white/5 transition-all duration-250"
+              title="Expand sidebar"
+            >
+              <ChevronRight size={18} />
+            </button>
+          </div>
+        )}
+
+        {/* User section */}
+        <div className={`px-3 pb-4 border-t border-white/10 pt-4 ${collapsed ? 'flex flex-col items-center gap-3' : ''}`}>
+          {!collapsed && user && (
+            <div className="flex items-center gap-3 mb-3 px-1">
+              <div className="w-9 h-9 bg-primary/30 rounded-full flex items-center justify-center text-sm font-bold">
+                {user?.email?.charAt(0).toUpperCase() || 'U'}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-white truncate">{user?.email}</p>
+                <p className="text-xs text-white/40">{role === 'super_admin' ? 'Platform Owner' : user?.school_name}</p>
+              </div>
+            </div>
+          )}
+          {collapsed && user && (
+            <div className="w-9 h-9 bg-primary/30 rounded-full flex items-center justify-center text-sm font-bold mx-auto">
+              {user?.email?.charAt(0).toUpperCase() || 'U'}
+            </div>
+          )}
+          <button
+            onClick={handleLogout}
+            className={`flex items-center gap-2 text-white/50 hover:text-error transition-colors duration-200 text-sm ${
+              collapsed ? 'justify-center w-full' : ''
+            }`}
+          >
+            <LogOut size={18} />
+            {!collapsed && <span>Sign out</span>}
+          </button>
+        </div>
+      </aside>
+    </>
+  );
+}
