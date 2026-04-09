@@ -1,0 +1,154 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: #F0EEF7;
+    color: #2D2B55;
+  }
+}
+
+@layer components {
+  /* Auth page layout */
+  .auth-page {
+    @apply min-h-screen flex bg-bg-main;
+  }
+
+  .auth-left {
+    @apply hidden lg:flex flex-1 flex-col justify-center items-center bg-gradient-to-br from-primary/10 via-bg-main to-primary-light/10 p-12 relative overflow-hidden;
+  }
+
+  .auth-right {
+    @apply flex-1 flex flex-col justify-center items-center p-8 md:p-12 lg:p-16;
+  }
+
+  .auth-card {
+    @apply w-full max-w-md bg-bg-card rounded-panel shadow-soft p-8 animate-slide-up;
+  }
+
+  .auth-title {
+    @apply text-2xl font-bold text-text-primary mb-2;
+  }
+
+  .auth-subtitle {
+    @apply text-text-secondary text-sm mb-6;
+  }
+
+  /* Form inputs */
+  .form-input {
+    @apply w-full px-4 py-3 rounded-btn border border-border bg-bg-main text-text-primary placeholder-text-muted text-sm transition-all duration-250 ease-out outline-none focus:border-primary focus:ring-2 focus:ring-primary/20;
+  }
+
+  .form-label {
+    @apply block text-sm font-medium text-text-secondary mb-1.5;
+  }
+
+  .form-error {
+    @apply text-xs text-error mt-1;
+  }
+
+  /* Buttons */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-btn text-sm font-semibold transition-all duration-250 ease-out cursor-pointer select-none;
+  }
+
+  .btn-primary {
+    @apply btn bg-primary text-white hover:bg-primary-dark active:scale-[0.98] shadow-soft;
+  }
+
+  .btn-secondary {
+    @apply btn bg-transparent text-primary border-2 border-primary hover:bg-primary/5 active:scale-[0.98];
+  }
+
+  .btn-ghost {
+    @apply btn bg-transparent text-text-secondary hover:text-primary hover:bg-primary/5;
+  }
+
+  .btn-full {
+    @apply w-full;
+  }
+
+  .btn-lg {
+    @apply px-8 py-3.5 text-base;
+  }
+
+  /* Links */
+  .auth-link {
+    @apply text-primary hover:text-primary-dark transition-colors duration-200 text-sm font-medium;
+  }
+
+  /* Divider */
+  .auth-divider {
+    @apply flex items-center gap-4 my-6 text-text-muted text-xs;
+  }
+
+  .auth-divider::before,
+  .auth-divider::after {
+    content: '';
+    @apply flex-1 h-px bg-border;
+  }
+
+  /* Illustration container */
+  .auth-illustration {
+    @apply max-w-sm w-full animate-fade-in transition-all duration-500 ease-out;
+  }
+
+  /* Loading spinner */
+  .spinner {
+    @apply w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin;
+  }
+
+  /* Toast / notification */
+  .toast {
+    @apply fixed top-4 right-4 z-50 px-6 py-3 rounded-btn shadow-elevated animate-slide-up;
+  }
+
+  .toast-success {
+    @apply toast bg-success/10 text-success border border-success/20;
+  }
+
+  .toast-error {
+    @apply toast bg-error/10 text-error border border-error/20;
+  }
+
+  /* Multi-step form progress */
+  .step-indicator {
+    @apply flex items-center gap-2 mb-8;
+  }
+
+  .step-dot {
+    @apply w-8 h-2 rounded-full transition-all duration-300 ease-out;
+  }
+
+  .step-dot-active {
+    @apply step-dot bg-primary w-12;
+  }
+
+  .step-dot-inactive {
+    @apply step-dot bg-border;
+  }
+
+  .step-dot-completed {
+    @apply step-dot bg-primary/40;
+  }
+}
+
+@layer utilities {
+  .glass {
+    @apply bg-white/60 backdrop-blur-xl border border-white/20;
+  }
+}

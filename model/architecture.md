@@ -35,6 +35,133 @@
 11. **Tiered Subscriptions:** 14-day free trial with monthly plans that accumulate duration; 'Hidden Forever & All Unlocked' plan for platform owner.
 12. **Marketplace:** In-app store for electronic textbooks and literature.
 13. **Lecture Builder:** Multi-media lecture assembly with video conferencing integration.
+14. **Living UI Illustration System:** Dynamic, table-driven illustration packs that can be swapped by Super Admins to keep the app feeling fresh and alive.
+
+---
+
+## **1.4 UI Design Philosophy**
+
+### **1.4.1 Design Principles**
+| Principle | Description |
+| :--- | :--- |
+| **Fluid & Modern** | Clean, minimal UI elements with soft rounded corners, generous whitespace, and smooth transitions. |
+| **Highly Interactive** | Subtle hover effects, micro-animations, and satisfying state transitions — never overwhelming, always purposeful. |
+| **Illustration-Driven** | Every key screen (login, signup, dashboards, empty states) features contextual illustrations that make the app feel alive and welcoming. |
+| **Dynamic Illustrations** | Illustrations are stored as managed assets via a database-driven system. Super Admins can upload "illustration packs" that instantly refresh the look of the entire app without code deployments. |
+| **Inspired by Design Reference** | The `ui_design.png` in `model/` serves as the primary visual reference: soft purple/lavender palette, rounded card UI, dark sidebar with icon navigation, clean typography, data widgets, and calendar integration. |
+
+### **1.4.2 Living UI Illustration System**
+
+**Problem:** Static illustration assets become stale over time. Replacing them requires code changes and redeployment.
+
+**Solution:** A **database-driven illustration management system** where:
+
+1.  **`ui_illustrations` Table** stores metadata for every illustration used across the app.
+2.  **Illustration Packs** are groups of images uploaded together and applied as a set.
+3.  **Super Admin Dashboard** provides a UI to upload new packs, preview them, and activate them with one click.
+4.  **Frontend** fetches the active illustration URLs from the API and renders them dynamically.
+
+#### **How It Works**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  Super Admin uploads "Illustration Pack v2"                 │
+│  ├── login_hero.svg                                         │
+│  ├── signup_step1.svg                                       │
+│  ├── signup_step2.svg                                       │
+│  ├── signup_step3.svg                                       │
+│  ├── dashboard_empty.svg                                    │
+│  ├── no_results.svg                                         │
+│  └── error_404.svg                                          │
+│                                                             │
+│  Admin activates the pack → sets "is_active" = true         │
+│  Previous pack → sets "is_active" = false                   │
+│                                                             │
+│  Frontend calls GET /api/ui/illustrations                   │
+│  Returns: { "login_hero": "/storage/illustrations/...", ...}│
+│                                                             │
+│  React components render images from API response           │
+└─────────────────────────────────────────────────────────────┘
+```
+
+#### **Database Table: `ui_illustrations`**
+
+| Column | Type | Description |
+| :--- | :--- | :--- |
+| `id` | BigInt | Primary key |
+| `pack_name` | String | Name of the illustration pack (e.g., "Fresh Start 2026") |
+| `key` | String | Identifier used in code (e.g., `login_hero`, `signup_welcome`) |
+| `url` | String | Public storage URL to the image file |
+| `section` | String | App section where used (login, signup, dashboard, errors, empty_states) |
+| `is_active` | Boolean | Whether this illustration is currently live |
+| `created_by` | FK → users | Super Admin who uploaded it |
+| `created_at` | Timestamp | Upload timestamp |
+
+**Uniqueness:** `(key, is_active)` — only one active illustration per key at any time.
+
+#### **Storage Strategy**
+- Illustrations are stored in Laravel's `storage/app/public/illustrations/` directory.
+- They are symlinked to `public/storage/illustrations/` via `php artisan storage:link`.
+- File naming follows the convention: `{pack_name}/{key}.{ext}` (e.g., `fresh_start_2026/login_hero.svg`).
+- Supported formats: SVG (preferred for scalability), PNG, WebP.
+
+#### **API Endpoints**
+
+| Method | Endpoint | Description | Access |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/ui/illustrations` | Get all active illustrations | Public |
+| `GET` | `/api/ui/illustrations/active/{section}` | Get active illustrations for a section | Public |
+| `POST` | `/api/ui/illustrations/packs` | Upload a new illustration pack | Super Admin |
+| `PUT` | `/api/ui/illustrations/packs/{id}/activate` | Activate a pack | Super Admin |
+| `GET` | `/api/ui/illustrations/packs` | List all uploaded packs | Super Admin |
+| `DELETE` | `/api/ui/illustrations/packs/{id}` | Delete a pack | Super Admin |
+
+#### **Frontend Integration**
+```jsx
+// Illustrations are fetched once at app boot and cached in React Context
+const { illustrations } = useIllustrations();
+
+// Usage in any component
+<img
+  src={illustrations.login_hero}
+  alt="Welcome to vDeskconnect"
+  className="illustration-fade-in"
+/>
+```
+
+#### **Animation Guidelines**
+| Animation | Duration | Easing | Usage |
+| :--- | :--- | :--- | :--- |
+| **Fade In** | 400ms | ease-out | Page load, illustration transitions |
+| **Slide Up** | 300ms | ease-out | Cards appearing, form steps |
+| **Scale Pulse** | 200ms | ease-in-out | Button hover, icon hover |
+| **Smooth Transition** | 250ms | ease | All interactive state changes |
+
+### **1.4.3 Color Palette (Inspired by ui_design.png)**
+
+| Token | Hex | Usage |
+| :--- | :--- | :--- |
+| `primary` | `#7C6BC4` | Primary actions, active states, brand |
+| `primary-light` | `#A99DDB` | Hover states, secondary accents |
+| `primary-dark` | `#5E4FA2` | Pressed states, emphasis |
+| `bg-main` | `#F0EEF7` | Main app background |
+| `bg-card` | `#FFFFFF` | Card backgrounds |
+| `sidebar` | `#1A1A2E` | Dark sidebar |
+| `text-primary` | `#2D2B55` | Primary text |
+| `text-secondary` | `#6B6B8D` | Secondary text, labels |
+| `text-muted` | `#9B9BB4` | Disabled, placeholders |
+| `border` | `#E5E4F0` | Borders, dividers |
+| `success` | `#34D399` | Success states |
+| `warning` | `#FBBF24` | Warning states |
+| `error` | `#EF4444` | Error states |
+| `info` | `#60A5FA` | Info states |
+
+### **1.4.4 Component Styling Conventions**
+- **Border Radius:** `12px` (cards), `16px` (large panels), `8px` (buttons/inputs), `24px` (hero panels)
+- **Shadows:** Soft, diffused shadows — `0 4px 24px rgba(124, 107, 196, 0.08)`
+- **Typography:** System font stack with clean, readable sizing hierarchy
+- **Spacing:** 8px base unit (8, 16, 24, 32, 48, 64)
+- **Transitions:** All interactive elements have `transition-all duration-250 ease`
 
 ---
 
@@ -178,6 +305,11 @@
 | **textbooks** | `id`, `school_id`, `title`, `grade_level_id`, `price`, `file_url` | Electronic books for Receptionist market. |
 | **marketplace_orders** | `id`, `student_id`, `textbook_id`, `amount`, `status`, `payment_ref` | Sales tracking for student purchases. |
 | **user_bans** | `id`, `user_id`, `banned_by`, `reason` | Record of bans and deletions. |
+
+#### **M. UI Illustrations System** ⭐ **NEW**
+| Table | Columns | Description |
+| :--- | :--- | :--- |
+| **ui_illustrations** | `id`, `pack_name`, `key`, `url`, `section`, `is_active`, `created_by` | Dynamic illustration assets managed by Super Admin. |
 
 ---
 

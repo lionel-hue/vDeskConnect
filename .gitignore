@@ -58,3 +58,4 @@ coverage/
 *.local
 
 test.txt
+.qwen
