@@ -12,10 +12,11 @@ use App\Http\Controllers\Api\UiIllustrationController;
 
 // Auth routes (public)
 Route::prefix('auth')->group(function () {
+    Route::post('/send-verification', [AuthController::class, 'sendVerification']);
+    Route::post('/verify', [AuthController::class, 'verifyEmail']);
     Route::post('/register-admin', [AuthController::class, 'registerAdmin']);
     Route::post('/register', [AuthController::class, 'register']); // internal, with invite code
     Route::post('/login', [AuthController::class, 'login']);
-    Route::post('/verify', [AuthController::class, 'verifyEmail']);
     Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
     Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 });

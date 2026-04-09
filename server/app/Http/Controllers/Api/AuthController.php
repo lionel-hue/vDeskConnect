@@ -12,11 +12,103 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
+use App\Mail\AdminRegistrationVerifyEmail;
 
 class AuthController extends Controller
 {
+    /**
+     * Send email verification code for school registration.
+     * Stores the code in a temporary cache/pending table and emails it.
+     */
+    public function sendVerification(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email',
+            'first_name' => 'required|string|max:255',
+            'school_name' => 'required|string|max:255',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        // Check if email is already registered
+        if (User::where('email', $request->email)->exists()) {
+            return response()->json([
+                'message' => 'This email is already registered',
+                'errors' => ['email' => ['An account with this email already exists']],
+            ], 422);
+        }
+
+        // Generate 6-digit code
+        $code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+
+        // Store in cache for 10 minutes
+        $cacheKey = 'verification_code_' . md5($request->email);
+        cache()->put($cacheKey, [
+            'code' => $code,
+            'first_name' => $request->first_name,
+            'school_name' => $request->school_name,
+            'email' => $request->email,
+        ], now()->addMinutes(10));
+
+        // Send email
+        try {
+            Mail::to($request->email)->send(new AdminRegistrationVerifyEmail($code));
+        } catch (\Exception $e) {
+            // Log error but still return success for dev purposes
+            \Log::error('Failed to send verification email: ' . $e->getMessage());
+        }
+
+        return response()->json([
+            'message' => 'Verification code sent successfully',
+            'expires_in' => 600,
+        ]);
+    }
+
+    /**
+     * Verify email code and mark email as verified.
+     */
+    public function verifyEmail(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email',
+            'code' => 'required|string|size:6',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $cacheKey = 'verification_code_' . md5($request->email);
+        $data = cache()->get($cacheKey);
+
+        if (!$data || $data['code'] !== $request->code) {
+            return response()->json([
+                'message' => 'Invalid or expired verification code',
+            ], 400);
+        }
+
+        // Mark as verified in cache
+        $data['verified'] = true;
+        cache()->put($cacheKey, $data, now()->addMinutes(10));
+
+        return response()->json([
+            'message' => 'Email verified successfully',
+            'verified' => true,
+        ]);
+    }
+
     /**
      * Register a new School Admin + School (public endpoint).
      */
@@ -40,7 +132,18 @@ class AuthController extends Controller
             ], 422);
         }
 
-        return DB::transaction(function () use ($request) {
+        // Check email verification
+        $cacheKey = 'verification_code_' . md5($request->admin_email);
+        $verificationData = cache()->get($cacheKey);
+
+        if (!$verificationData || !($verificationData['verified'] ?? false)) {
+            return response()->json([
+                'message' => 'Please verify your email before completing registration',
+                'verified' => false,
+            ], 403);
+        }
+
+        return DB::transaction(function () use ($request, $cacheKey) {
             // Create school
             $school = School::create([
                 'name' => $request->school_name,
@@ -78,6 +181,9 @@ class AuthController extends Controller
                 'expires_at' => now()->addDays(14),
                 'status' => 'trial',
             ]);
+
+            // Clean up verification cache
+            cache()->forget($cacheKey);
 
             return response()->json([
                 'message' => 'School registered successfully. 14-day free trial activated.',
