@@ -144,27 +144,27 @@ class AdminSeeder extends Seeder
         // ─────────────────────────────────────────────
         //  PRINT CREDENTIALS TO TERMINAL
         // ─────────────────────────────────────────────
-        $this->newLine();
-        $this->line('╔══════════════════════════════════════════════════════════════════╗');
-        $this->line('║                    vDeskConnect — Seeded Accounts                 ║');
-        $this->line('╠══════════════════════════════════════════════════════════════════╣');
-        $this->line('║                                                                  ║');
-        $this->line('║  SUPER ADMIN (Platform Owner)                                    ║');
-        $this->line('║  ────────────────────────────────                                ║');
-        $this->line(sprintf('║  Email    : %-46s ║', $superAdminEmail));
-        $this->line(sprintf('║  Password : %-46s ║', $superAdminPassword));
-        $this->line('║  Redirect : /admin/dashboard                                      ║');
-        $this->line('║                                                                  ║');
-        $this->line('║  SCHOOL ADMIN (Greenfield Academy Director)                      ║');
-        $this->line('║  ─────────────────────────────────────────────────                ║');
-        $this->line(sprintf('║  Email    : %-46s ║', $schoolAdminEmail));
-        $this->line(sprintf('║  Password : %-46s ║', $schoolAdminPassword));
-        $this->line('║  Redirect : /dashboard                                            ║');
-        $this->line('║  Trial    : 14 days free trial active                             ║');
-        $this->line('║                                                                  ║');
-        $this->line('╚══════════════════════════════════════════════════════════════════╝');
-        $this->newLine();
-        $this->info('✓ Seeding complete! Use the credentials above to log in.');
-        $this->newLine();
+        $this->command->getOutput()->newLine();
+        $this->command->getOutput()->writeln('╔══════════════════════════════════════════════════════════════════╗');
+        $this->command->getOutput()->writeln('║                    vDeskConnect — Seeded Accounts                 ║');
+        $this->command->getOutput()->writeln('╠══════════════════════════════════════════════════════════════════╣');
+        $this->command->getOutput()->writeln('║                                                                  ║');
+        $this->command->getOutput()->writeln('║  SUPER ADMIN (Platform Owner)                                    ║');
+        $this->command->getOutput()->writeln('║  ────────────────────────────────                                ║');
+        $this->command->getOutput()->writeln(sprintf('║  Email    : %-46s ║', $superAdminEmail));
+        $this->command->getOutput()->writeln(sprintf('║  Password : %-46s ║', $superAdminPassword));
+        $this->command->getOutput()->writeln('║  Redirect : /admin/dashboard                                      ║');
+        $this->command->getOutput()->writeln('║                                                                  ║');
+        $this->command->getOutput()->writeln('║  SCHOOL ADMIN (Greenfield Academy Director)                      ║');
+        $this->command->getOutput()->writeln('║  ─────────────────────────────────────────────────                ║');
+        $this->command->getOutput()->writeln(sprintf('║  Email    : %-46s ║', $schoolAdminEmail));
+        $this->command->getOutput()->writeln(sprintf('║  Password : %-46s ║', $schoolAdminPassword));
+        $this->command->getOutput()->writeln('║  Redirect : /dashboard                                            ║');
+        $this->command->getOutput()->writeln('║  Trial    : 14 days free trial active                             ║');
+        $this->command->getOutput()->writeln('║                                                                  ║');
+        $this->command->getOutput()->writeln('╚══════════════════════════════════════════════════════════════════╝');
+        $this->command->getOutput()->newLine();
+        $this->command->info('✓ Seeding complete! Use the credentials above to log in.');
+        $this->command->getOutput()->newLine();
     }
 }
