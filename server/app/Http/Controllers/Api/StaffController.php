@@ -80,6 +80,17 @@ class StaffController extends Controller
             return response()->json(['message' => 'Only School Admin can create Principals'], 403);
         }
 
+        // Check if employee number already exists in profiles
+        $existingEmployee = Profile::where('type', 'staff')
+            ->where('data->employee_number', $request->employee_number)
+            ->exists();
+        if ($existingEmployee) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => ['employee_number' => ['This employee number already exists.']],
+            ], 422);
+        }
+
         // Receptionist must be assigned to Admin Staff (role stored as receptionist)
         $tempPassword = $request->password ?: 'Secret123!';
 
