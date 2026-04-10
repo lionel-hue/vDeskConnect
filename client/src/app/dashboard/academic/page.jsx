@@ -316,7 +316,7 @@ export default function AcademicPage() {
             {activeTab === TABS.SESSIONS && (
               <div className="space-y-6">
                 {/* Warning */}
-                <div className="flex items-start gap-2 p-4 bg-error/5 border border-error/20 rounded-lg">
+                <div className="flex items-start gap-2 p-4 bg-error/5 dark:bg-error/10 border border-error/20 rounded-lg">
                   <AlertTriangle className="w-5 h-5 text-error flex-shrink-0 mt-0.5" />
                   <p className="text-sm text-error">
                     Create one session per academic year. The last created session will be considered the current academic session.
@@ -324,7 +324,7 @@ export default function AcademicPage() {
                 </div>
 
                 {/* Create Session Card */}
-                <div className="bg-white rounded-card border border-border p-6 shadow-sm">
+                <div className="bg-card dark:bg-gray-800 rounded-card border border-border p-6 shadow-sm">
                   <h2 className="text-lg font-semibold text-text-primary mb-4">Create Session</h2>
                   <form onSubmit={handleCreateSession} className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -335,7 +335,7 @@ export default function AcademicPage() {
                           placeholder="2025 - 2026"
                           value={sessionForm.name}
                           onChange={e => setSessionForm({ ...sessionForm, name: e.target.value })}
-                          className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+                          className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 placeholder-text-muted"
                           required
                         />
                       </div>
@@ -345,7 +345,7 @@ export default function AcademicPage() {
                           type="date"
                           value={sessionForm.start_date}
                           onChange={e => setSessionForm({ ...sessionForm, start_date: e.target.value })}
-                          className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+                          className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
                           required
                         />
                       </div>
@@ -355,7 +355,7 @@ export default function AcademicPage() {
                           type="date"
                           value={sessionForm.end_date}
                           onChange={e => setSessionForm({ ...sessionForm, end_date: e.target.value })}
-                          className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+                          className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
                           required
                         />
                       </div>
@@ -372,7 +372,7 @@ export default function AcademicPage() {
                 </div>
 
                 {/* Existing Sessions */}
-                <div className="bg-white rounded-card border border-border p-6 shadow-sm">
+                <div className="bg-card dark:bg-gray-800 rounded-card border border-border p-6 shadow-sm">
                   <h2 className="text-lg font-semibold text-text-primary mb-4">Academic Sessions</h2>
                   {sessions.length === 0 ? (
                     <p className="text-text-secondary text-center py-8">No sessions created yet.</p>
@@ -382,7 +382,7 @@ export default function AcademicPage() {
                         <div
                           key={session.id}
                           className={`p-4 rounded-lg border-2 ${
-                            session.active ? 'border-primary bg-primary/5' : 'border-border'
+                            session.active ? 'border-primary bg-primary/5 dark:bg-primary/10' : 'border-border dark:border-gray-600'
                           }`}
                         >
                           <div className="flex items-center justify-between">
@@ -402,7 +402,7 @@ export default function AcademicPage() {
                               {!session.active && (
                                 <button
                                   onClick={() => handleSetActiveSession(session.id)}
-                                  className="px-3 py-1 text-sm text-primary border border-primary rounded-lg hover:bg-primary/5"
+                                  className="px-3 py-1 text-sm text-primary border border-primary rounded-lg hover:bg-primary/5 dark:hover:bg-primary/10"
                                 >
                                   Set Active
                                 </button>
@@ -413,7 +413,6 @@ export default function AcademicPage() {
                       ))}
                     </div>
                   )}
-                </div>
               </div>
             )}
 
