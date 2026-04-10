@@ -60,6 +60,11 @@ export default function WelcomePage() {
         }
       />
 
+      {/* Floating Theme Toggle - Always Visible */}
+      <div className="fixed top-6 right-6 z-50">
+        <ThemeToggle />
+      </div>
+
       {/* Animated Background Particles */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="particle w-64 h-64 bg-primary/10 top-1/4 -left-32 animate-float" />
@@ -84,7 +89,6 @@ export default function WelcomePage() {
               <span className="text-xl font-bold text-text-primary">vDeskconnect</span>
             </div>
             <div className="flex items-center gap-4">
-              <ThemeToggle />
               <Link href="/login" className="text-text-secondary hover:text-primary transition-colors duration-200 font-medium hidden sm:inline">
                 Sign In
               </Link>

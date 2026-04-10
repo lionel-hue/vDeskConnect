@@ -20,9 +20,9 @@ export default function ThemeToggle({ className = '' }) {
   }, [isOpen]);
 
   const themeOptions = [
-    { value: themes.LIGHT, icon: Sun, label: 'Light', shortcut: '⌘L' },
-    { value: themes.DARK, icon: Moon, label: 'Dark', shortcut: '⌘D' },
-    { value: themes.SYSTEM, icon: Monitor, label: 'System', shortcut: '⌘S' },
+    { value: themes.LIGHT, icon: Sun, label: 'Light' },
+    { value: themes.DARK, icon: Moon, label: 'Dark' },
+    { value: themes.SYSTEM, icon: Monitor, label: 'System' },
   ];
 
   const currentTheme = themeOptions.find(t => t.value === themeMode);
@@ -30,37 +30,38 @@ export default function ThemeToggle({ className = '' }) {
 
   return (
     <div className={`relative theme-dropdown ${className}`}>
-      {/* Toggle Button */}
+      {/* Toggle Button - Glassmorphic */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={`
-          flex items-center gap-2 px-3 py-2 rounded-btn
+          flex items-center gap-2 px-3 py-2.5 rounded-btn
           transition-all duration-250 ease
-          hover:scale-105
+          hover:scale-105 active:scale-95
+          backdrop-blur-lg border shadow-glass
           ${isDark 
-            ? 'bg-white/10 hover:bg-white/15 border border-white/20 text-white' 
-            : 'bg-bg-card hover:bg-bg-main border border-border text-text-primary shadow-soft'
+            ? 'bg-white/10 hover:bg-white/15 border-white/20 text-white' 
+            : 'bg-white/60 hover:bg-white/80 border-white/40 text-text-primary'
           }
         `}
         aria-label="Toggle theme"
         aria-expanded={isOpen}
       >
-        <CurrentIcon size={18} />
-        <span className="text-sm font-medium hidden sm:inline">{currentTheme?.label}</span>
+        <CurrentIcon size={18} className="transition-transform duration-250" />
+        <span className="text-sm font-medium hidden lg:inline">{currentTheme?.label}</span>
       </button>
 
-      {/* Dropdown Menu */}
+      {/* Dropdown Menu - Glassmorphic */}
       {isOpen && (
         <div
           className={`
-            absolute top-full right-0 mt-2 py-2 min-w-[180px]
-            rounded-card shadow-elevated
+            absolute top-full right-0 mt-2 py-2 min-w-[160px]
+            rounded-card shadow-glass-elevated
             border backdrop-blur-xl
             animate-scale-in
             z-50
             ${isDark 
               ? 'bg-gray-900/95 border-white/20' 
-              : 'bg-bg-card/95 border-border'
+              : 'bg-white/95 border-white/40'
             }
           `}
           role="menu"
@@ -81,21 +82,21 @@ export default function ThemeToggle({ className = '' }) {
                   transition-all duration-200
                   ${isActive 
                     ? isDark 
-                      ? 'bg-white/10 text-white' 
+                      ? 'bg-primary/20 text-primary-light' 
                       : 'bg-primary/10 text-primary'
                     : isDark
-                      ? 'text-gray-300 hover:bg-white/5'
+                      ? 'text-gray-300 hover:bg-white/10'
                       : 'text-text-primary hover:bg-bg-main'
                   }
                 `}
                 role="menuitem"
               >
                 <div className="flex items-center gap-3">
-                  <Icon size={16} />
+                  <Icon size={16} className="transition-transform duration-200" />
                   <span className="text-sm font-medium">{option.label}</span>
                 </div>
                 {isActive && (
-                  <div className={`w-2 h-2 rounded-full ${isDark ? 'bg-primary-light' : 'bg-primary'}`} />
+                  <div className={`w-2 h-2 rounded-full ${isDark ? 'bg-primary-light' : 'bg-primary'} animate-pulse`} />
                 )}
               </button>
             );

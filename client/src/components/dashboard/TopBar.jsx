@@ -1,6 +1,7 @@
 'use client';
 
 import { Bell, Search, User, Settings, Menu } from 'lucide-react';
+import ThemeToggle from '@/components/ui/ThemeToggle';
 
 export default function TopBar({ title, subtitle, user, onMobileMenuToggle }) {
   return (
@@ -37,6 +38,9 @@ export default function TopBar({ title, subtitle, user, onMobileMenuToggle }) {
             <Bell size={20} className="text-text-secondary" />
             <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-error rounded-full border-2 border-bg-card" />
           </button>
+
+          {/* Theme Toggle */}
+          <ThemeToggle />
 
           {/* User avatar */}
           <div className="flex items-center gap-3 pl-4 border-l border-border">
