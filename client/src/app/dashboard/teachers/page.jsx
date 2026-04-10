@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import {
   Users, Plus, Search, Edit2, Ban, Trash2, X, RefreshCw,
   ChevronLeft, ChevronRight, Phone, MapPin, Award, Calendar,
-  GraduationCap, AlertTriangle, Check, Mail, Eye, EyeOff
+  GraduationCap, AlertTriangle, Check, Mail, Eye, EyeOff, Hash
 } from 'lucide-react';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import { api } from '@/lib/api';
