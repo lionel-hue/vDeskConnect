@@ -31,6 +31,7 @@ export default function AcademicPage() {
   // Sessions state
   const [sessions, setSessions] = useState([]);
   const [showSessionModal, setShowSessionModal] = useState(false);
+  const [editingSessionId, setEditingSessionId] = useState(null);
   const [sessionForm, setSessionForm] = useState({ name: '', start_date: '', end_date: '' });
   const [sessionLoading, setSessionLoading] = useState(false);
 
@@ -166,6 +167,34 @@ export default function AcademicPage() {
       fetchData();
     } catch (err) {
       toast.error(err.data?.message || 'Failed to set active session');
+    }
+  };
+
+  const handleUpdateSession = async (e) => {
+    e.preventDefault();
+    setSessionLoading(true);
+    try {
+      const res = await academicApi.sessions.update(editingSessionId, sessionForm);
+      toast.success(res.message);
+      setShowSessionModal(false);
+      setSessionForm({ name: '', start_date: '', end_date: '' });
+      setEditingSessionId(null);
+      fetchData();
+    } catch (err) {
+      toast.error(err.data?.message || 'Failed to update session');
+    } finally {
+      setSessionLoading(false);
+    }
+  };
+
+  const handleDeleteSession = async (id, name) => {
+    if (!confirm(`⚠️ WARNING: Deleting session "${name}" will also delete ALL associated terms, CA configurations, exams, and results for this year. This cannot be undone.\n\nAre you sure you want to continue?`)) return;
+    try {
+      await academicApi.sessions.delete(id);
+      toast.success('Session and all associated data deleted');
+      fetchData();
+    } catch (err) {
+      toast.error(err.data?.message || 'Failed to delete session');
     }
   };
 
@@ -682,6 +711,16 @@ export default function AcademicPage() {
                                 {session.active ? 'Active' : 'Inactive'}
                               </span>
                               <span className="text-xs md:text-sm text-text-secondary">{session.terms_count} terms</span>
+                              <button
+                                onClick={() => {
+                                  setEditingSessionId(session.id);
+                                  setSessionForm({ name: session.name, start_date: session.start_date, end_date: session.end_date });
+                                  setShowSessionModal(true);
+                                }}
+                                className="px-2 md:px-3 py-1 text-xs md:text-sm text-text-secondary border border-border dark:border-gray-600 rounded-lg hover:bg-bg-main dark:hover:bg-gray-700"
+                              >
+                                Edit
+                              </button>
                               {!session.active && (
                                 <button
                                   onClick={() => handleSetActiveSession(session.id)}
@@ -690,6 +729,12 @@ export default function AcademicPage() {
                                   Set Active
                                 </button>
                               )}
+                              <button
+                                onClick={() => handleDeleteSession(session.id, session.name)}
+                                className="px-2 md:px-3 py-1 text-xs md:text-sm text-error border border-error/30 rounded-lg hover:bg-error/10"
+                              >
+                                Delete
+                              </button>
                             </div>
                           </div>
                         </div>

@@ -168,6 +168,27 @@ class AcademicController extends Controller
         });
     }
 
+    /**
+     * Delete an academic session (cascades to terms, ca_weeks, exams, etc.).
+     */
+    public function deleteSession(Request $request, int $id): JsonResponse
+    {
+        $user = $request->user();
+        $session = AcademicSession::where('school_id', $user->school_id)->findOrFail($id);
+
+        // Prevent deleting if it's the only active session
+        $activeCount = AcademicSession::where('school_id', $user->school_id)->where('active', true)->count();
+        if ($session->active && $activeCount <= 1) {
+            return response()->json([
+                'message' => 'Cannot delete the only active session. Create another session and set it as active first.',
+            ], 400);
+        }
+
+        $session->delete();
+
+        return response()->json(['message' => 'Academic session and all associated data deleted successfully']);
+    }
+
     // ==================== ACADEMIC TERMS ====================
 
     /**

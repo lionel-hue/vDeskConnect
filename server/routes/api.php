@@ -79,6 +79,7 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/', [AcademicController::class, 'sessionsIndex']);
             Route::post('/', [AcademicController::class, 'createSession']);
             Route::put('/{id}', [AcademicController::class, 'updateSession']);
+            Route::delete('/{id}', [AcademicController::class, 'deleteSession']);
             Route::put('/{id}/set-active', [AcademicController::class, 'setActiveSession']);
         });
 

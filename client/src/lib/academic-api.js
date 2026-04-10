@@ -12,6 +12,7 @@ export const academicApi = {
     getAll: () => api.get('/academic/sessions'),
     create: (data) => api.post('/academic/sessions', data),
     update: (id, data) => api.put(`/academic/sessions/${id}`, data),
+    delete: (id) => api.delete(`/academic/sessions/${id}`),
     setActive: (id) => api.put(`/academic/sessions/${id}/set-active`),
   },
 
