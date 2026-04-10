@@ -508,31 +508,38 @@ export default function AcademicPage() {
   return (
     <DashboardLayout title="Academic" subtitle="Configure sessions, terms, continuous assessment, and grading scales">
       <div className="space-y-4 md:space-y-6">
-        {/* Tabs - Scrollable on mobile */}
-        <div className="flex gap-1 md:gap-2 border-b border-border overflow-x-auto scrollbar-hide pb-1 -mx-4 px-4 md:mx-0 md:px-0 md:pb-0">
-          {[
-            { id: TABS.SESSIONS, label: 'Sessions', icon: CalendarDays },
-            { id: TABS.TERMS, label: 'Terms', icon: CalendarDays },
-            { id: TABS.CA_WEEKS, label: 'CA Config', icon: BookOpen },
-            { id: TABS.GRADE_SCALES, label: 'Grade Scales', icon: Scale },
-            { id: TABS.GRADE_LEVELS, label: 'Grades', icon: School },
-            { id: TABS.SUBJECTS, label: 'Subjects', icon: Tag },
-            { id: TABS.SECTIONS, label: 'Sections', icon: Layers },
-            { id: TABS.MAPPINGS, label: 'Mappings', icon: BookOpen },
-          ].map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-1 md:gap-2 px-3 md:px-4 py-2 md:py-3 rounded-t-lg transition-all whitespace-nowrap flex-shrink-0 text-sm md:text-base ${
-                activeTab === tab.id
-                  ? 'bg-card border-b-2 border-primary text-primary font-semibold'
-                  : 'text-text-secondary hover:text-text-primary hover:bg-white/5 dark:hover:bg-white/10'
-              }`}
-            >
-              <tab.icon className="w-3.5 h-3.5 md:w-4 md:h-4" />
-              {tab.label}
-            </button>
-          ))}
+        {/* Tabs - Horizontally scrollable on mobile */}
+        <div className="relative">
+          {/* Fade indicators for scroll awareness */}
+          <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-bg-main dark:from-[#0F0E1A] to-transparent z-10 pointer-events-none md:hidden" />
+          <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-bg-main dark:from-[#0F0E1A] to-transparent z-10 pointer-events-none md:hidden" />
+          
+          <div className="flex gap-1 md:gap-2 border-b border-border overflow-x-auto scrollbar-hide pb-1 -mx-4 px-4 md:mx-0 md:px-0 md:pb-0 snap-x snap-mandatory" style={{ scrollBehavior: 'smooth' }}>
+            {[
+              { id: TABS.SESSIONS, label: 'Sessions', shortLabel: 'Sessions', icon: CalendarDays },
+              { id: TABS.TERMS, label: 'Terms', shortLabel: 'Terms', icon: CalendarDays },
+              { id: TABS.CA_WEEKS, label: 'CA Config', shortLabel: 'CA', icon: BookOpen },
+              { id: TABS.GRADE_SCALES, label: 'Grade Scales', shortLabel: 'Scales', icon: Scale },
+              { id: TABS.GRADE_LEVELS, label: 'Grades', shortLabel: 'Grades', icon: School },
+              { id: TABS.SUBJECTS, label: 'Subjects', shortLabel: 'Subjects', icon: Tag },
+              { id: TABS.SECTIONS, label: 'Sections', shortLabel: 'Sections', icon: Layers },
+              { id: TABS.MAPPINGS, label: 'Mappings', shortLabel: 'Mappings', icon: BookOpen },
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-1 md:gap-2 px-3 md:px-4 py-2.5 md:py-3 rounded-t-lg transition-all whitespace-nowrap flex-shrink-0 text-xs md:text-sm snap-start ${
+                  activeTab === tab.id
+                    ? 'bg-card border-b-2 border-primary text-primary font-semibold'
+                    : 'text-text-secondary hover:text-text-primary hover:bg-white/5 dark:hover:bg-white/10'
+                }`}
+              >
+                <tab.icon className="w-3.5 h-3.5 md:w-4 md:h-4 md:hidden" />
+                <span className="hidden md:inline">{tab.label}</span>
+                <span className="md:hidden">{tab.shortLabel}</span>
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Tab Content */}
