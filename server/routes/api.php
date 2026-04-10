@@ -61,4 +61,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/{id}/ban', [TeacherController::class, 'ban']);
         Route::delete('/{id}', [TeacherController::class, 'destroy']);
     });
+
+    // Staff management (Principal, Admin Staff, Receptionist)
+    Route::prefix('staff')->group(function () {
+        Route::get('/', [StaffController::class, 'index']);
+        Route::post('/', [StaffController::class, 'store']);
+        Route::put('/{id}', [StaffController::class, 'update']);
+        Route::post('/{id}/ban', [StaffController::class, 'ban']);
+        Route::delete('/{id}', [StaffController::class, 'destroy']);
+    });
 });
