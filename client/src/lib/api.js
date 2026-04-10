@@ -50,7 +50,7 @@ class ApiClient {
   get(endpoint) { return this.request(endpoint, { method: 'GET' }); }
   post(endpoint, body) { return this.request(endpoint, { method: 'POST', body }); }
   put(endpoint, body) { return this.request(endpoint, { method: 'PUT', body }); }
-  delete(endpoint) { return this.request(endpoint, { method: 'DELETE' }); }
+  delete(endpoint, options = {}) { return this.request(endpoint, { method: 'DELETE', ...options }); }
 }
 
 export const api = new ApiClient();

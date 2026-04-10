@@ -109,7 +109,7 @@ export default function StudentsPage() {
         await api.post(`/students/${s.id}/ban`, { reason: actionReason });
         toast.success('Student banned');
       } else {
-        await api.delete(`/students/${s.id}`, { body: JSON.stringify({ reason: actionReason }) });
+        await api.delete(`/students/${s.id}`, { body: { reason: actionReason } });
         toast.success('Student deleted');
       }
       setActionModal(null);
