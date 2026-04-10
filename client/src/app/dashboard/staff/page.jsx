@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Users, Plus, Search, Edit2, Ban, Trash2, X, RefreshCw,
-  ChevronLeft, ChevronRight, Mail, Phone, AlertTriangle, Check, Eye, EyeOff, Shield
+  ChevronLeft, ChevronRight, Mail, Phone, AlertTriangle, Check, Eye, EyeOff, Shield, Hash
 } from 'lucide-react';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import { api } from '@/lib/api';
@@ -129,6 +129,12 @@ export default function StaffPage() {
   };
 
   const fullName = (s) => `${s.first_name || ''} ${s.last_name || ''}`.trim() || s.email;
+
+  const generateEmployeeNumber = () => {
+    const year = new Date().getFullYear();
+    const seq = Math.floor(Math.random() * 9000 + 1000);
+    return `STF-${year}-${seq}`;
+  };
 
   const getRoleBadge = (role) => {
     const config = {

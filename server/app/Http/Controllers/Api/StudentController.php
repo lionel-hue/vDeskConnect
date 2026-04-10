@@ -80,6 +80,17 @@ class StudentController extends Controller
             return response()->json(['message' => 'You do not have permission to create students'], 403);
         }
 
+        // Check if admission number already exists in profiles
+        $existingAdmission = Profile::where('type', 'student')
+            ->where('data->admission_number', $request->admission_number)
+            ->exists();
+        if ($existingAdmission) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => ['admission_number' => ['This admission number already exists.']],
+            ], 422);
+        }
+
         $tempPassword = $request->password ?: 'Secret123!';
 
         return DB::transaction(function () use ($request, $tempPassword, $user) {
@@ -160,6 +171,20 @@ class StudentController extends Controller
                 'message' => 'Validation failed',
                 'errors' => $validator->errors(),
             ], 422);
+        }
+
+        // Check if admission number is being changed to one that already exists
+        if ($request->has('admission_number')) {
+            $existingAdmission = Profile::where('type', 'student')
+                ->where('data->admission_number', $request->admission_number)
+                ->whereNot('user_id', $id)
+                ->exists();
+            if ($existingAdmission) {
+                return response()->json([
+                    'message' => 'Validation failed',
+                    'errors' => ['admission_number' => ['This admission number already exists.']],
+                ], 422);
+            }
         }
 
         if ($request->has('email')) {
