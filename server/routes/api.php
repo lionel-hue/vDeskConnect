@@ -108,5 +108,11 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::delete('/{id}', [AcademicController::class, 'deleteGradeScale']);
             Route::get('/templates', [AcademicController::class, 'getPresetTemplates']);
         });
+
+        // Grade Levels
+        Route::get('grade-levels', [AcademicController::class, 'gradeLevelsIndex']);
+
+        // Subjects
+        Route::get('subjects', [AcademicController::class, 'subjectsIndex']);
     });
 });

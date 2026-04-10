@@ -16,6 +16,69 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
+  /* ===== CUSTOM SCROLLBARS ===== */
+  /* Hide scrollbar for Webkit browsers (Chrome, Safari, Edge) */
+  *::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: var(--text-muted);
+    border-radius: 999px;
+    opacity: 0.5;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background: var(--text-secondary);
+  }
+
+  /* Hide scrollbar when not hovering (for sidebar and tabs) */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+  }
+
+  .scrollbar-hide:hover {
+    scrollbar-color: var(--text-muted) transparent;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 999px;
+    transition: background 200ms ease;
+  }
+
+  .scrollbar-hide:hover::-webkit-scrollbar-thumb {
+    background: var(--text-muted);
+  }
+
+  /* Firefox scrollbar styling */
+  @supports (scrollbar-width: thin) {
+    .scrollbar-hide {
+      scrollbar-width: thin;
+      scrollbar-color: transparent transparent;
+    }
+    
+    .scrollbar-hide:hover {
+      scrollbar-color: var(--text-muted) transparent;
+    }
+  }
+
   /* Light mode (default) */
   :root {
     --bg-main: #F0EEF7;

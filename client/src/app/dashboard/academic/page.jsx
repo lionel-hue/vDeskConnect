@@ -273,35 +273,26 @@ export default function AcademicPage() {
 
   // ==================== RENDER ====================
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center gap-3">
-          <Settings className="w-8 h-8 text-primary" />
-          <div>
-            <h1 className="text-2xl font-bold text-primary-dark">Academic Settings</h1>
-            <p className="text-sm text-text-secondary">Configure sessions, terms, continuous assessment, and grading scales</p>
-          </div>
-        </div>
-
-        {/* Tabs */}
-        <div className="flex gap-2 border-b border-border">
+    <DashboardLayout title="Academic" subtitle="Configure sessions, terms, continuous assessment, and grading scales">
+      <div className="space-y-4 md:space-y-6">
+        {/* Tabs - Scrollable on mobile */}
+        <div className="flex gap-1 md:gap-2 border-b border-border overflow-x-auto scrollbar-hide pb-1 -mx-4 px-4 md:mx-0 md:px-0 md:pb-0">
           {[
             { id: TABS.SESSIONS, label: 'Sessions', icon: CalendarDays },
             { id: TABS.TERMS, label: 'Terms', icon: CalendarDays },
-            { id: TABS.CA_WEEKS, label: 'CA Configuration', icon: BookOpen },
+            { id: TABS.CA_WEEKS, label: 'CA Config', icon: BookOpen },
             { id: TABS.GRADE_SCALES, label: 'Grade Scales', icon: Scale },
           ].map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-3 rounded-t-lg transition-all ${
+              className={`flex items-center gap-1 md:gap-2 px-3 md:px-4 py-2 md:py-3 rounded-t-lg transition-all whitespace-nowrap flex-shrink-0 text-sm md:text-base ${
                 activeTab === tab.id
                   ? 'bg-card border-b-2 border-primary text-primary font-semibold'
                   : 'text-text-secondary hover:text-text-primary hover:bg-white/5 dark:hover:bg-white/10'
               }`}
             >
-              <tab.icon className="w-4 h-4" />
+              <tab.icon className="w-3.5 h-3.5 md:w-4 md:h-4" />
               {tab.label}
             </button>
           ))}
@@ -314,48 +305,48 @@ export default function AcademicPage() {
           <>
             {/* ==================== SESSIONS TAB ==================== */}
             {activeTab === TABS.SESSIONS && (
-              <div className="space-y-6">
+              <div className="space-y-4 md:space-y-6">
                 {/* Warning */}
-                <div className="flex items-start gap-2 p-4 bg-error/5 dark:bg-error/10 border border-error/20 rounded-lg">
-                  <AlertTriangle className="w-5 h-5 text-error flex-shrink-0 mt-0.5" />
-                  <p className="text-sm text-error">
-                    Create one session per academic year. The last created session will be considered the current academic session.
+                <div className="flex items-start gap-2 p-3 md:p-4 bg-error/5 dark:bg-error/10 border border-error/20 rounded-lg">
+                  <AlertTriangle className="w-4 h-4 md:w-5 md:h-5 text-error flex-shrink-0 mt-0.5" />
+                  <p className="text-xs md:text-sm text-error">
+                    Create one session per academic year. Last created session will be considered current.
                   </p>
                 </div>
 
                 {/* Create Session Card */}
-                <div className="bg-card dark:bg-gray-800 rounded-card border border-border p-6 shadow-sm">
-                  <h2 className="text-lg font-semibold text-text-primary mb-4">Create Session</h2>
+                <div className="bg-card dark:bg-gray-800 rounded-card border border-border p-4 md:p-6 shadow-sm">
+                  <h2 className="text-base md:text-lg font-semibold text-text-primary mb-4">Create Session</h2>
                   <form onSubmit={handleCreateSession} className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-text-secondary mb-1">Session Name *</label>
+                        <label className="block text-xs md:text-sm font-medium text-text-secondary mb-1">Session Name *</label>
                         <input
                           type="text"
                           placeholder="2025 - 2026"
                           value={sessionForm.name}
                           onChange={e => setSessionForm({ ...sessionForm, name: e.target.value })}
-                          className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 placeholder-text-muted"
+                          className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm md:text-base text-text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 placeholder-text-muted"
                           required
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-text-secondary mb-1">Start Date *</label>
+                        <label className="block text-xs md:text-sm font-medium text-text-secondary mb-1">Start Date *</label>
                         <input
                           type="date"
                           value={sessionForm.start_date}
                           onChange={e => setSessionForm({ ...sessionForm, start_date: e.target.value })}
-                          className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
+                          className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm md:text-base text-text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
                           required
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-text-secondary mb-1">End Date *</label>
+                        <label className="block text-xs md:text-sm font-medium text-text-secondary mb-1">End Date *</label>
                         <input
                           type="date"
                           value={sessionForm.end_date}
                           onChange={e => setSessionForm({ ...sessionForm, end_date: e.target.value })}
-                          className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
+                          className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm md:text-base text-text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
                           required
                         />
                       </div>
@@ -363,7 +354,7 @@ export default function AcademicPage() {
                     <button
                       type="submit"
                       disabled={sessionLoading}
-                      className="flex items-center gap-2 px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors disabled:opacity-50"
+                      className="w-full md:w-auto flex items-center justify-center gap-2 px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors disabled:opacity-50 text-sm md:text-base"
                     >
                       <CheckCircle className="w-4 h-4" />
                       {sessionLoading ? 'Creating...' : 'Create Session'}
@@ -372,37 +363,37 @@ export default function AcademicPage() {
                 </div>
 
                 {/* Existing Sessions */}
-                <div className="bg-card dark:bg-gray-800 rounded-card border border-border p-6 shadow-sm">
-                  <h2 className="text-lg font-semibold text-text-primary mb-4">Academic Sessions</h2>
+                <div className="bg-card dark:bg-gray-800 rounded-card border border-border p-4 md:p-6 shadow-sm">
+                  <h2 className="text-base md:text-lg font-semibold text-text-primary mb-4">Academic Sessions</h2>
                   {sessions.length === 0 ? (
-                    <p className="text-text-secondary text-center py-8">No sessions created yet.</p>
+                    <p className="text-text-secondary text-center py-8 text-sm md:text-base">No sessions created yet.</p>
                   ) : (
                     <div className="space-y-3">
                       {sessions.map(session => (
                         <div
                           key={session.id}
-                          className={`p-4 rounded-lg border-2 ${
+                          className={`p-3 md:p-4 rounded-lg border-2 ${
                             session.active ? 'border-primary bg-primary/5 dark:bg-primary/10' : 'border-border dark:border-gray-600'
                           }`}
                         >
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <h3 className="font-semibold text-text-primary">{session.name}</h3>
-                              <p className="text-sm text-text-secondary">
+                          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-3">
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-semibold text-text-primary text-sm md:text-base truncate">{session.name}</h3>
+                              <p className="text-xs md:text-sm text-text-secondary">
                                 {session.start_date} → {session.end_date}
                               </p>
                             </div>
-                            <div className="flex items-center gap-3">
-                              <span className={`px-3 py-1 rounded-full text-sm ${
+                            <div className="flex flex-wrap items-center gap-2 md:gap-3">
+                              <span className={`px-2 md:px-3 py-1 rounded-full text-xs md:text-sm ${
                                 session.active ? 'bg-success/10 text-success' : 'bg-text-muted/10 text-text-muted'
                               }`}>
                                 {session.active ? 'Active' : 'Inactive'}
                               </span>
-                              <span className="text-sm text-text-secondary">{session.terms_count} terms</span>
+                              <span className="text-xs md:text-sm text-text-secondary">{session.terms_count} terms</span>
                               {!session.active && (
                                 <button
                                   onClick={() => handleSetActiveSession(session.id)}
-                                  className="px-3 py-1 text-sm text-primary border border-primary rounded-lg hover:bg-primary/5 dark:hover:bg-primary/10"
+                                  className="px-2 md:px-3 py-1 text-xs md:text-sm text-primary border border-primary rounded-lg hover:bg-primary/5 dark:hover:bg-primary/10"
                                 >
                                   Set Active
                                 </button>
@@ -419,14 +410,14 @@ export default function AcademicPage() {
 
             {/* ==================== TERMS TAB ==================== */}
             {activeTab === TABS.TERMS && (
-              <div className="space-y-6">
+              <div className="space-y-4 md:space-y-6">
                 {/* Session Selector */}
-                <div className="bg-card dark:bg-gray-800 rounded-card border border-border p-6 shadow-sm">
-                  <h2 className="text-lg font-semibold text-text-primary mb-4">Select Session</h2>
+                <div className="bg-card dark:bg-gray-800 rounded-card border border-border p-4 md:p-6 shadow-sm">
+                  <h2 className="text-base md:text-lg font-semibold text-text-primary mb-4">Select Session</h2>
                   <select
                     value={selectedSessionId || ''}
                     onChange={e => handleFetchTerms(e.target.value)}
-                    className="w-full md:w-1/2 px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    className="w-full md:w-1/2 px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm md:text-base text-text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
                   >
                     <option value="">-- Select Session --</option>
                     {sessions.map(s => (
@@ -438,14 +429,14 @@ export default function AcademicPage() {
                 {selectedSessionId && (
                   <>
                     {/* Bulk Create Card */}
-                    <div className="bg-card dark:bg-gray-800 rounded-card border border-border p-6 shadow-sm">
-                      <h2 className="text-lg font-semibold text-text-primary mb-4">Quick Create Terms</h2>
-                      <p className="text-sm text-text-secondary mb-4">
+                    <div className="bg-card dark:bg-gray-800 rounded-card border border-border p-4 md:p-6 shadow-sm">
+                      <h2 className="text-base md:text-lg font-semibold text-text-primary mb-4">Quick Create Terms</h2>
+                      <p className="text-xs md:text-sm text-text-secondary mb-4">
                         Automatically create all terms for this session at once.
                       </p>
                       <button
                         onClick={() => setShowBulkTermModal(true)}
-                        className="flex items-center gap-2 px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark"
+                        className="flex items-center gap-2 px-4 md:px-6 py-2 text-sm md:text-base bg-primary text-white rounded-lg hover:bg-primary-dark"
                       >
                         <Copy className="w-4 h-4" />
                         Bulk Create Terms
@@ -453,12 +444,12 @@ export default function AcademicPage() {
                     </div>
 
                     {/* Existing Terms */}
-                    <div className="bg-card dark:bg-gray-800 rounded-card border border-border p-6 shadow-sm">
-                      <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-lg font-semibold text-text-primary">Terms</h2>
+                    <div className="bg-card dark:bg-gray-800 rounded-card border border-border p-4 md:p-6 shadow-sm">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                        <h2 className="text-base md:text-lg font-semibold text-text-primary">Terms</h2>
                         <button
                           onClick={() => setShowTermModal(true)}
-                          className="flex items-center gap-2 px-4 py-2 text-sm bg-primary text-white rounded-lg hover:bg-primary-dark"
+                          className="flex items-center gap-2 px-4 py-2 text-sm bg-primary text-white rounded-lg hover:bg-primary-dark self-start"
                         >
                           <Plus className="w-4 h-4" />
                           Add Term
@@ -466,21 +457,21 @@ export default function AcademicPage() {
                       </div>
 
                       {terms.length === 0 ? (
-                        <p className="text-text-secondary text-center py-8">No terms created yet.</p>
+                        <p className="text-text-secondary text-center py-8 text-sm md:text-base">No terms created yet.</p>
                       ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                           {terms.map(term => (
-                            <div key={term.id} className="p-4 border border-border dark:border-gray-600 rounded-lg bg-bg-main dark:bg-gray-750">
+                            <div key={term.id} className="p-3 md:p-4 border border-border dark:border-gray-600 rounded-lg bg-bg-main dark:bg-gray-750">
                               <div className="flex items-center justify-between mb-2">
-                                <h3 className="font-semibold text-text-primary">{term.name}</h3>
+                                <h3 className="font-semibold text-text-primary text-sm md:text-base truncate">{term.name}</h3>
                                 <button
                                   onClick={() => handleDeleteTerm(term.id)}
-                                  className="text-error hover:text-error/80"
+                                  className="text-error hover:text-error/80 flex-shrink-0"
                                 >
                                   <Trash2 className="w-4 h-4" />
                                 </button>
                               </div>
-                              <p className="text-sm text-text-secondary">
+                              <p className="text-xs md:text-sm text-text-secondary">
                                 {term.start_date} → {term.end_date}
                               </p>
                               <p className="text-xs text-text-muted mt-1">{term.weeks_count} weeks</p>
@@ -496,9 +487,9 @@ export default function AcademicPage() {
 
             {/* ==================== CA WEEKS TAB ==================== */}
             {activeTab === TABS.CA_WEEKS && (
-              <div className="space-y-6">
-                <div className="bg-card dark:bg-gray-800 rounded-card border border-border p-6 shadow-sm">
-                  <h2 className="text-lg font-semibold text-text-primary mb-2">Continuous Assessment Configuration</h2>
+              <div className="space-y-4 md:space-y-6">
+                <div className="bg-card dark:bg-gray-800 rounded-card border border-border p-4 md:p-6 shadow-sm">
+                  <h2 className="text-base md:text-lg font-semibold text-text-primary mb-2">Continuous Assessment Configuration</h2>
                   <p className="text-sm text-text-secondary mb-6">
                     Configure which weeks have tests (CA) and which week is the final exam for each grade and subject.
                   </p>
@@ -506,11 +497,11 @@ export default function AcademicPage() {
                   <form onSubmit={handleSetCaWeeks} className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-text-secondary mb-1">Term *</label>
+                        <label className="block text-xs md:text-sm font-medium text-text-secondary mb-1">Term *</label>
                         <select
                           value={caWeekForm.term_id}
                           onChange={e => setCaWeekForm({ ...caWeekForm, term_id: e.target.value })}
-                          className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
+                          className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm md:text-base text-text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
                           required
                         >
                           <option value="">Select Term</option>
@@ -520,11 +511,11 @@ export default function AcademicPage() {
                         </select>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-text-secondary mb-1">Grade Level *</label>
+                        <label className="block text-xs md:text-sm font-medium text-text-secondary mb-1">Grade Level *</label>
                         <select
                           value={caWeekForm.grade_level_id}
                           onChange={e => setCaWeekForm({ ...caWeekForm, grade_level_id: e.target.value })}
-                          className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
+                          className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm md:text-base text-text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
                           required
                         >
                           <option value="">Select Grade</option>
@@ -534,11 +525,11 @@ export default function AcademicPage() {
                         </select>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-text-secondary mb-1">Subject *</label>
+                        <label className="block text-xs md:text-sm font-medium text-text-secondary mb-1">Subject *</label>
                         <select
                           value={caWeekForm.subject_id}
                           onChange={e => setCaWeekForm({ ...caWeekForm, subject_id: e.target.value })}
-                          className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
+                          className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm md:text-base text-text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
                           required
                         >
                           <option value="">Select Subject</option>
@@ -548,14 +539,14 @@ export default function AcademicPage() {
                         </select>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-text-secondary mb-1">Total Weeks *</label>
+                        <label className="block text-xs md:text-sm font-medium text-text-secondary mb-1">Total Weeks *</label>
                         <input
                           type="number"
                           min="1"
                           max="20"
                           value={caWeekForm.weeks_count}
                           onChange={e => setCaWeekForm({ ...caWeekForm, weeks_count: parseInt(e.target.value), exam_week: parseInt(e.target.value) })}
-                          className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
+                          className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm md:text-base text-text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
                           required
                         />
                       </div>
@@ -563,17 +554,17 @@ export default function AcademicPage() {
 
                     {/* Week Grid */}
                     <div>
-                      <label className="block text-sm font-medium text-text-secondary mb-3">
+                      <label className="block text-xs md:text-sm font-medium text-text-secondary mb-3">
                         Configure Weeks (Toggle tests, select exam week)
                       </label>
-                      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 md:gap-3">
                         {Array.from({ length: caWeekForm.weeks_count }, (_, i) => i + 1).map(week => (
                           <div key={week} className="space-y-2">
-                            <div className="text-center text-sm font-semibold text-text-primary">Week {week}</div>
+                            <div className="text-center text-xs md:text-sm font-semibold text-text-primary">Week {week}</div>
                             <button
                               type="button"
                               onClick={() => toggleTestWeek(week)}
-                              className={`w-full py-2 rounded-lg text-sm border-2 transition-all ${
+                              className={`w-full py-1.5 md:py-2 rounded-lg text-xs md:text-sm border-2 transition-all ${
                                 caWeekForm.test_weeks.includes(week)
                                   ? 'bg-warning/20 dark:bg-warning/30 border-warning text-warning font-semibold'
                                   : 'border-border dark:border-gray-600 text-text-muted hover:border-warning/50 dark:hover:border-warning/50'
@@ -584,7 +575,7 @@ export default function AcademicPage() {
                             <button
                               type="button"
                               onClick={() => setCaWeekForm({ ...caWeekForm, exam_week: week })}
-                              className={`w-full py-2 rounded-lg text-sm border-2 transition-all ${
+                              className={`w-full py-1.5 md:py-2 rounded-lg text-xs md:text-sm border-2 transition-all ${
                                 caWeekForm.exam_week === week
                                   ? 'bg-error/20 dark:bg-error/30 border-error text-error font-semibold'
                                   : 'border-border dark:border-gray-600 text-text-muted hover:border-error/50 dark:hover:border-error/50'
@@ -598,7 +589,7 @@ export default function AcademicPage() {
                     </div>
 
                     {/* Summary */}
-                    <div className="p-4 bg-primary/5 dark:bg-primary/10 rounded-lg">
+                    <div className="p-3 md:p-4 bg-primary/5 dark:bg-primary/10 rounded-lg">
                       <p className="text-sm text-text-primary">
                         <strong>Summary:</strong> Tests at weeks {caWeekForm.test_weeks.length > 0 ? caWeekForm.test_weeks.join(', ') : 'None'} | Exam at week {caWeekForm.exam_week}
                       </p>
@@ -607,7 +598,7 @@ export default function AcademicPage() {
                     <button
                       type="submit"
                       disabled={caWeekLoading || caWeekForm.test_weeks.length === 0}
-                      className="flex items-center gap-2 px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark disabled:opacity-50"
+                      className="flex items-center gap-2 w-full md:w-auto px-4 md:px-6 py-2 text-sm md:text-base bg-primary text-white rounded-lg hover:bg-primary-dark disabled:opacity-50"
                     >
                       <Save className="w-4 h-4" />
                       {caWeekLoading ? 'Saving...' : 'Save CA Configuration'}
@@ -619,18 +610,18 @@ export default function AcademicPage() {
 
             {/* ==================== GRADE SCALES TAB ==================== */}
             {activeTab === TABS.GRADE_SCALES && (
-              <div className="space-y-6">
+              <div className="space-y-4 md:space-y-6">
                 {/* Existing Scales */}
-                <div className="bg-card dark:bg-gray-800 rounded-card border border-border p-6 shadow-sm">
+                <div className="bg-card dark:bg-gray-800 rounded-card border border-border p-4 md:p-6 shadow-sm">
                   <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-lg font-semibold text-text-primary">Grade Scales</h2>
+                    <h2 className="text-base md:text-lg font-semibold text-text-primary">Grade Scales</h2>
                     <button
                       onClick={() => {
                         setScaleForm({ name: '', scale: {}, is_default: false });
                         setEditingScaleId(null);
                         setShowScaleModal(true);
                       }}
-                      className="flex items-center gap-2 px-4 py-2 text-sm bg-primary text-white rounded-lg hover:bg-primary-dark"
+                      className="flex items-center gap-2 px-3 md:px-4 py-2 text-xs md:text-sm bg-primary text-white rounded-lg hover:bg-primary-dark"
                     >
                       <Plus className="w-4 h-4" />
                       Create Scale
@@ -644,7 +635,7 @@ export default function AcademicPage() {
                       {gradeScales.map(scale => (
                         <div
                           key={scale.id}
-                          className={`p-4 border-2 rounded-lg ${
+                          className={`p-3 md:p-4 border-2 rounded-lg ${
                             scale.is_default ? 'border-primary bg-primary/5 dark:bg-primary/10' : 'border-border dark:border-gray-600'
                           }`}
                         >
@@ -688,7 +679,7 @@ export default function AcademicPage() {
                           </div>
                           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
                             {Object.entries(typeof scale.scale === 'string' ? JSON.parse(scale.scale) : scale.scale).map(([letter, range]) => (
-                              <div key={letter} className="text-center p-2 bg-bg-main dark:bg-gray-700 rounded">
+                              <div key={letter} className="text-center p-1.5 md:p-2 bg-bg-main dark:bg-gray-700 rounded text-xs md:text-sm">
                                 <div className="font-bold text-primary">{letter}</div>
                                 <div className="text-xs text-text-secondary">{range.min}-{range.max}%</div>
                                 <div className="text-xs text-text-muted">{range.remark}</div>
@@ -710,7 +701,7 @@ export default function AcademicPage() {
         {/* Bulk Term Modal */}
         {showBulkTermModal && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-card border border-border p-6 w-full max-w-lg">
+            <div className="bg-card dark:bg-gray-800 rounded-card border border-border p-6 w-full max-w-lg">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-text-primary">Bulk Create Terms</h3>
                 <button onClick={() => setShowBulkTermModal(false)} className="text-text-muted hover:text-text-primary">
@@ -719,11 +710,11 @@ export default function AcademicPage() {
               </div>
               <form onSubmit={handleBulkCreateTerms} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-text-secondary mb-1">Number of Terms *</label>
+                  <label className="block text-xs md:text-sm font-medium text-text-secondary mb-1">Number of Terms *</label>
                   <select
                     value={bulkTermForm.terms_count}
                     onChange={e => setBulkTermForm({ ...bulkTermForm, terms_count: parseInt(e.target.value) })}
-                    className="w-full px-3 py-2 border border-border rounded-lg"
+                    className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm md:text-base text-text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
                     required
                   >
                     <option value="1">1 Term</option>
@@ -733,35 +724,35 @@ export default function AcademicPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-text-secondary mb-1">Weeks Per Term *</label>
+                  <label className="block text-xs md:text-sm font-medium text-text-secondary mb-1">Weeks Per Term *</label>
                   <input
                     type="number"
                     min="1"
                     max="20"
                     value={bulkTermForm.weeks_per_term}
                     onChange={e => setBulkTermForm({ ...bulkTermForm, weeks_per_term: parseInt(e.target.value) })}
-                    className="w-full px-3 py-2 border border-border rounded-lg"
+                    className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm md:text-base text-text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-text-secondary mb-1">Term Prefix *</label>
+                  <label className="block text-xs md:text-sm font-medium text-text-secondary mb-1">Term Prefix *</label>
                   <input
                     type="text"
                     placeholder="Term"
                     value={bulkTermForm.term_prefix}
                     onChange={e => setBulkTermForm({ ...bulkTermForm, term_prefix: e.target.value })}
-                    className="w-full px-3 py-2 border border-border rounded-lg"
+                    className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm md:text-base text-text-primary dark:text-white placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary/50"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-text-secondary mb-1">Start Date *</label>
+                  <label className="block text-xs md:text-sm font-medium text-text-secondary mb-1">Start Date *</label>
                   <input
                     type="date"
                     value={bulkTermForm.start_date}
                     onChange={e => setBulkTermForm({ ...bulkTermForm, start_date: e.target.value })}
-                    className="w-full px-3 py-2 border border-border rounded-lg"
+                    className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm md:text-base text-text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
                     required
                   />
                 </div>
@@ -769,14 +760,14 @@ export default function AcademicPage() {
                   <button
                     type="button"
                     onClick={() => setShowBulkTermModal(false)}
-                    className="flex-1 px-4 py-2 border border-border rounded-lg hover:bg-bg-main"
+                    className="flex-1 px-4 py-2 text-sm md:text-base border border-border dark:border-gray-600 rounded-lg hover:bg-bg-main dark:hover:bg-gray-700 text-text-primary"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={termLoading}
-                    className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark disabled:opacity-50"
+                    className="flex-1 px-4 py-2 text-sm md:text-base bg-primary text-white rounded-lg hover:bg-primary-dark disabled:opacity-50"
                   >
                     {termLoading ? 'Creating...' : 'Create Terms'}
                   </button>
@@ -789,7 +780,7 @@ export default function AcademicPage() {
         {/* Single Term Modal */}
         {showTermModal && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-card border border-border p-6 w-full max-w-lg">
+            <div className="bg-card dark:bg-gray-800 rounded-card border border-border p-6 w-full max-w-lg">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-text-primary">Add Term</h3>
                 <button onClick={() => setShowTermModal(false)} className="text-text-muted hover:text-text-primary">
@@ -798,66 +789,66 @@ export default function AcademicPage() {
               </div>
               <form onSubmit={handleCreateTerm} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-text-secondary mb-1">Term Name *</label>
+                  <label className="block text-xs md:text-sm font-medium text-text-secondary mb-1">Term Name *</label>
                   <input
                     type="text"
                     placeholder="Term 1"
                     value={termForm.name}
                     onChange={e => setTermForm({ ...termForm, name: e.target.value })}
-                    className="w-full px-3 py-2 border border-border rounded-lg"
+                    className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm md:text-base text-text-primary dark:text-white placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary/50"
                     required
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-text-secondary mb-1">Start Date *</label>
+                    <label className="block text-xs md:text-sm font-medium text-text-secondary mb-1">Start Date *</label>
                     <input
                       type="date"
                       value={termForm.start_date}
                       onChange={e => setTermForm({ ...termForm, start_date: e.target.value })}
-                      className="w-full px-3 py-2 border border-border rounded-lg"
+                      className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm md:text-base text-text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-text-secondary mb-1">End Date *</label>
+                    <label className="block text-xs md:text-sm font-medium text-text-secondary mb-1">End Date *</label>
                     <input
                       type="date"
                       value={termForm.end_date}
                       onChange={e => setTermForm({ ...termForm, end_date: e.target.value })}
-                      className="w-full px-3 py-2 border border-border rounded-lg"
+                      className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm md:text-base text-text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
                       required
                     />
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-text-secondary mb-1">Order *</label>
+                    <label className="block text-xs md:text-sm font-medium text-text-secondary mb-1">Order *</label>
                     <input
                       type="number"
                       min="1"
                       value={termForm.order}
                       onChange={e => setTermForm({ ...termForm, order: parseInt(e.target.value) })}
-                      className="w-full px-3 py-2 border border-border rounded-lg"
+                      className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm md:text-base text-text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-text-secondary mb-1">Weeks Count *</label>
+                    <label className="block text-xs md:text-sm font-medium text-text-secondary mb-1">Weeks Count *</label>
                     <input
                       type="number"
                       min="1"
                       max="20"
                       value={termForm.weeks_count}
                       onChange={e => setTermForm({ ...termForm, weeks_count: parseInt(e.target.value) })}
-                      className="w-full px-3 py-2 border border-border rounded-lg"
+                      className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm md:text-base text-text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
                       required
                     />
                   </div>
                 </div>
                 <div className="flex gap-3">
-                  <button type="button" onClick={() => setShowTermModal(false)} className="flex-1 px-4 py-2 border border-border rounded-lg hover:bg-bg-main">Cancel</button>
-                  <button type="submit" disabled={termLoading} className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark disabled:opacity-50">
+                  <button type="button" onClick={() => setShowTermModal(false)} className="flex-1 px-4 py-2 text-sm md:text-base border border-border dark:border-gray-600 rounded-lg hover:bg-bg-main dark:hover:bg-gray-700 text-text-primary">Cancel</button>
+                  <button type="submit" disabled={termLoading} className="flex-1 px-4 py-2 text-sm md:text-base bg-primary text-white rounded-lg hover:bg-primary-dark disabled:opacity-50">
                     {termLoading ? 'Creating...' : 'Create Term'}
                   </button>
                 </div>
@@ -869,7 +860,7 @@ export default function AcademicPage() {
         {/* Grade Scale Modal */}
         {showScaleModal && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-start justify-center p-4 overflow-y-auto">
-            <div className="bg-white rounded-card border border-border p-6 w-full max-w-2xl my-8">
+            <div className="bg-card dark:bg-gray-800 rounded-card border border-border p-4 md:p-6 w-full max-w-2xl my-8">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-text-primary">{editingScaleId ? 'Edit' : 'Create'} Grade Scale</h3>
                 <button onClick={() => { setShowScaleModal(false); setEditingScaleId(null); }} className="text-text-muted hover:text-text-primary">
@@ -878,19 +869,19 @@ export default function AcademicPage() {
               </div>
               <form onSubmit={handleCreateGradeScale} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-text-secondary mb-1">Scale Name *</label>
+                  <label className="block text-xs md:text-sm font-medium text-text-secondary mb-1">Scale Name *</label>
                   <input
                     type="text"
                     placeholder="Nigerian WAEC"
                     value={scaleForm.name}
                     onChange={e => setScaleForm({ ...scaleForm, name: e.target.value })}
-                    className="w-full px-3 py-2 border border-border rounded-lg"
+                    className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm md:text-base text-text-primary dark:text-white placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary/50"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-text-secondary mb-2">Grade Rows</label>
+                  <label className="block text-xs md:text-sm font-medium text-text-secondary mb-2">Grade Rows</label>
                   <p className="text-xs text-text-muted mb-3">Add grade letters (A, B, C...) with their score ranges.</p>
                   
                   {/* Quick Add Templates */}
@@ -915,7 +906,7 @@ export default function AcademicPage() {
 
                   <div className="space-y-2 max-h-64 overflow-y-auto">
                     {Object.entries(scaleForm.scale).map(([letter, range]) => (
-                      <div key={letter} className="flex gap-2 items-center">
+                      <div key={letter} className="flex gap-1 md:gap-2 items-center flex-wrap">
                         <input
                           type="text"
                           placeholder="A"
@@ -926,14 +917,14 @@ export default function AcademicPage() {
                             newScale[e.target.value] = range;
                             setScaleForm({ ...scaleForm, scale: newScale });
                           }}
-                          className="w-16 px-2 py-2 border border-border rounded-lg text-center font-bold"
+                          className="w-12 md:w-16 px-2 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-center font-bold text-text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
                         />
                         <input
                           type="number"
                           placeholder="Min"
                           value={range.min}
                           onChange={e => updateGradeRow(letter, 'min', parseInt(e.target.value))}
-                          className="w-20 px-2 py-2 border border-border rounded-lg"
+                          className="w-16 md:w-20 px-2 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm md:text-base text-text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
                         />
                         <span className="text-text-muted">-</span>
                         <input
@@ -941,14 +932,14 @@ export default function AcademicPage() {
                           placeholder="Max"
                           value={range.max}
                           onChange={e => updateGradeRow(letter, 'max', parseInt(e.target.value))}
-                          className="w-20 px-2 py-2 border border-border rounded-lg"
+                          className="w-16 md:w-20 px-2 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm md:text-base text-text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
                         />
                         <input
                           type="text"
                           placeholder="Remark"
                           value={range.remark}
                           onChange={e => updateGradeRow(letter, 'remark', e.target.value)}
-                          className="flex-1 px-2 py-2 border border-border rounded-lg"
+                          className="flex-1 px-2 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm md:text-base text-text-primary dark:text-white placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary/50"
                         />
                         <button
                           type="button"
@@ -985,12 +976,12 @@ export default function AcademicPage() {
                     onChange={e => setScaleForm({ ...scaleForm, is_default: e.target.checked })}
                     className="w-4 h-4"
                   />
-                  <label htmlFor="is_default" className="text-sm text-text-secondary">Set as default grading scale</label>
+                  <label htmlFor="is_default" className="text-xs md:text-sm text-text-secondary">Set as default grading scale</label>
                 </div>
 
                 <div className="flex gap-3">
-                  <button type="button" onClick={() => { setShowScaleModal(false); setEditingScaleId(null); }} className="flex-1 px-4 py-2 border border-border rounded-lg hover:bg-bg-main">Cancel</button>
-                  <button type="submit" disabled={scaleLoading || Object.keys(scaleForm.scale).length === 0} className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark disabled:opacity-50">
+                  <button type="button" onClick={() => { setShowScaleModal(false); setEditingScaleId(null); }} className="flex-1 px-4 py-2 text-sm md:text-base border border-border dark:border-gray-600 rounded-lg hover:bg-bg-main dark:hover:bg-gray-700 text-text-primary">Cancel</button>
+                  <button type="submit" disabled={scaleLoading || Object.keys(scaleForm.scale).length === 0} className="flex-1 px-4 py-2 text-sm md:text-base bg-primary text-white rounded-lg hover:bg-primary-dark disabled:opacity-50">
                     {scaleLoading ? 'Saving...' : 'Save Scale'}
                   </button>
                 </div>

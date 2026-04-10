@@ -98,7 +98,7 @@ export default function DashboardLayout({ children, title, subtitle, role = 'adm
         }}
       >
         <TopBar title={title} subtitle={subtitle} user={user} onMobileMenuToggle={handleMobileMenuToggle} />
-        <main className="p-4 md:p-6">
+        <main className="p-4 md:p-6 overflow-y-auto scrollbar-hide">
           {children}
         </main>
       </div>

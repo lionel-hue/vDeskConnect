@@ -705,4 +705,53 @@ class AcademicController extends Controller
 
         return response()->json(['templates' => $templates]);
     }
+
+    // ==================== GRADE LEVELS ====================
+
+    /**
+     * List all grade levels for the school.
+     */
+    public function gradeLevelsIndex(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $gradeLevels = GradeLevel::where('school_id', $user->school_id)
+            ->ordered()
+            ->get()
+            ->map(function ($gl) {
+                return [
+                    'id' => $gl->id,
+                    'name' => $gl->name,
+                    'short_name' => $gl->short_name,
+                    'order' => $gl->order,
+                    'cycle' => $gl->cycle,
+                ];
+            });
+
+        return response()->json(['grade_levels' => $gradeLevels]);
+    }
+
+    // ==================== SUBJECTS ====================
+
+    /**
+     * List all subjects for the school.
+     */
+    public function subjectsIndex(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $subjects = Subject::where('school_id', $user->school_id)
+            ->orderBy('name')
+            ->get()
+            ->map(function ($subject) {
+                return [
+                    'id' => $subject->id,
+                    'name' => $subject->name,
+                    'code' => $subject->code,
+                    'type' => $subject->type,
+                ];
+            });
+
+        return response()->json(['subjects' => $subjects]);
+    }
 }
