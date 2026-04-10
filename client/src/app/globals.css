@@ -16,9 +16,32 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
+  /* Light mode (default) */
+  :root {
+    --bg-main: #F0EEF7;
+    --bg-card: #FFFFFF;
+    --text-primary: #2D2B55;
+    --text-secondary: #6B6B8D;
+    --text-muted: #9B9BB4;
+    --border: #E5E4F0;
+    --sidebar: #1A1A2E;
+  }
+
+  /* Dark mode */
+  .dark {
+    --bg-main: #0F0E1A;
+    --bg-card: #1A1A2E;
+    --text-primary: #E8E6F0;
+    --text-secondary: #B8B6D0;
+    --text-muted: #7B7B9E;
+    --border: #2D2B55;
+    --sidebar: #0A0A12;
+  }
+
   body {
-    background-color: #F0EEF7;
-    color: #2D2B55;
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    transition: background-color 300ms ease, color 300ms ease;
   }
 }
 
