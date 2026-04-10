@@ -122,6 +122,12 @@ export default function StudentsPage() {
 
   const fullName = (s) => `${s.first_name || ''} ${s.last_name || ''}`.trim() || s.email;
 
+  const generateAdmissionNumber = () => {
+    const year = new Date().getFullYear();
+    const seq = Math.floor(Math.random() * 9000 + 1000);
+    return `STU-${year}-${seq}`;
+  };
+
   return (
     <DashboardLayout title="Students" subtitle="Manage your students" role="admin">
       <div className="space-y-6">
@@ -279,8 +285,15 @@ export default function StudentsPage() {
               </div>
               <div>
                 <label className="form-label">Admission Number *</label>
-                <input type="text" value={form.admission_number} onChange={e => setForm({...form, admission_number: e.target.value})}
-                  className={`form-input ${formErrors.admission_number ? 'border-error' : ''}`} placeholder="STU-2026-001" required />
+                <div className="flex gap-2">
+                  <input type="text" value={form.admission_number} onChange={e => setForm({...form, admission_number: e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, '')})}
+                    className={`form-input flex-1 ${formErrors.admission_number ? 'border-error' : ''}`} placeholder="STU-2026-001" required />
+                  <button type="button" onClick={() => setForm({...form, admission_number: generateAdmissionNumber()})}
+                    className="px-3 py-2.5 rounded-btn bg-primary/10 text-primary hover:bg-primary/20 transition-colors text-xs font-medium whitespace-nowrap flex items-center gap-1.5 flex-shrink-0"
+                    title="Auto-generate admission number">
+                    <Hash size={14} /> Auto
+                  </button>
+                </div>
                 {formErrors.admission_number && <p className="text-error text-xs mt-1">{formErrors.admission_number[0]}</p>}
               </div>
               <div>
