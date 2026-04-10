@@ -30,7 +30,6 @@ export default function AcademicPage() {
 
   // Sessions state
   const [sessions, setSessions] = useState([]);
-  const [showSessionModal, setShowSessionModal] = useState(false);
   const [editingSessionId, setEditingSessionId] = useState(null);
   const [sessionForm, setSessionForm] = useState({ name: '', start_date: '', end_date: '' });
   const [sessionLoading, setSessionLoading] = useState(false);
@@ -150,7 +149,6 @@ export default function AcademicPage() {
     try {
       const res = await academicApi.sessions.create(sessionForm);
       toast.success(res.message);
-      setShowSessionModal(false);
       setSessionForm({ name: '', start_date: '', end_date: '' });
       fetchData();
     } catch (err) {
@@ -176,7 +174,6 @@ export default function AcademicPage() {
     try {
       const res = await academicApi.sessions.update(editingSessionId, sessionForm);
       toast.success(res.message);
-      setShowSessionModal(false);
       setSessionForm({ name: '', start_date: '', end_date: '' });
       setEditingSessionId(null);
       fetchData();
@@ -635,10 +632,12 @@ export default function AcademicPage() {
                   </p>
                 </div>
 
-                {/* Create Session Card */}
+                {/* Create/Edit Session Card */}
                 <div className="bg-card dark:bg-gray-800 rounded-card border border-border p-4 md:p-6 shadow-sm">
-                  <h2 className="text-base md:text-lg font-semibold text-text-primary mb-4">Create Session</h2>
-                  <form onSubmit={handleCreateSession} className="space-y-4">
+                  <h2 className="text-base md:text-lg font-semibold text-text-primary mb-4">
+                    {editingSessionId ? 'Edit Session' : 'Create Session'}
+                  </h2>
+                  <form onSubmit={editingSessionId ? handleUpdateSession : handleCreateSession} className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
                       <div>
                         <label className="block text-xs md:text-sm font-medium text-text-secondary mb-1">Session Name *</label>
@@ -672,14 +671,28 @@ export default function AcademicPage() {
                         />
                       </div>
                     </div>
-                    <button
-                      type="submit"
-                      disabled={sessionLoading}
-                      className="w-full md:w-auto flex items-center justify-center gap-2 px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors disabled:opacity-50 text-sm md:text-base"
-                    >
-                      <CheckCircle className="w-4 h-4" />
-                      {sessionLoading ? 'Creating...' : 'Create Session'}
-                    </button>
+                    <div className="flex gap-3">
+                      <button
+                        type="submit"
+                        disabled={sessionLoading}
+                        className="flex items-center justify-center gap-2 px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors disabled:opacity-50 text-sm md:text-base"
+                      >
+                        <CheckCircle className="w-4 h-4" />
+                        {sessionLoading ? 'Saving...' : editingSessionId ? 'Update Session' : 'Create Session'}
+                      </button>
+                      {editingSessionId && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingSessionId(null);
+                            setSessionForm({ name: '', start_date: '', end_date: '' });
+                          }}
+                          className="px-6 py-2 border border-border dark:border-gray-600 rounded-lg hover:bg-bg-main dark:hover:bg-gray-700 text-sm md:text-base text-text-secondary"
+                        >
+                          Cancel
+                        </button>
+                      )}
+                    </div>
                   </form>
                 </div>
 
@@ -715,7 +728,7 @@ export default function AcademicPage() {
                                 onClick={() => {
                                   setEditingSessionId(session.id);
                                   setSessionForm({ name: session.name, start_date: session.start_date, end_date: session.end_date });
-                                  setShowSessionModal(true);
+                                  window.scrollTo({ top: 0, behavior: 'smooth' });
                                 }}
                                 className="px-2 md:px-3 py-1 text-xs md:text-sm text-text-secondary border border-border dark:border-gray-600 rounded-lg hover:bg-bg-main dark:hover:bg-gray-700"
                               >
