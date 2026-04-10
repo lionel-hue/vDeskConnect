@@ -431,6 +431,100 @@ theme: {
 
 ---
 
+## **2.4 School Admin Dashboard — Layout, Navigation & Tab Order**
+
+The School Admin dashboard is the primary workspace for managing an individual school. It uses the **liquid glassmorphic** design with a dark sidebar, collapsible navigation, and content area with glass-card panels.
+
+### **2.4.1 Dashboard Layout**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  Sidebar (256px full / 80px collapsed) │  Content Area      │
+│  ┌─────────────────────────────────────┐ ┌────────────────┐ │
+│  │  Logo + Collapse Toggle              │ │  Top Bar       │ │
+│  │  ─────────────────────────────────── │ │  Title + Search│ │
+│  │  📊 Dashboard                        │ │  Bell + Theme  │ │
+│  │  👨‍🎓 Students                        │ │  Avatar        │ │
+│  │  👩‍🏫 Teachers                        │ └────────────────┘ │
+│  │  🏫 Classes                          │                    │
+│  │  📝 Exams                            │  ┌──────────────┐  │
+│  │  📅 Events                           │  │  Page Content│  │
+│  │  📊 Reports                          │  │  (Glass Card)│  │
+│  │  💰 Fees                             │  │              │  │
+│  │  ─────────────────────────────────── │  └──────────────┘  │
+│  │  👤 Profile                          │                    │
+│  │  ⚙️ Settings                         │                    │
+│  │  ─────────────────────────────────── │                    │
+│  │  🚪 Sign Out                         │                    │
+│  └─────────────────────────────────────┘ └────────────────┘ │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### **2.4.2 Complete Navigation Tab Order (Top → Bottom)**
+
+| # | Tab Label | Icon | Route | Description |
+|---|-----------|------|-------|-------------|
+| 1 | **Dashboard** | `LayoutGrid` | `/dashboard` | Home overview — stats, recent activity, upcoming events, quick actions |
+| 2 | **Students** | `GraduationCap` | `/dashboard/students` | View, add, edit, ban/delete students; bulk import via CSV |
+| 3 | **Teachers** | `Users` | `/dashboard/teachers` | View, add, edit, ban/delete teachers; assign subjects |
+| 4 | **Classes** | `School` | `/dashboard/classes` | Manage grade levels, sections, departments; assign teachers to classes |
+| 5 | **Exams** | `FileText` | `/dashboard/exams` | Create, schedule, and manage exams (MCQ, Theory, Mixed); view submissions |
+| 6 | **Events** | `Calendar` | `/dashboard/events` | School calendar — create, edit, delete events; role-based visibility |
+| 7 | **Reports** | `BarChart3` | `/dashboard/reports` | Grade books, report cards, result checking portal config |
+| 8 | **Fees** | `CreditCard` | `/dashboard/fees` | Fee management — record payments, announcements, outstanding balances |
+| 9 | **Settings** | `Settings` | `/dashboard/settings` | School configuration — terms, grading, profile, password, branding |
+
+### **2.4.3 Dashboard Home (`/dashboard`) — Sections**
+
+The dashboard landing page contains:
+
+| Section | Position | Content |
+|---------|----------|---------|
+| **Welcome Banner** | Top | Greeting with user name, trial/plan badge, days remaining |
+| **Stats Grid (4 cards)** | Below banner | Total Students, Total Teachers, Active Classes, Upcoming Events |
+| **Recent Activity** | Left column (2/3) | Latest student/teacher additions, exam submissions, fee payments |
+| **Upcoming Events** | Right column (1/3) | Next 5 events from calendar with date badges |
+| **Quick Actions** | Bottom | Shortcut buttons: Add Student, Add Teacher, Create Exam, View Reports |
+
+### **2.4.4 Role-Specific Visibility**
+
+| Tab | School Admin | Principal | Admin Staff | Receptionist | Teacher | Student |
+|-----|:------------:|:---------:|:-----------:|:------------:|:-------:|:-------:|
+| Dashboard | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Students | ✅ | ✅ | ✅ | ✅ | 👁️ View | ❌ |
+| Teachers | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ |
+| Classes | ✅ | ✅ | ✅ | ✅ | 👁️ Own | ❌ |
+| Exams | ✅ | ✅ | ✅ | ✅ | ✅ Create/Grade | ✅ Take |
+| Events | ✅ | ✅ | ✅ | ✅ | 👁️ | 👁️ |
+| Reports | ✅ | ✅ | ✅ | ✅ | 👁️ Own | 👁️ Own |
+| Fees | ✅ | ❌ | ✅ (if tagged) | ✅ | ❌ | 👁️ Own |
+| Settings | ✅ | ✅ | ✅ | ✅ | ✅ Profile | ✅ Profile |
+
+**Legend:** ✅ = Full access · 👁️ = View only · ❌ = No access
+
+### **2.4.5 Mobile Navigation**
+
+On mobile screens (< 1024px):
+- Sidebar slides in from left as an **overlay** (not push)
+- **Hamburger menu** button in TopBar opens sidebar
+- **X button** in sidebar header closes it
+- **Collapse toggle** at bottom is **always visible** (mobile + desktop)
+- Sidebar state (collapsed/expanded) persists via `localStorage`
+- TopBar search is hidden on mobile; title truncates with `truncate`
+
+### **2.4.6 Top Bar Components (Left → Right)**
+
+| Component | Position | Behavior |
+|-----------|----------|----------|
+| Hamburger (☰) | Far left | Mobile only — opens sidebar overlay |
+| Page Title | Left | Bold title + subtitle (truncated on mobile) |
+| Search Bar | Center-left | Desktop only (`lg:`) — glassmorphic input |
+| Notifications (🔔) | Center-right | Badge with unread count |
+| User Avatar | Right | Initial + name + role (hidden on mobile) |
+| Theme Toggle (☀️🖥️🌙) | Far right | 3-state pill — always visible |
+
+---
+
 ## **3. Database Architecture (SaaS-Ready Model)**
 
 ### **3.1 Key Architectural Principles**

@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\UiIllustrationController;
+use App\Http\Controllers\Api\StudentController;
+use App\Http\Controllers\Api\TeacherController;
 
 /*
 |--------------------------------------------------------------------------
@@ -39,5 +41,23 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/illustrations/packs/{packName}/activate', [UiIllustrationController::class, 'activatePack']);
         Route::get('/illustrations/packs', [UiIllustrationController::class, 'listPacks']);
         Route::delete('/illustrations/packs/{packName}', [UiIllustrationController::class, 'deletePack']);
+    });
+
+    // Students management
+    Route::prefix('students')->group(function () {
+        Route::get('/', [StudentController::class, 'index']);
+        Route::post('/', [StudentController::class, 'store']);
+        Route::put('/{id}', [StudentController::class, 'update']);
+        Route::post('/{id}/ban', [StudentController::class, 'ban']);
+        Route::delete('/{id}', [StudentController::class, 'destroy']);
+    });
+
+    // Teachers management
+    Route::prefix('teachers')->group(function () {
+        Route::get('/', [TeacherController::class, 'index']);
+        Route::post('/', [TeacherController::class, 'store']);
+        Route::put('/{id}', [TeacherController::class, 'update']);
+        Route::post('/{id}/ban', [TeacherController::class, 'ban']);
+        Route::delete('/{id}', [TeacherController::class, 'destroy']);
     });
 });
