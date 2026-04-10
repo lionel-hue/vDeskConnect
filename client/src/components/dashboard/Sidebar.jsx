@@ -94,7 +94,8 @@ export default function Sidebar({ role = 'admin', user, onLogout, collapsed: ini
       {/* Sidebar */}
       <aside
         className={`fixed top-0 left-0 h-full bg-sidebar text-white z-50 transition-all duration-300 ease-out flex flex-col
-          ${collapsed ? 'w-20' : 'w-64'}
+          ${collapsed ? 'lg:w-20' : 'lg:w-64'}
+          w-64 lg:w-auto
           ${mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}
       >
