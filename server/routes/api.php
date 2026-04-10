@@ -97,6 +97,7 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/term/{termId}/grade/{gradeLevelId}/subject/{subjectId}', [AcademicController::class, 'caWeeksIndex']);
             Route::get('/term/{termId}/grade/{gradeLevelId}/subject/{subjectId}/summary', [AcademicController::class, 'caWeeksSummary']);
             Route::post('/', [AcademicController::class, 'setCaWeeks']);
+            Route::delete('/term/{termId}/grade/{gradeLevelId}/subject/{subjectId}', [AcademicController::class, 'deleteCaWeeks']);
         });
 
         // Grade Scales

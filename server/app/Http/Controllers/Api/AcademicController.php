@@ -1313,4 +1313,20 @@ class AcademicController extends Controller
 
         return response()->json(['message' => 'Subject removed from grade level']);
     }
+
+    /**
+     * Delete CA week configuration for a specific grade + subject + term.
+     */
+    public function deleteCaWeeks(Request $request, int $termId, int $gradeLevelId, int $subjectId): JsonResponse
+    {
+        $user = $request->user();
+        
+        $deleted = CaWeek::where('school_id', $user->school_id)
+            ->where('term_id', $termId)
+            ->where('grade_level_id', $gradeLevelId)
+            ->where('subject_id', $subjectId)
+            ->delete();
+
+        return response()->json(['message' => "CA configuration deleted successfully ($deleted records removed)"]);
+    }
 }

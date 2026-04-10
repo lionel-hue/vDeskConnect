@@ -31,6 +31,7 @@ export const academicApi = {
     getSummary: (termId, gradeLevelId, subjectId) =>
       api.get(`/academic/ca-weeks/term/${termId}/grade/${gradeLevelId}/subject/${subjectId}/summary`),
     set: (data) => api.post('/academic/ca-weeks', data),
+    delete: (termId, gradeLevelId, subjectId) => api.delete(`/academic/ca-weeks/term/${termId}/grade/${gradeLevelId}/subject/${subjectId}`),
   },
 
   // Grade Scales

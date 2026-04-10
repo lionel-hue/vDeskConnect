@@ -50,6 +50,14 @@ export default function AcademicPage() {
     test_weeks: [], exam_week: 12
   });
   const [caWeekLoading, setCaWeekLoading] = useState(false);
+  
+  // CA Summary state
+  const [caSummary, setCaSummary] = useState(null);
+  const [caViewTermId, setCaViewTermId] = useState('');
+  const [caViewGradeId, setCaViewGradeId] = useState('');
+  const [caViewSubjectId, setCaViewSubjectId] = useState('');
+  const [caEditMode, setCaEditMode] = useState(false);
+  
   const [gradeLevels, setGradeLevels] = useState([]);
   const [subjects, setSubjects] = useState([]);
 
@@ -231,10 +239,50 @@ export default function AcademicPage() {
       const res = await academicApi.caWeeks.set(caWeekForm);
       toast.success(res.message);
       setCaWeekForm({ ...caWeekForm, test_weeks: [], exam_week: caWeekForm.weeks_count });
+      setCaEditMode(false);
+      if (caViewTermId && caViewGradeId && caViewSubjectId) {
+        handleFetchCaSummary(caViewTermId, caViewGradeId, caViewSubjectId);
+      }
     } catch (err) {
       toast.error(err.data?.message || 'Failed to set CA weeks');
     } finally {
       setCaWeekLoading(false);
+    }
+  };
+
+  const handleFetchCaSummary = async (termId, gradeId, subjectId) => {
+    try {
+      const res = await academicApi.caWeeks.getSummary(termId, gradeId, subjectId);
+      setCaSummary(res.summary);
+    } catch (err) {
+      setCaSummary(null);
+    }
+  };
+
+  const handleEditCaConfig = () => {
+    if (!caSummary) return;
+    setCaWeekForm({
+      term_id: caViewTermId,
+      grade_level_id: caViewGradeId,
+      subject_id: caViewSubjectId,
+      weeks_count: caSummary.total_weeks || 12,
+      test_weeks: caSummary.test_weeks || [],
+      exam_week: caSummary.exam_week || 12,
+    });
+    setCaEditMode(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleDeleteCaConfig = async () => {
+    if (!confirm('Delete this CA configuration? This cannot be undone.')) return;
+    try {
+      await academicApi.caWeeks.delete(caViewTermId, caViewGradeId, caViewSubjectId);
+      toast.success('CA configuration deleted');
+      setCaSummary(null);
+      setCaEditMode(false);
+      setCaWeekForm({ term_id: '', grade_level_id: '', subject_id: '', weeks_count: 12, test_weeks: [], exam_week: 12 });
+    } catch (err) {
+      toast.error(err.data?.message || 'Failed to delete configuration');
     }
   };
 
@@ -845,9 +893,88 @@ export default function AcademicPage() {
                       className="flex items-center gap-2 w-full md:w-auto px-4 md:px-6 py-2 text-sm md:text-base bg-primary text-white rounded-lg hover:bg-primary-dark disabled:opacity-50"
                     >
                       <Save className="w-4 h-4" />
-                      {caWeekLoading ? 'Saving...' : 'Save CA Configuration'}
+                      {caWeekLoading ? 'Saving...' : caEditMode ? 'Update Configuration' : 'Save CA Configuration'}
                     </button>
                   </form>
+                </div>
+
+                {/* View Current CA Configuration */}
+                <div className="bg-card dark:bg-gray-800 rounded-card border border-border p-4 md:p-6 shadow-sm">
+                  <h2 className="text-base md:text-lg font-semibold text-text-primary mb-4">View Current Configuration</h2>
+                  <p className="text-xs md:text-sm text-text-secondary mb-4">Select Term, Grade, and Subject to view saved CA settings.</p>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mb-4">
+                    <select
+                      value={caViewTermId || ''}
+                      onChange={e => {
+                        setCaViewTermId(e.target.value);
+                        if (e.target.value && caViewGradeId && caViewSubjectId) handleFetchCaSummary(e.target.value, caViewGradeId, caViewSubjectId);
+                      }}
+                      className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm md:text-base text-text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    >
+                      <option value="">Select Term</option>
+                      {terms.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                    </select>
+                    <select
+                      value={caViewGradeId || ''}
+                      onChange={e => {
+                        setCaViewGradeId(e.target.value);
+                        if (caViewTermId && e.target.value && caViewSubjectId) handleFetchCaSummary(caViewTermId, e.target.value, caViewSubjectId);
+                      }}
+                      className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm md:text-base text-text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    >
+                      <option value="">Select Grade</option>
+                      {gradeLevels.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
+                    </select>
+                    <select
+                      value={caViewSubjectId || ''}
+                      onChange={e => {
+                        setCaViewSubjectId(e.target.value);
+                        if (caViewTermId && caViewGradeId && e.target.value) handleFetchCaSummary(caViewTermId, caViewGradeId, e.target.value);
+                      }}
+                      className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm md:text-base text-text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    >
+                      <option value="">Select Subject</option>
+                      {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                    </select>
+                  </div>
+
+                  {caSummary ? (
+                    <div className="p-4 bg-bg-main dark:bg-gray-750 rounded-lg border border-border dark:border-gray-600 space-y-4">
+                      <div className="flex flex-wrap gap-4 items-center">
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 rounded-full bg-warning"></div>
+                          <span className="text-sm md:text-base text-text-primary"><strong>Tests:</strong> Week {caSummary.test_weeks.join(', ')}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 rounded-full bg-error"></div>
+                          <span className="text-sm md:text-base text-text-primary"><strong>Exam:</strong> Week {caSummary.exam_week}</span>
+                        </div>
+                      </div>
+                      <div className="flex gap-3 pt-2 border-t border-border dark:border-gray-600">
+                        <button
+                          type="button"
+                          onClick={handleEditCaConfig}
+                          className="flex items-center gap-2 px-4 py-2 text-sm bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                          Edit Configuration
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleDeleteCaConfig}
+                          className="flex items-center gap-2 px-4 py-2 text-sm bg-error/10 text-error rounded-lg hover:bg-error/20 transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    caViewTermId && caViewGradeId && caViewSubjectId && (
+                      <p className="text-text-muted text-center py-4 text-sm">No configuration found for this combination.</p>
+                    )
+                  )}
                 </div>
               </div>
             )}
