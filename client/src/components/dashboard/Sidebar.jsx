@@ -22,6 +22,7 @@ import {
   Menu,
   X,
   UserRound,
+  SlidersHorizontal,
 } from 'lucide-react';
 
 // Super Admin navigation items
@@ -40,6 +41,7 @@ const SCHOOL_ADMIN_NAV = [
   { label: 'Students', icon: GraduationCap, href: '/dashboard/students' },
   { label: 'Teachers', icon: Users, href: '/dashboard/teachers' },
   { label: 'Staff', icon: UserRound, href: '/dashboard/staff' },
+  { label: 'Academic', icon: SlidersHorizontal, href: '/dashboard/academic' },
   { label: 'Classes', icon: School, href: '/dashboard/classes' },
   { label: 'Exams', icon: FileText, href: '/dashboard/exams' },
   { label: 'Events', icon: Calendar, href: '/dashboard/events' },

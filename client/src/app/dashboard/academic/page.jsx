@@ -297,8 +297,8 @@ export default function AcademicPage() {
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 px-4 py-3 rounded-t-lg transition-all ${
                 activeTab === tab.id
-                  ? 'bg-white border-b-2 border-primary text-primary font-semibold'
-                  : 'text-text-secondary hover:text-text-primary hover:bg-white/50'
+                  ? 'bg-card border-b-2 border-primary text-primary font-semibold'
+                  : 'text-text-secondary hover:text-text-primary hover:bg-white/5 dark:hover:bg-white/10'
               }`}
             >
               <tab.icon className="w-4 h-4" />
