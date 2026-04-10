@@ -420,12 +420,12 @@ export default function AcademicPage() {
             {activeTab === TABS.TERMS && (
               <div className="space-y-6">
                 {/* Session Selector */}
-                <div className="bg-white rounded-card border border-border p-6 shadow-sm">
+                <div className="bg-card dark:bg-gray-800 rounded-card border border-border p-6 shadow-sm">
                   <h2 className="text-lg font-semibold text-text-primary mb-4">Select Session</h2>
                   <select
                     value={selectedSessionId || ''}
                     onChange={e => handleFetchTerms(e.target.value)}
-                    className="w-full md:w-1/2 px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    className="w-full md:w-1/2 px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
                   >
                     <option value="">-- Select Session --</option>
                     {sessions.map(s => (
@@ -437,7 +437,7 @@ export default function AcademicPage() {
                 {selectedSessionId && (
                   <>
                     {/* Bulk Create Card */}
-                    <div className="bg-white rounded-card border border-border p-6 shadow-sm">
+                    <div className="bg-card dark:bg-gray-800 rounded-card border border-border p-6 shadow-sm">
                       <h2 className="text-lg font-semibold text-text-primary mb-4">Quick Create Terms</h2>
                       <p className="text-sm text-text-secondary mb-4">
                         Automatically create all terms for this session at once.
@@ -452,7 +452,7 @@ export default function AcademicPage() {
                     </div>
 
                     {/* Existing Terms */}
-                    <div className="bg-white rounded-card border border-border p-6 shadow-sm">
+                    <div className="bg-card dark:bg-gray-800 rounded-card border border-border p-6 shadow-sm">
                       <div className="flex items-center justify-between mb-4">
                         <h2 className="text-lg font-semibold text-text-primary">Terms</h2>
                         <button
@@ -469,7 +469,7 @@ export default function AcademicPage() {
                       ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                           {terms.map(term => (
-                            <div key={term.id} className="p-4 border border-border rounded-lg">
+                            <div key={term.id} className="p-4 border border-border dark:border-gray-600 rounded-lg bg-bg-main dark:bg-gray-750">
                               <div className="flex items-center justify-between mb-2">
                                 <h3 className="font-semibold text-text-primary">{term.name}</h3>
                                 <button
