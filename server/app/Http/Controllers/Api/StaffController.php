@@ -169,6 +169,20 @@ class StaffController extends Controller
             ], 422);
         }
 
+        // Check if employee number is being changed to one that already exists
+        if ($request->has('employee_number')) {
+            $existingEmployee = Profile::where('type', 'staff')
+                ->where('data->employee_number', $request->employee_number)
+                ->whereNot('user_id', $id)
+                ->exists();
+            if ($existingEmployee) {
+                return response()->json([
+                    'message' => 'Validation failed',
+                    'errors' => ['employee_number' => ['This employee number already exists.']],
+                ], 422);
+            }
+        }
+
         if ($request->has('email')) {
             $staff->email = $request->email;
         }
