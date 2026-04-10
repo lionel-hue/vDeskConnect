@@ -118,7 +118,7 @@ class StudentController extends Controller
             return response()->json([
                 'message' => 'Student created successfully',
                 'student' => $this->formatStudentResponse($student),
-                'temporary_password' => $tempPassword,
+                'temporary_password' => $request->password ? null : 'Secret123!',
             ], 201);
         });
     }
