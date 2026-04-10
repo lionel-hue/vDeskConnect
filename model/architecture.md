@@ -163,6 +163,115 @@ const { illustrations } = useIllustrations();
 - **Spacing:** 8px base unit (8, 16, 24, 32, 48, 64)
 - **Transitions:** All interactive elements have `transition-all duration-250 ease`
 
+### **1.4.5 Liquid Glassmorphic Background Design System**
+
+**Purpose:** When illustrations are used as **background images** (not standalone `<img>` elements), the UI overlay should implement a **Liquid Glassmorphic** design that creates depth, transparency, and a modern frosted-glass aesthetic. This is especially critical for hero sections like the Welcome Page.
+
+**When to Use:**
+- Welcome/Landing page backgrounds
+- Auth page backgrounds (login, signup, forgot password)
+- Dashboard hero backgrounds
+- Any full-page or full-section background image where UI elements sit on top
+
+**Core Principles:**
+
+1. **Background Image Layer (Bottom)**
+   - Realistic, high-quality photographic or photorealistic image
+   - Slightly desaturated or with a subtle color overlay (20-30% opacity) to ensure text readability
+   - Fixed positioning (`background-attachment: fixed` or `position: fixed`) for parallax-like effect
+   - Full viewport coverage (`min-height: 100vh`, `width: 100%`, `object-fit: cover` or `background-size: cover`)
+
+2. **Glassmorphic Overlay Layer (Middle)**
+   - Semi-transparent panels with backdrop blur effect
+   - CSS: `backdrop-filter: blur(12px) saturate(180%)`
+   - Background: `rgba(255, 255, 255, 0.08)` to `rgba(255, 255, 255, 0.15)` (light theme)
+   - Background: `rgba(26, 26, 46, 0.4)` to `rgba(26, 26, 46, 0.6)` (dark sidebar theme)
+   - Subtle border: `1px solid rgba(255, 255, 255, 0.18)` or `rgba(124, 107, 196, 0.3)`
+   - Soft inner shadow for depth: `box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1)`
+
+3. **Content Layer (Top)**
+   - Clean, high-contrast text (white on dark overlays, dark on light overlays)
+   - Glassmorphic cards/containers with enhanced blur
+   - CSS: `backdrop-filter: blur(16px) saturate(200%)`
+   - Background: `rgba(255, 255, 255, 0.12)` to `rgba(255, 255, 255, 0.2)`
+   - Border: `1px solid rgba(255, 255, 255, 0.25)`
+   - Border radius: `16px` to `24px` for hero panels
+   - Shadow: `0 8px 32px rgba(0, 0, 0, 0.15)` for elevation
+
+**Implementation Example (Welcome Page):**
+
+```jsx
+// Background layer
+<div className="fixed inset-0 -z-10">
+  <img
+    src={illustrations.welcome_hero}
+    alt=""
+    className="w-full h-full object-cover"
+    aria-hidden="true"
+  />
+  {/* Color overlay for readability */}
+  <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-primary-dark/20 to-bg-main/40" />
+</div>
+
+// Glassmorphic content container
+<div className="relative z-10 backdrop-blur-xl bg-white/10 border border-white/20 rounded-hero shadow-elevated p-12">
+  <h1 className="text-5xl font-bold text-white drop-shadow-lg">
+    Welcome to vDeskconnect
+  </h1>
+  <p className="text-lg text-white/90 mt-4">
+    Empowering education worldwide
+  </p>
+</div>
+```
+
+**Tailwind Custom Classes:**
+Add to `tailwind.config.cjs`:
+```js
+theme: {
+  extend: {
+    backdropBlur: {
+      'glass': '12px',
+      'glass-xl': '16px',
+    },
+    backgroundColor: {
+      'glass': 'rgba(255, 255, 255, 0.08)',
+      'glass-light': 'rgba(255, 255, 255, 0.15)',
+      'glass-dark': 'rgba(26, 26, 46, 0.4)',
+    },
+    borderColor: {
+      'glass': 'rgba(255, 255, 255, 0.18)',
+      'glass-primary': 'rgba(124, 107, 196, 0.3)',
+    },
+    boxShadow: {
+      'glass': '0 8px 32px rgba(0, 0, 0, 0.1)',
+      'glass-elevated': '0 12px 48px rgba(0, 0, 0, 0.15)',
+    },
+  }
+}
+```
+
+**Usage Pattern:**
+```jsx
+// Glass card on background image
+<div className="backdrop-blur-glass bg-glass border border-glass shadow-glass rounded-card p-6">
+  {content}
+</div>
+```
+
+**Accessibility Requirements:**
+- Always ensure **WCAG AA contrast ratios** (4.5:1 for normal text, 3:1 for large text)
+- Provide **sufficient overlay opacity** to maintain readability regardless of background image brightness
+- Add `aria-hidden="true"` to decorative background images
+- Use `prefers-reduced-motion` media query to disable backdrop animations for users who prefer reduced motion
+
+**Image Guidelines for Backgrounds:**
+- **Format:** PNG or WebP (photorealistic, not SVG illustrations)
+- **Resolution:** Minimum 1920x1080px for desktop, 768x1366px for mobile variants
+- **Style:** Professional, aspirational, modern educational environments
+- **Color Harmony:** Should complement the primary purple palette (`#7C6BC4`, `#A99DDB`, `#5E4FA2`)
+- **Subject Matter:** Diverse students, modern classrooms, technology in education, global learning
+- **Avoid:** Cluttered scenes, overly bright areas that break through overlays, dated aesthetics
+
 ---
 
 ## **2. System Architecture**
