@@ -517,6 +517,10 @@ export default function AcademicPage() {
             { id: TABS.TERMS, label: 'Terms', icon: CalendarDays },
             { id: TABS.CA_WEEKS, label: 'CA Config', icon: BookOpen },
             { id: TABS.GRADE_SCALES, label: 'Grade Scales', icon: Scale },
+            { id: TABS.GRADE_LEVELS, label: 'Grades', icon: School },
+            { id: TABS.SUBJECTS, label: 'Subjects', icon: Tag },
+            { id: TABS.SECTIONS, label: 'Sections', icon: Layers },
+            { id: TABS.MAPPINGS, label: 'Mappings', icon: BookOpen },
           ].map(tab => (
             <button
               key={tab.id}
@@ -928,6 +932,218 @@ export default function AcademicPage() {
                 </div>
               </div>
             )}
+
+            {/* ==================== PHASE 2: GRADE LEVELS TAB ==================== */}
+            {activeTab === TABS.GRADE_LEVELS && (
+              <div className="space-y-4 md:space-y-6">
+                <div className="bg-card dark:bg-gray-800 rounded-card border border-border p-4 md:p-6 shadow-sm">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                    <h2 className="text-base md:text-lg font-semibold text-text-primary">Grade Levels</h2>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setShowBulkGradeModal(true)}
+                        className="flex items-center gap-1 md:gap-2 px-3 md:px-4 py-2 text-xs md:text-sm bg-primary/10 text-primary rounded-lg hover:bg-primary/20"
+                      >
+                        <Copy className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                        Bulk Create
+                      </button>
+                      <button
+                        onClick={() => {
+                          setGradeLevelForm({ name: '', short_name: '', order: 1, cycle: '' });
+                          setEditingId(null);
+                          setShowGradeLevelModal(true);
+                        }}
+                        className="flex items-center gap-1 md:gap-2 px-3 md:px-4 py-2 text-xs md:text-sm bg-primary text-white rounded-lg hover:bg-primary-dark"
+                      >
+                        <Plus className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                        Add Grade
+                      </button>
+                    </div>
+                  </div>
+
+                  {gradeLevels.length === 0 ? (
+                    <p className="text-text-secondary text-center py-8 text-sm md:text-base">No grade levels created yet.</p>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+                      {gradeLevels.map(gl => (
+                        <div key={gl.id} className="p-3 md:p-4 border border-border dark:border-gray-600 rounded-lg bg-bg-main dark:bg-gray-750">
+                          <div className="flex items-center justify-between mb-2">
+                            <div>
+                              <h3 className="font-semibold text-text-primary text-sm md:text-base">{gl.name}</h3>
+                              <p className="text-xs text-text-muted">{gl.short_name} • Order: {gl.order}</p>
+                            </div>
+                            <button onClick={() => handleDeleteGradeLevel(gl.id)} className="text-error hover:text-error/80 flex-shrink-0">
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                          {gl.cycle && <span className="text-xs px-2 py-0.5 bg-primary/10 text-primary rounded-full">{gl.cycle}</span>}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* ==================== PHASE 2: SUBJECTS TAB ==================== */}
+            {activeTab === TABS.SUBJECTS && (
+              <div className="space-y-4 md:space-y-6">
+                <div className="bg-card dark:bg-gray-800 rounded-card border border-border p-4 md:p-6 shadow-sm">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                    <h2 className="text-base md:text-lg font-semibold text-text-primary">Subjects</h2>
+                    <button
+                      onClick={() => {
+                        setSubjectForm({ name: '', code: '', type: 'core', department_id: '' });
+                        setShowSubjectModal(true);
+                      }}
+                      className="flex items-center gap-1 md:gap-2 px-3 md:px-4 py-2 text-xs md:text-sm bg-primary text-white rounded-lg hover:bg-primary-dark"
+                    >
+                      <Plus className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                      Add Subject
+                    </button>
+                  </div>
+
+                  {subjects.length === 0 ? (
+                    <p className="text-text-secondary text-center py-8 text-sm md:text-base">No subjects created yet.</p>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+                      {subjects.map(sub => (
+                        <div key={sub.id} className="p-3 md:p-4 border border-border dark:border-gray-600 rounded-lg bg-bg-main dark:bg-gray-750">
+                          <div className="flex items-center justify-between mb-2">
+                            <div>
+                              <h3 className="font-semibold text-text-primary text-sm md:text-base">{sub.name}</h3>
+                              <p className="text-xs text-text-muted">{sub.code}</p>
+                            </div>
+                            <button onClick={() => handleDeleteSubject(sub.id)} className="text-error hover:text-error/80 flex-shrink-0">
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                          <span className={`text-xs px-2 py-0.5 rounded-full ${
+                            sub.type === 'core' ? 'bg-success/10 text-success' :
+                            sub.type === 'elective' ? 'bg-warning/10 text-warning' :
+                            'bg-info/10 text-info'
+                          }`}>{sub.type}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* ==================== PHASE 2: SECTIONS TAB ==================== */}
+            {activeTab === TABS.SECTIONS && (
+              <div className="space-y-4 md:space-y-6">
+                <div className="bg-card dark:bg-gray-800 rounded-card border border-border p-4 md:p-6 shadow-sm">
+                  <h2 className="text-base md:text-lg font-semibold text-text-primary mb-4">Sections</h2>
+                  <p className="text-xs md:text-sm text-text-secondary mb-4">Select a grade level to view/manage its sections.</p>
+                  
+                  <select
+                    value={selectedGradeForSections || ''}
+                    onChange={e => handleFetchSections(e.target.value)}
+                    className="w-full md:w-1/2 px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm md:text-base text-text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 mb-4"
+                  >
+                    <option value="">-- Select Grade Level --</option>
+                    {gradeLevels.map(g => (
+                      <option key={g.id} value={g.id}>{g.name}</option>
+                    ))}
+                  </select>
+
+                  {selectedGradeForSections && (
+                    <>
+                      <div className="flex justify-end mb-3">
+                        <button
+                          onClick={() => {
+                            setSectionForm({ grade_level_id: selectedGradeForSections, name: '', room_number: '', capacity: '' });
+                            setShowSectionModal(true);
+                          }}
+                          className="flex items-center gap-1 md:gap-2 px-3 md:px-4 py-2 text-xs md:text-sm bg-primary text-white rounded-lg hover:bg-primary-dark"
+                        >
+                          <Plus className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                          Add Section
+                        </button>
+                      </div>
+
+                      {sections.length === 0 ? (
+                        <p className="text-text-secondary text-center py-6 text-sm">No sections for this grade level.</p>
+                      ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+                          {sections.map(sec => (
+                            <div key={sec.id} className="p-3 md:p-4 border border-border dark:border-gray-600 rounded-lg bg-bg-main dark:bg-gray-750">
+                              <div className="flex items-center justify-between mb-1">
+                                <h3 className="font-semibold text-text-primary text-sm md:text-base">{sec.name}</h3>
+                                <button onClick={() => handleDeleteSection(sec.id)} className="text-error hover:text-error/80 flex-shrink-0">
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+                              <p className="text-xs text-text-muted">Room: {sec.room_number || 'N/A'} • Capacity: {sec.capacity || 'N/A'}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* ==================== PHASE 2: MAPPINGS TAB ==================== */}
+            {activeTab === TABS.MAPPINGS && (
+              <div className="space-y-4 md:space-y-6">
+                <div className="bg-card dark:bg-gray-800 rounded-card border border-border p-4 md:p-6 shadow-sm">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                    <h2 className="text-base md:text-lg font-semibold text-text-primary">Subject-to-Grade Mappings</h2>
+                    <button
+                      onClick={() => {
+                        setMappingForm({ grade_level_ids: [], subject_ids: [], is_compulsory: true, department_id: '' });
+                        setShowMappingModal(true);
+                      }}
+                      className="flex items-center gap-1 md:gap-2 px-3 md:px-4 py-2 text-xs md:text-sm bg-primary text-white rounded-lg hover:bg-primary-dark"
+                    >
+                      <Plus className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                      Assign Subjects
+                    </button>
+                  </div>
+                  <p className="text-xs md:text-sm text-text-secondary mb-4">Select a grade level to see its assigned subjects.</p>
+                  
+                  <select
+                    value={selectedGradeForMappings || ''}
+                    onChange={e => handleFetchMappings(e.target.value)}
+                    className="w-full md:w-1/2 px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm md:text-base text-text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 mb-4"
+                  >
+                    <option value="">-- Select Grade Level --</option>
+                    {gradeLevels.map(g => (
+                      <option key={g.id} value={g.id}>{g.name}</option>
+                    ))}
+                  </select>
+
+                  {selectedGradeForMappings && (
+                    <>
+                      {mappings.length === 0 ? (
+                        <p className="text-text-secondary text-center py-6 text-sm">No subjects assigned to this grade level.</p>
+                      ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+                          {mappings.map(m => (
+                            <div key={m.id} className="p-3 md:p-4 border border-border dark:border-gray-600 rounded-lg bg-bg-main dark:bg-gray-750">
+                              <div className="flex items-center justify-between mb-1">
+                                <h3 className="font-semibold text-text-primary text-sm md:text-base">{m.subject_name}</h3>
+                                <button onClick={() => handleRemoveMapping(m.id)} className="text-error hover:text-error/80 flex-shrink-0">
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+                              <p className="text-xs text-text-muted">{m.subject_code} • {m.subject_type}</p>
+                              <span className={`text-xs px-2 py-0.5 rounded-full mt-1 inline-block ${
+                                m.is_compulsory ? 'bg-success/10 text-success' : 'bg-warning/10 text-warning'
+                              }`}>{m.is_compulsory ? 'Compulsory' : 'Elective'}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
           </>
         )}
 
@@ -1224,6 +1440,159 @@ export default function AcademicPage() {
             </div>
           </div>
         )}
+
+        {/* ==================== PHASE 2 MODALS ==================== */}
+
+        {/* Bulk Grade Level Modal */}
+        {showBulkGradeModal && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-card dark:bg-gray-800 rounded-card border border-border p-4 md:p-6 w-full max-w-lg">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-base md:text-lg font-semibold text-text-primary">Bulk Create Grade Levels</h3>
+                <button onClick={() => setShowBulkGradeModal(false)} className="text-text-muted hover:text-text-primary">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <form onSubmit={handleBulkCreateGradeLevels} className="space-y-4">
+                <div>
+                  <label className="block text-xs md:text-sm font-medium text-text-secondary mb-1">Prefix *</label>
+                  <input type="text" placeholder="JSS" value={bulkGradeForm.prefix} onChange={e => setBulkGradeForm({ ...bulkGradeForm, prefix: e.target.value })} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm md:text-base text-text-primary dark:text-white placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary/50" required />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+                  <div>
+                    <label className="block text-xs md:text-sm font-medium text-text-secondary mb-1">Start Order *</label>
+                    <input type="number" min="1" value={bulkGradeForm.start_order} onChange={e => setBulkGradeForm({ ...bulkGradeForm, start_order: parseInt(e.target.value) })} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm md:text-base text-text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50" required />
+                  </div>
+                  <div>
+                    <label className="block text-xs md:text-sm font-medium text-text-secondary mb-1">Count *</label>
+                    <input type="number" min="1" max="20" value={bulkGradeForm.count} onChange={e => setBulkGradeForm({ ...bulkGradeForm, count: parseInt(e.target.value) })} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm md:text-base text-text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50" required />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs md:text-sm font-medium text-text-secondary mb-1">Cycle</label>
+                  <input type="text" placeholder="Junior" value={bulkGradeForm.cycle} onChange={e => setBulkGradeForm({ ...bulkGradeForm, cycle: e.target.value })} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm md:text-base text-text-primary dark:text-white placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary/50" />
+                </div>
+                <div className="flex gap-3">
+                  <button type="button" onClick={() => setShowBulkGradeModal(false)} className="flex-1 px-4 py-2 text-sm md:text-base border border-border dark:border-gray-600 rounded-lg hover:bg-bg-main dark:hover:bg-gray-700 text-text-primary">Cancel</button>
+                  <button type="submit" disabled={gradeLevelLoading} className="flex-1 px-4 py-2 text-sm md:text-base bg-primary text-white rounded-lg hover:bg-primary-dark disabled:opacity-50">{gradeLevelLoading ? 'Creating...' : 'Create'}</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Subject Modal */}
+        {showSubjectModal && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-card dark:bg-gray-800 rounded-card border border-border p-4 md:p-6 w-full max-w-lg">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-base md:text-lg font-semibold text-text-primary">Add Subject</h3>
+                <button onClick={() => setShowSubjectModal(false)} className="text-text-muted hover:text-text-primary"><X className="w-5 h-5" /></button>
+              </div>
+              <form onSubmit={handleCreateSubject} className="space-y-4">
+                <div>
+                  <label className="block text-xs md:text-sm font-medium text-text-secondary mb-1">Subject Name *</label>
+                  <input type="text" placeholder="Mathematics" value={subjectForm.name} onChange={e => setSubjectForm({ ...subjectForm, name: e.target.value })} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm md:text-base text-text-primary dark:text-white placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary/50" required />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+                  <div>
+                    <label className="block text-xs md:text-sm font-medium text-text-secondary mb-1">Code</label>
+                    <input type="text" placeholder="MTH" value={subjectForm.code} onChange={e => setSubjectForm({ ...subjectForm, code: e.target.value })} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm md:text-base text-text-primary dark:text-white placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary/50" />
+                  </div>
+                  <div>
+                    <label className="block text-xs md:text-sm font-medium text-text-secondary mb-1">Type *</label>
+                    <select value={subjectForm.type} onChange={e => setSubjectForm({ ...subjectForm, type: e.target.value })} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm md:text-base text-text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50" required>
+                      <option value="core">Core</option>
+                      <option value="elective">Elective</option>
+                      <option value="departmental">Departmental</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <button type="button" onClick={() => setShowSubjectModal(false)} className="flex-1 px-4 py-2 text-sm md:text-base border border-border dark:border-gray-600 rounded-lg hover:bg-bg-main dark:hover:bg-gray-700 text-text-primary">Cancel</button>
+                  <button type="submit" disabled={subjectLoading} className="flex-1 px-4 py-2 text-sm md:text-base bg-primary text-white rounded-lg hover:bg-primary-dark disabled:opacity-50">{subjectLoading ? 'Creating...' : 'Create Subject'}</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Section Modal */}
+        {showSectionModal && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-card dark:bg-gray-800 rounded-card border border-border p-4 md:p-6 w-full max-w-lg">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-base md:text-lg font-semibold text-text-primary">Add Section</h3>
+                <button onClick={() => setShowSectionModal(false)} className="text-text-muted hover:text-text-primary"><X className="w-5 h-5" /></button>
+              </div>
+              <form onSubmit={handleCreateSection} className="space-y-4">
+                <div>
+                  <label className="block text-xs md:text-sm font-medium text-text-secondary mb-1">Section Name *</label>
+                  <input type="text" placeholder="A" value={sectionForm.name} onChange={e => setSectionForm({ ...sectionForm, name: e.target.value })} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm md:text-base text-text-primary dark:text-white placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary/50" required />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+                  <div>
+                    <label className="block text-xs md:text-sm font-medium text-text-secondary mb-1">Room Number</label>
+                    <input type="text" placeholder="Room 101" value={sectionForm.room_number} onChange={e => setSectionForm({ ...sectionForm, room_number: e.target.value })} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm md:text-base text-text-primary dark:text-white placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary/50" />
+                  </div>
+                  <div>
+                    <label className="block text-xs md:text-sm font-medium text-text-secondary mb-1">Capacity</label>
+                    <input type="number" min="1" placeholder="40" value={sectionForm.capacity} onChange={e => setSectionForm({ ...sectionForm, capacity: e.target.value })} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm md:text-base text-text-primary dark:text-white placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary/50" />
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <button type="button" onClick={() => setShowSectionModal(false)} className="flex-1 px-4 py-2 text-sm md:text-base border border-border dark:border-gray-600 rounded-lg hover:bg-bg-main dark:hover:bg-gray-700 text-text-primary">Cancel</button>
+                  <button type="submit" disabled={sectionLoading} className="flex-1 px-4 py-2 text-sm md:text-base bg-primary text-white rounded-lg hover:bg-primary-dark disabled:opacity-50">{sectionLoading ? 'Creating...' : 'Create Section'}</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Mapping Modal */}
+        {showMappingModal && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-start justify-center p-4 overflow-y-auto">
+            <div className="bg-card dark:bg-gray-800 rounded-card border border-border p-4 md:p-6 w-full max-w-2xl my-8">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-base md:text-lg font-semibold text-text-primary">Assign Subjects to Grades</h3>
+                <button onClick={() => setShowMappingModal(false)} className="text-text-muted hover:text-text-primary"><X className="w-5 h-5" /></button>
+              </div>
+              <form onSubmit={handleBulkAssignSubjects} className="space-y-4">
+                <div>
+                  <label className="block text-xs md:text-sm font-medium text-text-secondary mb-2">Select Grade Levels *</label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-32 overflow-y-auto">
+                    {gradeLevels.map(g => (
+                      <label key={g.id} className="flex items-center gap-2 p-2 border border-border dark:border-gray-600 rounded cursor-pointer hover:bg-bg-main dark:hover:bg-gray-700">
+                        <input type="checkbox" checked={mappingForm.grade_level_ids.includes(g.id)} onChange={() => toggleMappingGrade(g.id)} className="w-4 h-4" />
+                        <span className="text-xs md:text-sm text-text-primary">{g.name}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs md:text-sm font-medium text-text-secondary mb-2">Select Subjects *</label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-32 overflow-y-auto">
+                    {subjects.map(s => (
+                      <label key={s.id} className="flex items-center gap-2 p-2 border border-border dark:border-gray-600 rounded cursor-pointer hover:bg-bg-main dark:hover:bg-gray-700">
+                        <input type="checkbox" checked={mappingForm.subject_ids.includes(s.id)} onChange={() => toggleMappingSubject(s.id)} className="w-4 h-4" />
+                        <span className="text-xs md:text-sm text-text-primary truncate">{s.name}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input type="checkbox" id="is_compulsory" checked={mappingForm.is_compulsory} onChange={e => setMappingForm({ ...mappingForm, is_compulsory: e.target.checked })} className="w-4 h-4" />
+                  <label htmlFor="is_compulsory" className="text-xs md:text-sm text-text-secondary">Mark as Compulsory</label>
+                </div>
+                <div className="flex gap-3">
+                  <button type="button" onClick={() => setShowMappingModal(false)} className="flex-1 px-4 py-2 text-sm md:text-base border border-border dark:border-gray-600 rounded-lg hover:bg-bg-main dark:hover:bg-gray-700 text-text-primary">Cancel</button>
+                  <button type="submit" disabled={mappingLoading || mappingForm.grade_level_ids.length === 0 || mappingForm.subject_ids.length === 0} className="flex-1 px-4 py-2 text-sm md:text-base bg-primary text-white rounded-lg hover:bg-primary-dark disabled:opacity-50">{mappingLoading ? 'Assigning...' : 'Assign Subjects'}</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
       </div>
     </DashboardLayout>
   );
