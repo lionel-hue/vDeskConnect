@@ -311,6 +311,201 @@ export default function AcademicPage() {
     }
   };
 
+  // ==================== PHASE 2 HANDLERS ====================
+
+  // Grade Level handlers
+  const handleCreateGradeLevel = async (e) => {
+    e.preventDefault();
+    setGradeLevelLoading(true);
+    try {
+      const res = await academicApi.gradeLevels.create(gradeLevelForm);
+      toast.success(res.message);
+      setShowGradeLevelModal(false);
+      setGradeLevelForm({ name: '', short_name: '', order: 1, cycle: '' });
+      fetchData();
+    } catch (err) {
+      toast.error(err.data?.message || 'Failed to create grade level');
+    } finally {
+      setGradeLevelLoading(false);
+    }
+  };
+
+  const handleBulkCreateGradeLevels = async (e) => {
+    e.preventDefault();
+    setGradeLevelLoading(true);
+    try {
+      const res = await academicApi.gradeLevels.bulkCreate(bulkGradeForm);
+      toast.success(res.message);
+      setShowBulkGradeModal(false);
+      fetchData();
+    } catch (err) {
+      toast.error(err.data?.message || 'Failed to create grade levels');
+    } finally {
+      setGradeLevelLoading(false);
+    }
+  };
+
+  const handleDeleteGradeLevel = async (id) => {
+    if (!confirm('Delete this grade level?')) return;
+    try {
+      await academicApi.gradeLevels.delete(id);
+      toast.success('Grade level deleted');
+      fetchData();
+    } catch (err) {
+      toast.error(err.data?.message || 'Failed to delete grade level');
+    }
+  };
+
+  // Section handlers
+  const handleFetchSections = async (gradeLevelId) => {
+    try {
+      const res = await academicApi.sections.getAll(gradeLevelId);
+      setSections(res.sections || []);
+      setSelectedGradeForSections(gradeLevelId);
+    } catch (err) {
+      toast.error('Failed to load sections');
+    }
+  };
+
+  const handleCreateSection = async (e) => {
+    e.preventDefault();
+    setSectionLoading(true);
+    try {
+      const res = await academicApi.sections.create({ ...sectionForm, grade_level_id: selectedGradeForSections });
+      toast.success(res.message);
+      setShowSectionModal(false);
+      setSectionForm({ grade_level_id: '', name: '', room_number: '', capacity: '' });
+      handleFetchSections(selectedGradeForSections);
+    } catch (err) {
+      toast.error(err.data?.message || 'Failed to create section');
+    } finally {
+      setSectionLoading(false);
+    }
+  };
+
+  const handleDeleteSection = async (id) => {
+    if (!confirm('Delete this section?')) return;
+    try {
+      await academicApi.sections.delete(id);
+      toast.success('Section deleted');
+      handleFetchSections(selectedGradeForSections);
+    } catch (err) {
+      toast.error('Failed to delete section');
+    }
+  };
+
+  // Subject handlers
+  const handleCreateSubject = async (e) => {
+    e.preventDefault();
+    setSubjectLoading(true);
+    try {
+      const res = await academicApi.subjects.create(subjectForm);
+      toast.success(res.message);
+      setShowSubjectModal(false);
+      setSubjectForm({ name: '', code: '', type: 'core', department_id: '' });
+      fetchData();
+    } catch (err) {
+      toast.error(err.data?.message || 'Failed to create subject');
+    } finally {
+      setSubjectLoading(false);
+    }
+  };
+
+  const handleDeleteSubject = async (id) => {
+    if (!confirm('Delete this subject?')) return;
+    try {
+      await academicApi.subjects.delete(id);
+      toast.success('Subject deleted');
+      fetchData();
+    } catch (err) {
+      toast.error('Failed to delete subject');
+    }
+  };
+
+  // Department handlers
+  const handleCreateDepartment = async (e) => {
+    e.preventDefault();
+    setDepartmentLoading(true);
+    try {
+      const res = await academicApi.departments.create(departmentForm);
+      toast.success(res.message);
+      setShowDepartmentModal(false);
+      setDepartmentForm({ name: '', code: '' });
+      fetchData();
+    } catch (err) {
+      toast.error(err.data?.message || 'Failed to create department');
+    } finally {
+      setDepartmentLoading(false);
+    }
+  };
+
+  const handleDeleteDepartment = async (id) => {
+    if (!confirm('Delete this department?')) return;
+    try {
+      await academicApi.departments.delete(id);
+      toast.success('Department deleted');
+      fetchData();
+    } catch (err) {
+      toast.error(err.data?.message || 'Failed to delete department');
+    }
+  };
+
+  // Mapping handlers
+  const handleFetchMappings = async (gradeLevelId) => {
+    try {
+      const res = await academicApi.mappings.getForGrade(gradeLevelId);
+      setMappings(res.mappings || []);
+      setSelectedGradeForMappings(gradeLevelId);
+    } catch (err) {
+      toast.error('Failed to load mappings');
+    }
+  };
+
+  const handleBulkAssignSubjects = async (e) => {
+    e.preventDefault();
+    setMappingLoading(true);
+    try {
+      const res = await academicApi.mappings.bulkAssign(mappingForm);
+      toast.success(res.message);
+      setShowMappingModal(false);
+      setMappingForm({ grade_level_ids: [], subject_ids: [], is_compulsory: true, department_id: '' });
+      if (selectedGradeForMappings) handleFetchMappings(selectedGradeForMappings);
+    } catch (err) {
+      toast.error(err.data?.message || 'Failed to assign subjects');
+    } finally {
+      setMappingLoading(false);
+    }
+  };
+
+  const handleRemoveMapping = async (id) => {
+    if (!confirm('Remove this subject from grade level?')) return;
+    try {
+      await academicApi.mappings.remove(id);
+      toast.success('Subject removed');
+      handleFetchMappings(selectedGradeForMappings);
+    } catch (err) {
+      toast.error('Failed to remove mapping');
+    }
+  };
+
+  const toggleMappingGrade = (gradeId) => {
+    setMappingForm(prev => ({
+      ...prev,
+      grade_level_ids: prev.grade_level_ids.includes(gradeId)
+        ? prev.grade_level_ids.filter(g => g !== gradeId)
+        : [...prev.grade_level_ids, gradeId]
+    }));
+  };
+
+  const toggleMappingSubject = (subjectId) => {
+    setMappingForm(prev => ({
+      ...prev,
+      subject_ids: prev.subject_ids.includes(subjectId)
+        ? prev.subject_ids.filter(s => s !== subjectId)
+        : [...prev.subject_ids, subjectId]
+    }));
+  };
+
   // ==================== RENDER ====================
   return (
     <DashboardLayout title="Academic" subtitle="Configure sessions, terms, continuous assessment, and grading scales">
