@@ -413,6 +413,7 @@ export default function AcademicPage() {
                       ))}
                     </div>
                   )}
+                </div>
               </div>
             )}
 
