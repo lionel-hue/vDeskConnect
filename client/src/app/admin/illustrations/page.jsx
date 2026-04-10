@@ -31,6 +31,7 @@ const ILLUSTRATION_KEYS = [
   { key: 'set_new_password', section: 'auth', label: 'Set New Password' },
   { key: 'password_reset_success', section: 'auth', label: 'Password Reset Success' },
   { key: 'welcome_hero', section: 'landing', label: 'Landing Page Hero' },
+  { key: 'welcome_hero_background', section: 'landing', label: 'Welcome Page Background (Glassmorphic)' },
   { key: 'superadmin_dashboard_hero', section: 'admin', label: 'Super Admin Dashboard' },
   { key: 'dashboard_empty', section: 'dashboard', label: 'Empty Dashboard State' },
   { key: 'no_results', section: 'dashboard', label: 'No Results State' },
