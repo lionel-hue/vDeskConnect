@@ -5,11 +5,12 @@ import { useRouter } from 'next/navigation';
 import {
   Users, Plus, Search, Edit2, Ban, Trash2, X, RefreshCw,
   ChevronLeft, ChevronRight, Mail, Phone, MapPin, Calendar,
-  GraduationCap, Hash, AlertTriangle, Check, AlertCircle
+  GraduationCap, Hash, AlertTriangle, Check, AlertCircle, Eye, EyeOff
 } from 'lucide-react';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import { api } from '@/lib/api';
 import { useToast } from '@/contexts/ToastProvider';
+import PasswordStrengthMeter from '@/components/ui/PasswordStrengthMeter';
 
 export default function StudentsPage() {
   const router = useRouter();
@@ -28,10 +29,13 @@ export default function StudentsPage() {
   const [form, setForm] = useState({
     first_name: '', last_name: '', email: '', admission_number: '',
     gender: '', date_of_birth: '', phone: '', address: '',
-    guardian_name: '', guardian_phone: '', guardian_email: ''
+    guardian_name: '', guardian_phone: '', guardian_email: '',
+    password: ''
   });
   const [formErrors, setFormErrors] = useState({});
   const [actionReason, setActionReason] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const DEFAULT_PASSWORD = 'Secret123!';
 
   const fetchStudents = useCallback(async () => {
     setLoading(true);
@@ -57,7 +61,8 @@ export default function StudentsPage() {
   const resetForm = () => {
     setForm({ first_name: '', last_name: '', email: '', admission_number: '',
       gender: '', date_of_birth: '', phone: '', address: '',
-      guardian_name: '', guardian_phone: '', guardian_email: '' });
+      guardian_name: '', guardian_phone: '', guardian_email: '',
+      password: DEFAULT_PASSWORD });
     setFormErrors({});
     setEditingStudent(null);
   };
@@ -71,7 +76,8 @@ export default function StudentsPage() {
       gender: s.gender || '', date_of_birth: s.date_of_birth || '',
       phone: s.phone || '', address: s.address || '',
       guardian_name: s.guardian_name || '', guardian_phone: s.guardian_phone || '',
-      guardian_email: s.guardian_email || ''
+      guardian_email: s.guardian_email || '',
+      password: '' // Leave empty when editing - only fill if they want to change
     });
     setFormErrors({});
     setShowModal(true);

@@ -94,9 +94,8 @@ export default function Sidebar({ role = 'admin', user, onLogout, collapsed: ini
       {/* Sidebar */}
       <aside
         className={`fixed top-0 left-0 h-full bg-sidebar text-white z-50 transition-all duration-300 ease-out flex flex-col
-          ${collapsed ? 'lg:w-20' : 'lg:w-64'}
-          w-64
           ${mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+          ${collapsed ? 'w-20 lg:w-20' : 'w-64 lg:w-64'}
         `}
       >
         {/* Header with Logo and Mobile Close */}
@@ -162,10 +161,10 @@ export default function Sidebar({ role = 'admin', user, onLogout, collapsed: ini
         {/* Navigation */}
         <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
           {navItems.map((item) => {
-            // Exact match for dashboard, prefix match for sub-pages
-            const isActive = item.href === '/dashboard'
-              ? pathname === '/dashboard'
-              : (pathname === item.href || pathname?.startsWith(item.href + '/'));
+            // Active state logic:
+            // - For dashboard: exact match only to avoid matching /dashboard/* sub-routes
+            // - For other items: exact match OR starts with the route + '/'
+            const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname?.startsWith(item.href + '/'));
             return (
               <Link
                 key={item.href}
@@ -176,11 +175,11 @@ export default function Sidebar({ role = 'admin', user, onLogout, collapsed: ini
                     ? 'bg-primary text-white shadow-soft'
                     : 'text-white/60 hover:text-white hover:bg-white/5'
                   }
-                  ${collapsed ? 'justify-center' : ''}
+                  ${collapsed ? 'justify-center px-0 py-2' : ''}
                 `}
                 title={collapsed ? item.label : undefined}
               >
-                <item.icon size={20} className="flex-shrink-0" />
+                <item.icon size={collapsed ? 18 : 20} className="flex-shrink-0" />
                 {!collapsed && <span>{item.label}</span>}
               </Link>
             );
