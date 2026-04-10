@@ -60,11 +60,9 @@ export default function AcademicPage() {
   const [scaleLoading, setScaleLoading] = useState(false);
   const [editingScaleId, setEditingScaleId] = useState(null);
 
-  // Phase 2 state
-  const [gradeLevels, setGradeLevels] = useState([]);
+  // Phase 2 state (gradeLevels and subjects already declared above for CA weeks)
   const [sections, setSections] = useState([]);
   const [selectedGradeForSections, setSelectedGradeForSections] = useState(null);
-  const [subjects, setSubjects] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [mappings, setMappings] = useState([]);
   const [selectedGradeForMappings, setSelectedGradeForMappings] = useState(null);
