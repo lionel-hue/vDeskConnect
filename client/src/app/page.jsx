@@ -49,16 +49,21 @@ export default function WelcomePage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-bg-main overflow-hidden transition-colors duration-300">
+    <div className="relative min-h-screen bg-bg-main overflow-hidden transition-colors duration-300">
       {/* Background Image Layer (Glassmorphic) */}
-      <IllustrationDisplay
-        name="welcome_hero_background"
-        alt=""
-        className="fixed inset-0 -z-10 w-full h-full"
-        fallback={
-          <div className="fixed inset-0 -z-10 bg-gradient-to-br from-primary/20 via-bg-main to-primary-light/20" />
-        }
-      />
+      <div className="fixed inset-0 -z-10">
+        <IllustrationDisplay
+          name="welcome_hero_background"
+          alt=""
+          className="w-full h-full"
+          mode="background"
+          fallback={
+            <div className="w-full h-full bg-gradient-to-br from-primary/20 via-bg-main to-primary-light/20" />
+          }
+        />
+        {/* Color overlay for readability */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-primary-dark/20 to-bg-main/40" />
+      </div>
 
       {/* Floating Theme Toggle - Bottom-right always, out of the way of nav */}
       <div className="fixed bottom-6 right-6 z-50">

@@ -122,14 +122,16 @@ export default function Sidebar({ role = 'admin', user, onLogout, collapsed: ini
             </div>
           )}
           
-          {/* Mobile Close Button */}
-          <button
-            onClick={closeMobile}
-            className="lg:hidden p-1.5 rounded-lg hover:bg-white/10 transition-colors"
-            aria-label="Close menu"
-          >
-            <X size={20} />
-          </button>
+          {/* Mobile Close Button - only when NOT collapsed and menu is open */}
+          {!collapsed && mobileOpen && (
+            <button
+              onClick={closeMobile}
+              className="lg:hidden p-1.5 rounded-lg hover:bg-white/10 transition-colors"
+              aria-label="Close menu"
+            >
+              <X size={20} />
+            </button>
+          )}
 
           {/* Desktop Collapse Toggle */}
           {!collapsed && (
@@ -181,9 +183,9 @@ export default function Sidebar({ role = 'admin', user, onLogout, collapsed: ini
           })}
         </nav>
 
-        {/* Collapse toggle (bottom) */}
+        {/* Collapse toggle (bottom) - visible on ALL screen sizes */}
         {!collapsed && (
-          <div className="px-3 pb-4 hidden lg:block">
+          <div className="px-3 pb-4">
             <button
               onClick={toggleSidebar}
               className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-white/50 hover:text-white hover:bg-white/5 transition-all duration-250 text-sm"
@@ -194,7 +196,7 @@ export default function Sidebar({ role = 'admin', user, onLogout, collapsed: ini
           </div>
         )}
         {collapsed && (
-          <div className="px-3 pb-4 hidden lg:block">
+          <div className="px-3 pb-4">
             <button
               onClick={toggleSidebar}
               className="w-full flex items-center justify-center p-2 rounded-lg text-white/50 hover:text-white hover:bg-white/5 transition-all duration-250"

@@ -73,7 +73,7 @@ export default function DashboardLayout({ children, title, subtitle, role = 'adm
   const contentMargin = isDesktop ? (sidebarCollapsed ? '5rem' : '16rem') : '0rem';
 
   return (
-    <div className="min-h-screen bg-bg-main">
+    <div className="min-h-screen bg-bg-main overflow-x-hidden">
       {/* Subtle background gradient for glass effect */}
       <div className="fixed inset-0 -z-10 bg-gradient-to-br from-primary/5 via-transparent to-primary-light/5 pointer-events-none" />
       <div className="fixed top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 pointer-events-none" />
@@ -88,10 +88,14 @@ export default function DashboardLayout({ children, title, subtitle, role = 'adm
         onMobileClose={() => setMobileMenuOpen(false)}
         collapsed={sidebarCollapsed}
       />
-      {/* Content area: margin adapts to desktop/mobile */}
+      {/* Content area: margin adapts to desktop/mobile, width constrained to prevent overflow */}
       <div
-        className="w-full transition-all duration-300 ease-out"
-        style={{ marginLeft: contentMargin }}
+        className="transition-all duration-300 ease-out"
+        style={{
+          marginLeft: contentMargin,
+          width: isDesktop ? `calc(100vw - ${contentMargin})` : '100vw',
+          maxWidth: '100vw',
+        }}
       >
         <TopBar title={title} subtitle={subtitle} user={user} onMobileMenuToggle={handleMobileMenuToggle} />
         <main className="p-4 md:p-6">
