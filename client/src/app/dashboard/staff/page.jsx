@@ -117,7 +117,7 @@ export default function StaffPage() {
         await api.post(`/staff/${s.id}/ban`, { reason: actionReason });
         toast.success('Staff banned');
       } else {
-        await api.delete(`/staff/${s.id}`, { body: JSON.stringify({ reason: actionReason }) });
+        await api.delete(`/staff/${s.id}`, { body: { reason: actionReason } });
         toast.success('Staff deleted');
       }
       setActionModal(null);

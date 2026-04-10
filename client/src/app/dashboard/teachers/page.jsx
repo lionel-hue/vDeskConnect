@@ -105,7 +105,7 @@ export default function TeachersPage() {
         await api.post(`/teachers/${t.id}/ban`, { reason: actionReason });
         toast.success('Teacher banned');
       } else {
-        await api.delete(`/teachers/${t.id}`, { body: JSON.stringify({ reason: actionReason }) });
+        await api.delete(`/teachers/${t.id}`, { body: { reason: actionReason } });
         toast.success('Teacher deleted');
       }
       setActionModal(null);
