@@ -54,7 +54,7 @@ class StudentController extends Controller
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
-            'admission_number' => 'required|string|max:100|unique:profiles,data->admission_number',
+            'admission_number' => 'required|string|max:100',
             'gender' => 'nullable|string|in:male,female,other',
             'date_of_birth' => 'nullable|date',
             'phone' => 'nullable|string|max:50',
@@ -65,6 +65,7 @@ class StudentController extends Controller
             'grade_level_id' => 'nullable|exists:grade_levels,id',
             'section_id' => 'nullable|exists:sections,id',
             'department_id' => 'nullable|exists:departments,id',
+            'password' => 'nullable|string|min:8',
         ]);
 
         if ($validator->fails()) {
@@ -80,7 +81,7 @@ class StudentController extends Controller
             return response()->json(['message' => 'You do not have permission to create students'], 403);
         }
 
-        $tempPassword = Str::random(10);
+        $tempPassword = $request->password ?: 'Secret123!';
 
         return DB::transaction(function () use ($request, $tempPassword, $user) {
             $student = User::create([
