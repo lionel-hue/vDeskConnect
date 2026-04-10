@@ -621,7 +621,7 @@ export default function AcademicPage() {
             {activeTab === TABS.GRADE_SCALES && (
               <div className="space-y-6">
                 {/* Existing Scales */}
-                <div className="bg-white rounded-card border border-border p-6 shadow-sm">
+                <div className="bg-card dark:bg-gray-800 rounded-card border border-border p-6 shadow-sm">
                   <div className="flex items-center justify-between mb-4">
                     <h2 className="text-lg font-semibold text-text-primary">Grade Scales</h2>
                     <button
@@ -645,7 +645,7 @@ export default function AcademicPage() {
                         <div
                           key={scale.id}
                           className={`p-4 border-2 rounded-lg ${
-                            scale.is_default ? 'border-primary bg-primary/5' : 'border-border'
+                            scale.is_default ? 'border-primary bg-primary/5 dark:bg-primary/10' : 'border-border dark:border-gray-600'
                           }`}
                         >
                           <div className="flex items-center justify-between mb-3">
@@ -688,7 +688,7 @@ export default function AcademicPage() {
                           </div>
                           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
                             {Object.entries(typeof scale.scale === 'string' ? JSON.parse(scale.scale) : scale.scale).map(([letter, range]) => (
-                              <div key={letter} className="text-center p-2 bg-bg-main rounded">
+                              <div key={letter} className="text-center p-2 bg-bg-main dark:bg-gray-700 rounded">
                                 <div className="font-bold text-primary">{letter}</div>
                                 <div className="text-xs text-text-secondary">{range.min}-{range.max}%</div>
                                 <div className="text-xs text-text-muted">{range.remark}</div>
