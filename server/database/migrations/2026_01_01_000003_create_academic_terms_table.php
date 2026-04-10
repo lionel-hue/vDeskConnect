@@ -16,6 +16,7 @@ return new class extends Migration
             $table->date('start_date');
             $table->date('end_date');
             $table->integer('order')->default(1);
+            $table->integer('weeks_count')->default(12); // Number of weeks for this term
             $table->timestamps();
         });
     }

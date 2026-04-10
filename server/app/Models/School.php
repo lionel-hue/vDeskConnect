@@ -37,4 +37,35 @@ class School extends Model
     {
         return $this->hasOne(Subscription::class)->latest();
     }
+
+    // Academic relationships
+    public function academicSessions(): HasMany
+    {
+        return $this->hasMany(AcademicSession::class);
+    }
+
+    public function activeSession()
+    {
+        return $this->hasOne(AcademicSession::class)->where('active', true);
+    }
+
+    public function academicTerms(): HasMany
+    {
+        return $this->hasMany(AcademicTerm::class);
+    }
+
+    public function gradeScales(): HasMany
+    {
+        return $this->hasMany(GradeScale::class);
+    }
+
+    public function defaultGradeScale()
+    {
+        return $this->hasOne(GradeScale::class)->where('is_default', true);
+    }
+
+    public function caWeeks(): HasMany
+    {
+        return $this->hasMany(CaWeek::class);
+    }
 }

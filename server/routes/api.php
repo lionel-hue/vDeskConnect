@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\UiIllustrationController;
 use App\Http\Controllers\Api\StudentController;
 use App\Http\Controllers\Api\TeacherController;
 use App\Http\Controllers\Api\StaffController;
+use App\Http\Controllers\Api\AcademicController;
 
 /*
 |--------------------------------------------------------------------------
@@ -69,5 +70,43 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/{id}', [StaffController::class, 'update']);
         Route::post('/{id}/ban', [StaffController::class, 'ban']);
         Route::delete('/{id}', [StaffController::class, 'destroy']);
+    });
+
+    // Academic Management (Phase 1)
+    Route::prefix('academic')->group(function () {
+        // Academic Sessions
+        Route::prefix('sessions')->group(function () {
+            Route::get('/', [AcademicController::class, 'sessionsIndex']);
+            Route::post('/', [AcademicController::class, 'createSession']);
+            Route::put('/{id}', [AcademicController::class, 'updateSession']);
+            Route::put('/{id}/set-active', [AcademicController::class, 'setActiveSession']);
+        });
+
+        // Academic Terms
+        Route::prefix('terms')->group(function () {
+            Route::get('/', [AcademicController::class, 'termsIndex']); // requires session_id param
+            Route::get('/session/{sessionId}', [AcademicController::class, 'termsIndex']);
+            Route::post('/', [AcademicController::class, 'createTerm']);
+            Route::post('/bulk', [AcademicController::class, 'bulkCreateTerms']);
+            Route::put('/{id}', [AcademicController::class, 'updateTerm']);
+            Route::delete('/{id}', [AcademicController::class, 'deleteTerm']);
+        });
+
+        // CA Weeks
+        Route::prefix('ca-weeks')->group(function () {
+            Route::get('/term/{termId}/grade/{gradeLevelId}/subject/{subjectId}', [AcademicController::class, 'caWeeksIndex']);
+            Route::get('/term/{termId}/grade/{gradeLevelId}/subject/{subjectId}/summary', [AcademicController::class, 'caWeeksSummary']);
+            Route::post('/', [AcademicController::class, 'setCaWeeks']);
+        });
+
+        // Grade Scales
+        Route::prefix('grade-scales')->group(function () {
+            Route::get('/', [AcademicController::class, 'gradeScalesIndex']);
+            Route::post('/', [AcademicController::class, 'createGradeScale']);
+            Route::put('/{id}', [AcademicController::class, 'updateGradeScale']);
+            Route::put('/{id}/set-default', [AcademicController::class, 'setDefaultGradeScale']);
+            Route::delete('/{id}', [AcademicController::class, 'deleteGradeScale']);
+            Route::get('/templates', [AcademicController::class, 'getPresetTemplates']);
+        });
     });
 });
