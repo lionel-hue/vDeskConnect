@@ -91,7 +91,16 @@ export default function IllustrationsPage() {
 
   const handleFileSelect = (e) => {
     const files = Array.from(e.target.files || []);
-    setSelectedFiles(files);
+    // Validate file types and sizes
+    const validFiles = files.filter(file => {
+      const validTypes = ['image/svg+xml', 'image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
+      const validExtensions = ['.svg', '.png', '.jpg', '.jpeg', '.webp'];
+      const hasValidType = validTypes.includes(file.type);
+      const hasValidExtension = validExtensions.some(ext => file.name.toLowerCase().endsWith(ext));
+      const isValidSize = file.size <= 5 * 1024 * 1024; // 5MB
+      return (hasValidType || hasValidExtension) && isValidSize;
+    });
+    setSelectedFiles(validFiles);
   };
 
   const handleUpload = async () => {
@@ -105,7 +114,9 @@ export default function IllustrationsPage() {
         formData.append('illustrations[]', file);
       });
 
-      await api.post('/ui/illustrations/packs', formData);
+      const response = await api.post('/ui/illustrations/packs', formData);
+      
+      console.log('Upload successful:', response);
 
       setPackName('');
       setSelectedFiles([]);
@@ -114,6 +125,8 @@ export default function IllustrationsPage() {
       refreshIllustrations(); // Refresh global context for other pages
     } catch (err) {
       console.error('Upload failed:', err);
+      const errorMessage = err?.data?.message || 'Upload failed. Please check your files and try again.';
+      alert(errorMessage);
     } finally {
       setUploading(false);
     }
@@ -122,11 +135,14 @@ export default function IllustrationsPage() {
   const handleActivatePack = async (packNameToActivate) => {
     setActionLoading(packNameToActivate);
     try {
-      await api.put(`/ui/illustrations/packs/${encodeURIComponent(packNameToActivate)}/activate`);
+      const response = await api.put(`/ui/illustrations/packs/${encodeURIComponent(packNameToActivate)}/activate`);
+      console.log('Activation successful:', response);
       await fetchData();
       refreshIllustrations(); // Refresh global context
     } catch (err) {
       console.error('Activation failed:', err);
+      const errorMessage = err?.data?.message || 'Failed to activate pack. Please try again.';
+      alert(errorMessage);
     } finally {
       setActionLoading(null);
     }
@@ -387,7 +403,7 @@ export default function IllustrationsPage() {
                       Drag & drop illustration files here
                     </p>
                     <p className="text-xs text-text-muted mb-3">
-                      SVG, PNG, or WebP • Max 5MB each
+                      SVG, PNG, JPG, or WebP • Max 5MB each
                     </p>
                     <label className="inline-flex items-center gap-2 px-4 py-2 rounded-btn bg-primary text-white text-sm font-medium cursor-pointer hover:bg-primary-dark transition-colors">
                       <Plus size={16} />
@@ -395,7 +411,7 @@ export default function IllustrationsPage() {
                       <input
                         type="file"
                         multiple
-                        accept=".svg,.png,.webp,.jpg,.jpeg"
+                        accept="image/svg+xml,image/png,image/jpeg,image/jpg,image/webp,.svg,.png,.jpg,.jpeg,.webp"
                         onChange={handleFileSelect}
                         className="hidden"
                       />

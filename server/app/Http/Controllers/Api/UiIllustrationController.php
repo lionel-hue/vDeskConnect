@@ -17,7 +17,16 @@ class UiIllustrationController extends Controller
     public function index(): JsonResponse
     {
         $illustrations = UiIllustration::where('is_active', true)
-            ->get(['id', 'key', 'url', 'section', 'pack_name']);
+            ->get(['id', 'key', 'url', 'section', 'pack_name'])
+            ->map(function ($illustration) {
+                return [
+                    'id' => $illustration->id,
+                    'key' => $illustration->key,
+                    'url' => $this->getFullUrl($illustration->url),
+                    'section' => $illustration->section,
+                    'pack_name' => $illustration->pack_name,
+                ];
+            });
 
         return response()->json($illustrations);
     }
@@ -29,7 +38,16 @@ class UiIllustrationController extends Controller
     {
         $illustrations = UiIllustration::where('is_active', true)
             ->where('section', $section)
-            ->get(['id', 'key', 'url', 'section', 'pack_name']);
+            ->get(['id', 'key', 'url', 'section', 'pack_name'])
+            ->map(function ($illustration) {
+                return [
+                    'id' => $illustration->id,
+                    'key' => $illustration->key,
+                    'url' => $this->getFullUrl($illustration->url),
+                    'section' => $illustration->section,
+                    'pack_name' => $illustration->pack_name,
+                ];
+            });
 
         return response()->json($illustrations);
     }
@@ -44,8 +62,7 @@ class UiIllustrationController extends Controller
         $validator = Validator::make($request->all(), [
             'pack_name' => 'required|string|max:255',
             'illustrations' => 'required|array|min:1',
-            // Allow SVG, PNG, JPG, JPEG, WEBP. Note: SVG requires mime check or extension check.
-            'illustrations.*' => 'required|file|max:5120', // Max 5MB
+            'illustrations.*' => 'required|file|mimes:svg,png,jpg,jpeg,webp|max:5120', // Max 5MB, specific mime types
         ]);
 
         if ($validator->fails()) {
@@ -68,7 +85,7 @@ class UiIllustrationController extends Controller
         $uploaded = [];
 
         foreach ($request->file('illustrations') as $file) {
-            // Validate extension manually for SVG support
+            // Get and validate extension
             $extension = strtolower($file->getClientOriginalExtension());
             $allowedExtensions = ['svg', 'png', 'jpg', 'jpeg', 'webp'];
 
@@ -80,6 +97,11 @@ class UiIllustrationController extends Controller
             $filename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
             // Sanitize filename key
             $filename = preg_replace('/[^a-zA-Z0-9_\-]/', '_', strtolower($filename));
+            $filename = trim($filename, '_');
+
+            if (empty($filename)) {
+                continue; // Skip if key is empty after sanitization
+            }
 
             // Determine section from key prefix
             $section = $this->detectSection($filename);
@@ -96,6 +118,9 @@ class UiIllustrationController extends Controller
 
             $url = Storage::url($path);
 
+            // Check if illustration with same key exists and deactivate it
+            UiIllustration::where('key', $filename)->update(['is_active' => false]);
+
             $uiIllustration = UiIllustration::create([
                 'pack_name' => $packName,
                 'key'       => $filename,
@@ -105,6 +130,8 @@ class UiIllustrationController extends Controller
                 'created_by' => $request->user()->id,
             ]);
 
+            // Return full URL in response
+            $uiIllustration->url = $this->getFullUrl($uiIllustration->url);
             $uploaded[] = $uiIllustration;
         }
 
@@ -142,6 +169,24 @@ class UiIllustrationController extends Controller
     }
 
     /**
+     * Convert storage URL to full URL.
+     */
+    private function getFullUrl(string $url): string
+    {
+        // If it's already a full URL, return it
+        if (str_starts_with($url, 'http://') || str_starts_with($url, 'https://')) {
+            return $url;
+        }
+
+        // If it starts with /storage, convert to full URL
+        if (str_starts_with($url, '/storage')) {
+            return rtrim(config('app.url'), '/') . $url;
+        }
+
+        return $url;
+    }
+
+    /**
      * Activate an illustration pack.
      */
     public function activatePack(string $packName): JsonResponse
@@ -152,18 +197,25 @@ class UiIllustrationController extends Controller
             return response()->json(['message' => 'Pack not found'], 404);
         }
 
-        // Deactivate all currently active illustrations
-        UiIllustration::where('is_active', true)->update(['is_active' => false]);
+        try {
+            // Deactivate all currently active illustrations across all packs
+            UiIllustration::where('is_active', true)->update(['is_active' => false]);
 
-        // Activate all illustrations in this pack
-        foreach ($illustrations as $illustration) {
-            $illustration->update(['is_active' => true]);
+            // Activate all illustrations in this pack
+            foreach ($illustrations as $illustration) {
+                $illustration->update(['is_active' => true]);
+            }
+
+            return response()->json([
+                'message' => 'Illustration pack activated successfully',
+                'pack_name' => $packName,
+                'activated_count' => $illustrations->count(),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to activate pack: ' . $e->getMessage(),
+            ], 500);
         }
-
-        return response()->json([
-            'message' => 'Illustration pack activated',
-            'pack_name' => $packName,
-        ]);
     }
 
     /**

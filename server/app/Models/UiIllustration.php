@@ -31,12 +31,12 @@ class UiIllustration extends Model
     public function activate(): void
     {
         $this->getConnection()->transaction(function () {
-            // Deactivate all illustrations in the same pack
-            static::where('pack_name', $this->pack_name)->update(['is_active' => false]);
-            // Deactivate all illustrations with the same key
-            static::where('key', $this->key)->update(['is_active' => false]);
-            // Activate this one
-            $this->update(['is_active' => true]);
+            // Deactivate all illustrations with the same keys in this pack
+            $keys = static::where('pack_name', $this->pack_name)->pluck('key');
+            static::whereIn('key', $keys)->update(['is_active' => false]);
+            
+            // Activate all illustrations in this pack
+            static::where('pack_name', $this->pack_name)->update(['is_active' => true]);
         });
     }
 
