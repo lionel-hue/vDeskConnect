@@ -60,8 +60,8 @@ export default function WelcomePage() {
         }
       />
 
-      {/* Floating Theme Toggle - Always Visible */}
-      <div className="fixed top-6 right-6 z-50">
+      {/* Floating Theme Toggle - Bottom-right always, out of the way of nav */}
+      <div className="fixed bottom-6 right-6 z-50">
         <ThemeToggle />
       </div>
 

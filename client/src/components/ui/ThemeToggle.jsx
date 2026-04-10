@@ -37,7 +37,7 @@ export default function ThemeToggle({ className = '' }) {
               onClick={() => changeTheme(option.value)}
               className={`
                 relative flex items-center justify-center
-                w-8 h-8 rounded-full
+                w-6 h-6 sm:w-8 sm:h-8 rounded-full
                 transition-all duration-250 ease-out
                 hover:scale-110 active:scale-95
                 ${isActive
@@ -53,7 +53,7 @@ export default function ThemeToggle({ className = '' }) {
               aria-checked={isActive}
               aria-label={`${option.value} theme`}
             >
-              <Icon size={14} />
+              <Icon size={12} className="sm:w-3.5 sm:h-3.5" />
               {isActive && (
                 <span
                   className={`

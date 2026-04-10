@@ -10,8 +10,8 @@ export default function AuthLayout({ children }) {
         <div className="absolute w-48 h-48 bg-primary/5 rounded-full top-1/4 right-1/4 animate-float" style={{ animationDelay: '-2s' }} />
       </div>
 
-      {/* Theme Toggle - Fixed top right */}
-      <div className="fixed top-6 right-6 z-50">
+      {/* Theme Toggle - Bottom-right to avoid blocking content */}
+      <div className="fixed bottom-6 right-6 z-50">
         <ThemeToggle />
       </div>
 

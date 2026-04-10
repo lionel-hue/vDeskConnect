@@ -10,8 +10,25 @@ export default function DashboardLayout({ children, title, subtitle, role = 'adm
   const router = useRouter();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  // Read persisted sidebar state directly from localStorage
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('sidebar-collapsed');
+      return stored !== null ? JSON.parse(stored) : false;
+    }
+    return false;
+  });
+
+  // Track desktop/mobile breakpoint
+  useEffect(() => {
+    const check = () => setIsDesktop(window.innerWidth >= 1024);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
 
   useEffect(() => {
     const token = api.getToken();
@@ -52,13 +69,16 @@ export default function DashboardLayout({ children, title, subtitle, role = 'adm
     );
   }
 
+  // Margin only on desktop; mobile gets zero margin
+  const contentMargin = isDesktop ? (sidebarCollapsed ? '5rem' : '16rem') : '0rem';
+
   return (
-    <div className="min-h-screen bg-bg-main relative overflow-hidden">
-      {/* Background gradient for glass effect */}
-      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-primary/5 via-transparent to-primary-light/5" />
-      <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl -translate-y-1/2" />
-      <div className="absolute bottom-0 left-0 w-96 h-96 bg-primary-light/10 rounded-full blur-3xl translate-y-1/2" />
-      
+    <div className="min-h-screen bg-bg-main">
+      {/* Subtle background gradient for glass effect */}
+      <div className="fixed inset-0 -z-10 bg-gradient-to-br from-primary/5 via-transparent to-primary-light/5 pointer-events-none" />
+      <div className="fixed top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 pointer-events-none" />
+      <div className="fixed bottom-0 left-0 w-96 h-96 bg-primary-light/10 rounded-full blur-3xl translate-y-1/2 pointer-events-none" />
+
       <Sidebar
         role={role}
         user={user}
@@ -66,10 +86,15 @@ export default function DashboardLayout({ children, title, subtitle, role = 'adm
         onToggle={handleSidebarToggle}
         mobileOpen={mobileMenuOpen}
         onMobileClose={() => setMobileMenuOpen(false)}
+        collapsed={sidebarCollapsed}
       />
-      <div className={`transition-all duration-300 ${sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'}`}>
+      {/* Content area: margin adapts to desktop/mobile */}
+      <div
+        className="w-full transition-all duration-300 ease-out"
+        style={{ marginLeft: contentMargin }}
+      >
         <TopBar title={title} subtitle={subtitle} user={user} onMobileMenuToggle={handleMobileMenuToggle} />
-        <main className="p-6 relative z-10">
+        <main className="p-4 md:p-6">
           {children}
         </main>
       </div>
