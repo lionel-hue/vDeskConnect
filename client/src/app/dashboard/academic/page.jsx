@@ -496,7 +496,7 @@ export default function AcademicPage() {
             {/* ==================== CA WEEKS TAB ==================== */}
             {activeTab === TABS.CA_WEEKS && (
               <div className="space-y-6">
-                <div className="bg-white rounded-card border border-border p-6 shadow-sm">
+                <div className="bg-card dark:bg-gray-800 rounded-card border border-border p-6 shadow-sm">
                   <h2 className="text-lg font-semibold text-text-primary mb-2">Continuous Assessment Configuration</h2>
                   <p className="text-sm text-text-secondary mb-6">
                     Configure which weeks have tests (CA) and which week is the final exam for each grade and subject.
@@ -509,7 +509,7 @@ export default function AcademicPage() {
                         <select
                           value={caWeekForm.term_id}
                           onChange={e => setCaWeekForm({ ...caWeekForm, term_id: e.target.value })}
-                          className="w-full px-3 py-2 border border-border rounded-lg"
+                          className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
                           required
                         >
                           <option value="">Select Term</option>
@@ -523,7 +523,7 @@ export default function AcademicPage() {
                         <select
                           value={caWeekForm.grade_level_id}
                           onChange={e => setCaWeekForm({ ...caWeekForm, grade_level_id: e.target.value })}
-                          className="w-full px-3 py-2 border border-border rounded-lg"
+                          className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
                           required
                         >
                           <option value="">Select Grade</option>
@@ -537,7 +537,7 @@ export default function AcademicPage() {
                         <select
                           value={caWeekForm.subject_id}
                           onChange={e => setCaWeekForm({ ...caWeekForm, subject_id: e.target.value })}
-                          className="w-full px-3 py-2 border border-border rounded-lg"
+                          className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
                           required
                         >
                           <option value="">Select Subject</option>
@@ -554,7 +554,7 @@ export default function AcademicPage() {
                           max="20"
                           value={caWeekForm.weeks_count}
                           onChange={e => setCaWeekForm({ ...caWeekForm, weeks_count: parseInt(e.target.value), exam_week: parseInt(e.target.value) })}
-                          className="w-full px-3 py-2 border border-border rounded-lg"
+                          className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
                           required
                         />
                       </div>
@@ -574,8 +574,8 @@ export default function AcademicPage() {
                               onClick={() => toggleTestWeek(week)}
                               className={`w-full py-2 rounded-lg text-sm border-2 transition-all ${
                                 caWeekForm.test_weeks.includes(week)
-                                  ? 'bg-warning/20 border-warning text-warning font-semibold'
-                                  : 'border-border text-text-muted hover:border-warning/50'
+                                  ? 'bg-warning/20 dark:bg-warning/30 border-warning text-warning font-semibold'
+                                  : 'border-border dark:border-gray-600 text-text-muted hover:border-warning/50 dark:hover:border-warning/50'
                               }`}
                             >
                               {caWeekForm.test_weeks.includes(week) ? '✓ Test' : 'Test'}
@@ -585,8 +585,8 @@ export default function AcademicPage() {
                               onClick={() => setCaWeekForm({ ...caWeekForm, exam_week: week })}
                               className={`w-full py-2 rounded-lg text-sm border-2 transition-all ${
                                 caWeekForm.exam_week === week
-                                  ? 'bg-error/20 border-error text-error font-semibold'
-                                  : 'border-border text-text-muted hover:border-error/50'
+                                  ? 'bg-error/20 dark:bg-error/30 border-error text-error font-semibold'
+                                  : 'border-border dark:border-gray-600 text-text-muted hover:border-error/50 dark:hover:border-error/50'
                               }`}
                             >
                               {caWeekForm.exam_week === week ? '✓ Exam' : 'Exam'}
@@ -597,7 +597,7 @@ export default function AcademicPage() {
                     </div>
 
                     {/* Summary */}
-                    <div className="p-4 bg-primary/5 rounded-lg">
+                    <div className="p-4 bg-primary/5 dark:bg-primary/10 rounded-lg">
                       <p className="text-sm text-text-primary">
                         <strong>Summary:</strong> Tests at weeks {caWeekForm.test_weeks.length > 0 ? caWeekForm.test_weeks.join(', ') : 'None'} | Exam at week {caWeekForm.exam_week}
                       </p>
