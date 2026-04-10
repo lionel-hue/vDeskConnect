@@ -4,31 +4,37 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Users, Plus, Search, Edit2, Ban, Trash2, X, RefreshCw,
-  ChevronLeft, ChevronRight, Phone, MapPin, Award, Calendar,
-  GraduationCap, AlertTriangle, Check, Mail, Eye, EyeOff
+  ChevronLeft, ChevronRight, Mail, Phone, AlertTriangle, Check, Eye, EyeOff, Shield
 } from 'lucide-react';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import { api } from '@/lib/api';
 import { useToast } from '@/contexts/ToastProvider';
 import PasswordStrengthMeter from '@/components/ui/PasswordStrengthMeter';
 
-export default function TeachersPage() {
+const ROLES = [
+  { value: 'principal', label: 'Principal', description: 'Can create teachers/students, manage academics' },
+  { value: 'admin_staff', label: 'Admin Staff', description: 'Can create teachers/students' },
+  { value: 'receptionist', label: 'Receptionist', description: 'Admin Staff with fee management access' },
+];
+
+export default function StaffPage() {
   const router = useRouter();
   const toast = useToast();
   const [loading, setLoading] = useState(true);
-  const [teachers, setTeachers] = useState([]);
+  const [staff, setStaff] = useState([]);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [lastPage, setLastPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
-  const [editingTeacher, setEditingTeacher] = useState(null);
+  const [editingStaff, setEditingStaff] = useState(null);
   const [actionModal, setActionModal] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
     first_name: '', last_name: '', email: '', employee_number: '',
-    gender: '', phone: '', address: '', qualification: '', date_joined: '',
+    gender: '', phone: '', address: '', designation: '',
+    role: 'admin_staff',
     password: ''
   });
   const [formErrors, setFormErrors] = useState({});
@@ -36,44 +42,50 @@ export default function TeachersPage() {
   const [showPassword, setShowPassword] = useState(false);
   const DEFAULT_PASSWORD = 'Secret123!';
 
-  const fetchTeachers = useCallback(async () => {
+  const fetchStaff = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await api.get(`/teachers?search=${encodeURIComponent(search)}&page=${page}&per_page=20`);
-      setTeachers(res.data || []);
+      const res = await api.get(`/staff?search=${encodeURIComponent(search)}&page=${page}&per_page=20`);
+      setStaff(res.data || []);
       setTotal(res.total || 0);
       setLastPage(res.last_page || 1);
     } catch (err) {
-      console.error('Failed to fetch teachers:', err);
-      toast.error('Failed to load teachers');
+      // Backend not ready yet - show empty state gracefully
+      setStaff([]);
+      setTotal(0);
+      setLastPage(1);
     } finally {
       setLoading(false);
     }
-  }, [search, page, toast]);
+  }, [search, page]);
 
   useEffect(() => {
     const token = api.getToken();
     if (!token) { router.push('/login'); return; }
-    fetchTeachers();
-  }, [fetchTeachers, router]);
+    fetchStaff();
+  }, [fetchStaff, router]);
 
   const resetForm = () => {
-    setForm({ first_name: '', last_name: '', email: '', employee_number: '',
-      gender: '', phone: '', address: '', qualification: '', date_joined: '',
-      password: DEFAULT_PASSWORD });
+    setForm({
+      first_name: '', last_name: '', email: '', employee_number: '',
+      gender: '', phone: '', address: '', designation: '',
+      role: 'admin_staff',
+      password: DEFAULT_PASSWORD
+    });
     setFormErrors({});
-    setEditingTeacher(null);
+    setEditingStaff(null);
   };
 
   const openAddModal = () => { resetForm(); setShowModal(true); };
-  const openEditModal = (t) => {
-    setEditingTeacher(t);
+  const openEditModal = (s) => {
+    setEditingStaff(s);
     setForm({
-      first_name: t.first_name || '', last_name: t.last_name || '',
-      email: t.email || '', employee_number: t.employee_number || '',
-      gender: t.gender || '', phone: t.phone || '', address: t.address || '',
-      qualification: t.qualification || '', date_joined: t.date_joined || '',
-      password: '' // Leave empty when editing
+      first_name: s.first_name || '', last_name: s.last_name || '',
+      email: s.email || '', employee_number: s.employee_number || '',
+      gender: s.gender || '', phone: s.phone || '', address: s.address || '',
+      designation: s.designation || '',
+      role: s.role || 'admin_staff',
+      password: ''
     });
     setFormErrors({});
     setShowModal(true);
@@ -83,13 +95,13 @@ export default function TeachersPage() {
     e.preventDefault();
     setSubmitting(true);
     try {
-      const url = editingTeacher ? `/teachers/${editingTeacher.id}` : '/teachers';
-      const method = editingTeacher ? 'put' : 'post';
+      const url = editingStaff ? `/staff/${editingStaff.id}` : '/staff';
+      const method = editingStaff ? 'put' : 'post';
       await api[method](url, form);
-      toast.success(editingTeacher ? 'Teacher updated' : 'Teacher created');
+      toast.success(editingStaff ? 'Staff updated' : 'Staff created');
       setShowModal(false);
       resetForm();
-      fetchTeachers();
+      fetchStaff();
     } catch (err) {
       if (err.data?.errors) setFormErrors(err.data.errors);
       else toast.error(err.data?.message || 'Operation failed');
@@ -100,35 +112,45 @@ export default function TeachersPage() {
     if (!actionReason.trim()) { toast.error('Please provide a reason'); return; }
     setActionLoading(true);
     try {
-      const t = actionModal.teacher;
+      const s = actionModal.staff;
       if (actionModal.type === 'ban') {
-        await api.post(`/teachers/${t.id}/ban`, { reason: actionReason });
-        toast.success('Teacher banned');
+        await api.post(`/staff/${s.id}/ban`, { reason: actionReason });
+        toast.success('Staff banned');
       } else {
-        await api.delete(`/teachers/${t.id}`, { body: JSON.stringify({ reason: actionReason }) });
-        toast.success('Teacher deleted');
+        await api.delete(`/staff/${s.id}`, { body: JSON.stringify({ reason: actionReason }) });
+        toast.success('Staff deleted');
       }
       setActionModal(null);
       setActionReason('');
-      fetchTeachers();
+      fetchStaff();
     } catch (err) {
       toast.error(err.data?.message || 'Operation failed');
     } finally { setActionLoading(false); }
   };
 
-  const fullName = (t) => `${t.first_name || ''} ${t.last_name || ''}`.trim() || t.email;
+  const fullName = (s) => `${s.first_name || ''} ${s.last_name || ''}`.trim() || s.email;
+
+  const getRoleBadge = (role) => {
+    const config = {
+      principal: { label: 'Principal', color: 'bg-purple-200 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300' },
+      admin_staff: { label: 'Admin Staff', color: 'bg-blue-200 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' },
+      receptionist: { label: 'Receptionist', color: 'bg-green-200 text-green-800 dark:bg-green-900/30 dark:text-green-300' },
+    };
+    const { label, color } = config[role] || { label: role, color: 'bg-bg-main text-text-secondary' };
+    return <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${color}`}><Shield size={10} />{label}</span>;
+  };
 
   return (
-    <DashboardLayout title="Teachers" subtitle="Manage your teachers" role="admin">
+    <DashboardLayout title="Staff" subtitle="Manage school administration staff" role="admin">
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-bold text-text-primary">{total} Teachers</h2>
-            <p className="text-sm text-text-secondary">Manage teaching staff and assignments</p>
+            <h2 className="text-2xl font-bold text-text-primary">{total} Staff Members</h2>
+            <p className="text-sm text-text-secondary">Manage principal, admin staff, and receptionists</p>
           </div>
           <button onClick={openAddModal} className="glass-button inline-flex items-center gap-2 px-4 py-2.5 text-sm">
-            <Plus size={16} /> Add Teacher
+            <Plus size={16} /> Add Staff
           </button>
         </div>
 
@@ -150,12 +172,12 @@ export default function TeachersPage() {
             <div className="p-12 flex justify-center">
               <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
             </div>
-          ) : teachers.length === 0 ? (
+          ) : staff.length === 0 ? (
             <div className="p-12 text-center">
-              <GraduationCap size={40} className="text-text-muted mx-auto mb-3" />
-              <p className="text-text-secondary">No teachers found</p>
+              <Users size={40} className="text-text-muted mx-auto mb-3" />
+              <p className="text-text-secondary">No staff found</p>
               <button onClick={openAddModal} className="mt-4 glass-button text-sm px-4 py-2">
-                <Plus size={14} className="inline mr-1" /> Add First Teacher
+                <Plus size={14} className="inline mr-1" /> Add First Staff
               </button>
             </div>
           ) : (
@@ -163,37 +185,35 @@ export default function TeachersPage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-border">
-                    <th className="text-left px-5 py-3.5 text-xs font-semibold text-text-secondary uppercase tracking-wider">Teacher</th>
-                    <th className="text-left px-5 py-3.5 text-xs font-semibold text-text-secondary uppercase tracking-wider hidden md:table-cell">Employee #</th>
-                    <th className="text-left px-5 py-3.5 text-xs font-semibold text-text-secondary uppercase tracking-wider hidden lg:table-cell">Qualification</th>
+                    <th className="text-left px-5 py-3.5 text-xs font-semibold text-text-secondary uppercase tracking-wider">Staff</th>
+                    <th className="text-left px-5 py-3.5 text-xs font-semibold text-text-secondary uppercase tracking-wider hidden md:table-cell">Role</th>
+                    <th className="text-left px-5 py-3.5 text-xs font-semibold text-text-secondary uppercase tracking-wider hidden lg:table-cell">Designation</th>
                     <th className="text-center px-5 py-3.5 text-xs font-semibold text-text-secondary uppercase tracking-wider">Status</th>
                     <th className="text-right px-5 py-3.5 text-xs font-semibold text-text-secondary uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
-                  {teachers.map((t) => (
-                    <tr key={t.id} className="glass-row">
+                  {staff.map((s) => (
+                    <tr key={s.id} className="glass-row">
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center text-sm font-bold text-primary flex-shrink-0">
-                            {(t.first_name?.[0] || t.email?.[0] || 'T').toUpperCase()}
+                            {(s.first_name?.[0] || s.email?.[0] || 'S').toUpperCase()}
                           </div>
                           <div className="min-w-0">
-                            <p className="text-sm font-medium text-text-primary truncate">{fullName(t)}</p>
-                            <p className="text-xs text-text-muted truncate">{t.email}</p>
+                            <p className="text-sm font-medium text-text-primary truncate">{fullName(s)}</p>
+                            <p className="text-xs text-text-muted truncate">{s.email}</p>
                           </div>
                         </div>
                       </td>
                       <td className="px-5 py-4 hidden md:table-cell">
-                        <span className="text-xs font-mono bg-bg-main px-2 py-1 rounded text-text-secondary">
-                          {t.employee_number || '—'}
-                        </span>
+                        {getRoleBadge(s.role)}
                       </td>
                       <td className="px-5 py-4 hidden lg:table-cell">
-                        <p className="text-sm text-text-secondary truncate max-w-[150px]">{t.qualification || '—'}</p>
+                        <p className="text-sm text-text-secondary truncate max-w-[150px]">{s.designation || '—'}</p>
                       </td>
                       <td className="px-5 py-4 text-center">
-                        {t.banned ? (
+                        {s.banned ? (
                           <span className="inline-flex items-center gap-1 text-error text-xs"><Ban size={12} /> Banned</span>
                         ) : (
                           <span className="inline-flex items-center gap-1 text-success text-xs"><Check size={12} /> Active</span>
@@ -201,13 +221,13 @@ export default function TeachersPage() {
                       </td>
                       <td className="px-5 py-4">
                         <div className="flex items-center justify-end gap-1">
-                          <button onClick={() => openEditModal(t)} className="p-2 rounded-lg hover:bg-primary/10 text-text-muted hover:text-primary transition-all" title="Edit">
+                          <button onClick={() => openEditModal(s)} className="p-2 rounded-lg hover:bg-primary/10 text-text-muted hover:text-primary transition-all" title="Edit">
                             <Edit2 size={16} />
                           </button>
-                          <button onClick={() => setActionModal({ type: 'ban', teacher: t })} className="p-2 rounded-lg hover:bg-warning/10 text-text-muted hover:text-warning transition-all" title="Ban">
+                          <button onClick={() => setActionModal({ type: 'ban', staff: s })} className="p-2 rounded-lg hover:bg-warning/10 text-text-muted hover:text-warning transition-all" title="Ban">
                             <Ban size={16} />
                           </button>
-                          <button onClick={() => setActionModal({ type: 'delete', teacher: t })} className="p-2 rounded-lg hover:bg-error/10 text-text-muted hover:text-error transition-all" title="Delete">
+                          <button onClick={() => setActionModal({ type: 'delete', staff: s })} className="p-2 rounded-lg hover:bg-error/10 text-text-muted hover:text-error transition-all" title="Delete">
                             <Trash2 size={16} />
                           </button>
                         </div>
@@ -223,7 +243,9 @@ export default function TeachersPage() {
         {/* Pagination */}
         {lastPage > 1 && (
           <div className="flex items-center justify-between">
-            <p className="text-sm text-text-secondary">Page {page} of {lastPage}</p>
+            <p className="text-sm text-text-secondary">
+              Page {page} of {lastPage}
+            </p>
             <div className="flex items-center gap-2">
               <button disabled={page <= 1} onClick={() => setPage(p => p - 1)}
                 className="glass-button px-3 py-2 disabled:opacity-40" title="Previous">
@@ -244,13 +266,44 @@ export default function TeachersPage() {
           <div className="glass-modal max-w-2xl w-full animate-scale-in flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between p-5 border-b border-border flex-shrink-0">
               <h3 className="text-lg font-bold text-text-primary">
-                {editingTeacher ? 'Edit Teacher' : 'Add Teacher'}
+                {editingStaff ? 'Edit Staff' : 'Add Staff Member'}
               </h3>
               <button onClick={() => { setShowModal(false); resetForm(); }} className="text-text-muted hover:text-text-primary">
                 <X size={20} />
               </button>
             </div>
             <form onSubmit={handleSubmit} className="p-5 space-y-4 overflow-y-auto flex-1">
+              {/* Role Selection */}
+              <div>
+                <label className="form-label">Role *</label>
+                <div className="space-y-2">
+                  {ROLES.map((role) => (
+                    <label
+                      key={role.value}
+                      className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                        form.role === role.value
+                          ? 'border-primary bg-primary/5'
+                          : 'border-border hover:border-primary/50'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="role"
+                        value={role.value}
+                        checked={form.role === role.value}
+                        onChange={(e) => setForm({ ...form, role: e.target.value })}
+                        className="mt-0.5"
+                      />
+                      <div>
+                        <p className="text-sm font-medium text-text-primary">{role.label}</p>
+                        <p className="text-xs text-text-muted">{role.description}</p>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+                {formErrors.role && <p className="text-error text-xs mt-1">{formErrors.role[0]}</p>}
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="form-label">First Name *</label>
@@ -271,21 +324,28 @@ export default function TeachersPage() {
                   className={`form-input ${formErrors.email ? 'border-error' : ''}`} placeholder="jane@school.edu" required />
                 {formErrors.email && <p className="text-error text-xs mt-1">{formErrors.email[0]}</p>}
               </div>
-              <div>
-                <label className="form-label">Employee Number *</label>
-                <input type="text" value={form.employee_number} onChange={e => setForm({...form, employee_number: e.target.value})}
-                  className={`form-input ${formErrors.employee_number ? 'border-error' : ''}`} placeholder="TCH-2026-001" required />
-                {formErrors.employee_number && <p className="text-error text-xs mt-1">{formErrors.employee_number[0]}</p>}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="form-label">Employee Number *</label>
+                  <input type="text" value={form.employee_number} onChange={e => setForm({...form, employee_number: e.target.value})}
+                    className={`form-input ${formErrors.employee_number ? 'border-error' : ''}`} placeholder="STF-2026-001" required />
+                  {formErrors.employee_number && <p className="text-error text-xs mt-1">{formErrors.employee_number[0]}</p>}
+                </div>
+                <div>
+                  <label className="form-label">Designation</label>
+                  <input type="text" value={form.designation} onChange={e => setForm({...form, designation: e.target.value})}
+                    className="form-input" placeholder="e.g., Vice Principal" />
+                </div>
               </div>
               <div>
-                <label className="form-label">Password {!editingTeacher && <span className="text-text-muted font-normal">(Default: {DEFAULT_PASSWORD})</span>}</label>
+                <label className="form-label">Password {!editingStaff && <span className="text-text-muted font-normal">(Default: {DEFAULT_PASSWORD})</span>}</label>
                 <div className="relative">
                   <input
                     type={showPassword ? 'text' : 'password'}
                     value={form.password}
                     onChange={e => setForm({...form, password: e.target.value})}
                     className={`form-input pr-10 ${formErrors.password ? 'border-error' : ''}`}
-                    placeholder={editingTeacher ? 'Leave blank to keep current' : DEFAULT_PASSWORD}
+                    placeholder={editingStaff ? 'Leave blank to keep current' : DEFAULT_PASSWORD}
                   />
                   <button
                     type="button"
@@ -296,7 +356,7 @@ export default function TeachersPage() {
                   </button>
                 </div>
                 {formErrors.password && <p className="text-error text-xs mt-1">{formErrors.password[0]}</p>}
-                {!editingTeacher && form.password && <PasswordStrengthMeter password={form.password} />}
+                {!editingStaff && form.password && <PasswordStrengthMeter password={form.password} />}
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
@@ -309,23 +369,13 @@ export default function TeachersPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="form-label">Date Joined</label>
-                  <input type="date" value={form.date_joined} onChange={e => setForm({...form, date_joined: e.target.value})} className="form-input" />
-                </div>
-              </div>
-              <div>
-                <label className="form-label">Qualification</label>
-                <input type="text" value={form.qualification} onChange={e => setForm({...form, qualification: e.target.value})} className="form-input" placeholder="B.Ed, M.Sc, etc." />
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
                   <label className="form-label">Phone</label>
                   <input type="text" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} className="form-input" placeholder="+234..." />
                 </div>
-                <div>
-                  <label className="form-label">Address</label>
-                  <input type="text" value={form.address} onChange={e => setForm({...form, address: e.target.value})} className="form-input" />
-                </div>
+              </div>
+              <div>
+                <label className="form-label">Address</label>
+                <input type="text" value={form.address} onChange={e => setForm({...form, address: e.target.value})} className="form-input" />
               </div>
             </form>
             <div className="flex gap-3 p-5 border-t border-border flex-shrink-0">
@@ -335,7 +385,7 @@ export default function TeachersPage() {
               </button>
               <button type="submit" onClick={handleSubmit} disabled={submitting}
                 className="flex-1 px-4 py-2.5 rounded-btn glass-button disabled:opacity-50">
-                {submitting ? <span className="flex items-center justify-center gap-2"><RefreshCw size={14} className="animate-spin" /> Saving...</span> : editingTeacher ? 'Update Teacher' : 'Create Teacher'}
+                {submitting ? <span className="flex items-center justify-center gap-2"><RefreshCw size={14} className="animate-spin" /> Saving...</span> : editingStaff ? 'Update Staff' : 'Create Staff'}
               </button>
             </div>
           </div>
@@ -351,11 +401,11 @@ export default function TeachersPage() {
                 {actionModal.type === 'delete' ? <AlertTriangle size={20} className="text-error" /> : <Ban size={20} className="text-warning" />}
               </div>
               <h3 className="text-lg font-bold text-text-primary">
-                {actionModal.type === 'delete' ? 'Delete' : 'Ban'} Teacher
+                {actionModal.type === 'delete' ? 'Delete' : 'Ban'} Staff
               </h3>
             </div>
             <p className="text-sm text-text-secondary mb-4">
-              Are you sure you want to <strong>{actionModal.type}</strong> <strong>{fullName(actionModal.teacher)}</strong>?
+              Are you sure you want to <strong>{actionModal.type}</strong> <strong>{fullName(actionModal.staff)}</strong>?
               {actionModal.type === 'delete' && ' This action cannot be undone.'}
             </p>
             <label className="form-label">Reason *</label>

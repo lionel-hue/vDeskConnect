@@ -354,12 +354,14 @@ theme: {
 #### **2.3.6 Receptionist (Assigned Role)**
 *   **Assignment:** A **role tag** assigned to any Admin Staff member by the School Admin. One school can have one or multiple Receptionists.
 *   **Responsibilities:**
-    *   Receives and records school fee payments (cash, bank, online).
-    *   Publishes payment/fee announcements and salary announcements to students and teachers.
-    *   Emails parents about outstanding fees.
-    *   Manages the **Textbook Marketplace** (lists electronic books/literature for student purchase).
-    *   Generates financial reports and sends them **directly to the School Admin** (not to Principal or anyone else).
-*   **Restrictions:** Same as Admin Staff — cannot ban peers or anyone above.
+    *   **Fee Management:** Receives and records school fee payments (cash, bank, online). Tracks outstanding balances.
+    *   **Announcements:**
+        *   Publishes payment/fee announcements to students (e.g., fee due dates, payment reminders, outstanding balance notices).
+        *   Publishes salary announcements to teachers (e.g., salary payment confirmations, adjustments).
+    *   **Parent Communication:** Emails parents about outstanding fees and payment schedules.
+    *   **Financial Reporting:** Generates financial reports and sends them **directly to the School Admin only** (not to Principal or anyone else). Reports include fee collection summaries, outstanding balances, and payment trends.
+    *   **Textbook Marketplace:** Manages the marketplace — lists electronic books/literature for student purchase, tracks inventory and sales.
+*   **Restrictions:** Same as Admin Staff — cannot ban peers or anyone above. Cannot see full financial analytics (only School Admin has that view).
 
 #### **2.3.7 Teacher**
 *   **Academic Role:** Creates lectures, sets exams, grades submissions, writes lesson notes and schemes of work.

@@ -21,6 +21,7 @@ import {
   CreditCard,
   Menu,
   X,
+  UserRound,
 } from 'lucide-react';
 
 // Super Admin navigation items
@@ -38,6 +39,7 @@ const SCHOOL_ADMIN_NAV = [
   { label: 'Dashboard', icon: LayoutGrid, href: '/dashboard' },
   { label: 'Students', icon: GraduationCap, href: '/dashboard/students' },
   { label: 'Teachers', icon: Users, href: '/dashboard/teachers' },
+  { label: 'Staff', icon: UserRound, href: '/dashboard/staff' },
   { label: 'Classes', icon: School, href: '/dashboard/classes' },
   { label: 'Exams', icon: FileText, href: '/dashboard/exams' },
   { label: 'Events', icon: Calendar, href: '/dashboard/events' },
@@ -64,6 +66,16 @@ export default function Sidebar({ role = 'admin', user, onLogout, collapsed: ini
       localStorage.setItem('sidebar-collapsed', JSON.stringify(collapsed));
     }
   }, [collapsed]);
+
+  // Sync with initialCollapsed prop on mount only
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('sidebar-collapsed');
+      if (stored === null && initialCollapsed !== collapsed) {
+        setCollapsed(initialCollapsed);
+      }
+    }
+  }, [initialCollapsed]);
 
   const navItems = role === 'super_admin' ? SUPER_ADMIN_NAV : SCHOOL_ADMIN_NAV;
 

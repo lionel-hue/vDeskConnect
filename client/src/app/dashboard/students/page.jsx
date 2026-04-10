@@ -283,6 +283,27 @@ export default function StudentsPage() {
                   className={`form-input ${formErrors.admission_number ? 'border-error' : ''}`} placeholder="STU-2026-001" required />
                 {formErrors.admission_number && <p className="text-error text-xs mt-1">{formErrors.admission_number[0]}</p>}
               </div>
+              <div>
+                <label className="form-label">Password {!editingStudent && <span className="text-text-muted font-normal">(Default: {DEFAULT_PASSWORD})</span>}</label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={form.password}
+                    onChange={e => setForm({...form, password: e.target.value})}
+                    className={`form-input pr-10 ${formErrors.password ? 'border-error' : ''}`}
+                    placeholder={editingStudent ? 'Leave blank to keep current' : DEFAULT_PASSWORD}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary"
+                  >
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+                {formErrors.password && <p className="text-error text-xs mt-1">{formErrors.password[0]}</p>}
+                {!editingStudent && form.password && <PasswordStrengthMeter password={form.password} />}
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="form-label">Gender</label>

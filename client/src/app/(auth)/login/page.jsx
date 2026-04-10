@@ -95,7 +95,10 @@ export default function LoginPage() {
       });
       toast.success('Password changed successfully!');
       setShowChangePassword(false);
-      setTimeout(() => router.push('/dashboard'), 800);
+      // Fetch user to get role for proper redirect
+      const userData = await api.get('/user');
+      const redirectPath = userData.user?.role === 'super_admin' ? '/admin/dashboard' : '/dashboard';
+      setTimeout(() => router.push(redirectPath), 800);
     } catch (err) {
       toast.error(err.data?.message || 'Failed to change password');
     } finally {
@@ -113,41 +116,65 @@ export default function LoginPage() {
     }, 1000);
   };
 
-  // Forced password change modal
+  // Forced password change modal - full screen blocking
   if (showChangePassword) {
     return (
-      <div className="auth-page items-center justify-center">
-        <div className="auth-card max-w-md animate-scale-in">
+      <div className="fixed inset-0 z-50 bg-bg-main flex items-center justify-center p-4">
+        {/* Background gradient */}
+        <div className="fixed inset-0 -z-10 bg-gradient-to-br from-primary/5 via-transparent to-primary-light/5" />
+        
+        <div className="glass-card max-w-md w-full animate-scale-in p-8">
           <div className="text-center mb-6">
-            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse-slow">
+            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
               <Lock size={28} className="text-primary" />
             </div>
-            <h2 className="text-xl font-bold text-text-primary">Change Your Password</h2>
-            <p className="text-text-secondary text-sm mt-1">
-              For security, you must change your password before continuing.
+            <h2 className="text-2xl font-bold text-text-primary">Change Your Password</h2>
+            <p className="text-text-secondary text-sm mt-2">
+              For security reasons, you must change your default password before accessing the application.
             </p>
           </div>
 
           <form onSubmit={handlePasswordChange} className="space-y-4">
-            <Input
-              label="New password"
-              type="password"
-              placeholder="Min. 8 characters"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-            />
+            <div>
+              <label className="form-label">New Password</label>
+              <input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="form-input"
+                placeholder="Enter new password (min. 8 characters)"
+                required
+              />
+            </div>
             <PasswordStrengthMeter password={newPassword} />
-            <Input
-              label="Confirm new password"
-              type="password"
-              placeholder="Re-enter your new password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-            />
-            <Button type="submit" variant="primary" fullWidth loading={changingPassword}>
-              <Lock size={18} />
-              Change Password & Continue
-            </Button>
+            <div>
+              <label className="form-label">Confirm New Password</label>
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="form-input"
+                placeholder="Re-enter your new password"
+                required
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={changingPassword}
+              className="w-full px-4 py-3 rounded-btn bg-primary text-white font-medium text-sm hover:bg-primary-dark transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {changingPassword ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Changing Password...
+                </>
+              ) : (
+                <>
+                  <Lock size={18} />
+                  Change Password & Continue
+                </>
+              )}
+            </button>
           </form>
         </div>
       </div>
