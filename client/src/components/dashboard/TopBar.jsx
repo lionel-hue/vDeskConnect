@@ -4,13 +4,13 @@ import { Bell, Search, User, Settings, Menu } from 'lucide-react';
 
 export default function TopBar({ title, subtitle, user, onMobileMenuToggle }) {
   return (
-    <header className="sticky top-0 z-30 bg-bg-card/80 backdrop-blur-xl border-b border-border px-6 py-4">
+    <header className="sticky top-0 z-30 glass-header px-6 py-4">
       <div className="flex items-center justify-between">
         {/* Left: Title + Mobile Menu */}
         <div className="flex items-center gap-4">
           <button
             onClick={onMobileMenuToggle}
-            className="lg:hidden p-2 rounded-lg hover:bg-bg-main transition-colors"
+            className="lg:hidden p-2 rounded-lg hover:bg-primary/10 transition-colors"
           >
             <Menu size={20} className="text-text-secondary" />
           </button>
@@ -22,9 +22,9 @@ export default function TopBar({ title, subtitle, user, onMobileMenuToggle }) {
 
         {/* Right: Actions */}
         <div className="flex items-center gap-4">
-          {/* Search */}
-          <div className="hidden md:flex items-center gap-2 bg-bg-main rounded-btn px-3 py-2 w-64">
-            <Search size={16} className="text-text-muted" />
+          {/* Search - Glass Input */}
+          <div className="hidden md:flex items-center gap-2 glass-input rounded-btn px-3 py-2 w-64">
+            <Search size={16} className="text-text-muted flex-shrink-0" />
             <input
               type="text"
               placeholder="Search..."
@@ -33,14 +33,14 @@ export default function TopBar({ title, subtitle, user, onMobileMenuToggle }) {
           </div>
 
           {/* Notifications */}
-          <button className="relative w-10 h-10 flex items-center justify-center rounded-btn hover:bg-bg-main transition-colors duration-200">
+          <button className="relative w-10 h-10 flex items-center justify-center rounded-btn hover:bg-primary/10 transition-colors duration-200">
             <Bell size={20} className="text-text-secondary" />
             <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-error rounded-full border-2 border-bg-card" />
           </button>
 
           {/* User avatar */}
           <div className="flex items-center gap-3 pl-4 border-l border-border">
-            <div className="w-9 h-9 bg-primary/20 rounded-full flex items-center justify-center text-sm font-bold text-primary">
+            <div className="w-9 h-9 bg-primary/20 rounded-full flex items-center justify-center text-sm font-bold text-primary border-2 border-primary/30 backdrop-blur-lg">
               {user?.email?.charAt(0).toUpperCase() || 'U'}
             </div>
             <div className="hidden md:block">

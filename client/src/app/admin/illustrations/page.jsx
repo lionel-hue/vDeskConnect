@@ -196,9 +196,9 @@ export default function IllustrationsPage() {
 
         {/* Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="bg-bg-card rounded-card shadow-soft p-5">
+          <div className="glass-stat">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center backdrop-blur-lg border border-white/10">
                 <Layers size={20} className="text-primary" />
               </div>
               <div>
@@ -207,9 +207,9 @@ export default function IllustrationsPage() {
               </div>
             </div>
           </div>
-          <div className="bg-bg-card rounded-card shadow-soft p-5">
+          <div className="glass-stat">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-success/10 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-success/10 rounded-lg flex items-center justify-center backdrop-blur-lg border border-white/10">
                 <CheckCircle size={20} className="text-success" />
               </div>
               <div>
@@ -218,9 +218,9 @@ export default function IllustrationsPage() {
               </div>
             </div>
           </div>
-          <div className="bg-bg-card rounded-card shadow-soft p-5">
+          <div className="glass-stat">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-info/10 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-info/10 rounded-lg flex items-center justify-center backdrop-blur-lg border border-white/10">
                 <Zap size={20} className="text-info" />
               </div>
               <div>
@@ -232,7 +232,7 @@ export default function IllustrationsPage() {
         </div>
 
         {/* Illustration Keys Reference */}
-        <div className="bg-bg-card rounded-card shadow-soft">
+        <div className="glass-card">
           <div className="flex items-center justify-between p-5 border-b border-border">
             <div>
               <h3 className="font-semibold text-text-primary">Illustration Slots</h3>
@@ -242,7 +242,7 @@ export default function IllustrationsPage() {
             </div>
             <button
               onClick={() => setShowUploadModal(true)}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-btn bg-primary text-white text-sm font-medium hover:bg-primary-dark transition-all duration-250 hover:scale-105"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-btn glass-button text-sm"
             >
               <Upload size={16} />
               Upload New Pack
@@ -263,7 +263,7 @@ export default function IllustrationsPage() {
                 {ILLUSTRATION_KEYS.map((item) => {
                   const isActive = !!activeIllustrations[item.key];
                   return (
-                    <tr key={item.key} className="hover:bg-bg-main/50 transition-colors">
+                    <tr key={item.key} className="glass-row">
                       <td className="px-5 py-3">
                         <code className="text-xs bg-bg-main px-2 py-1 rounded text-primary font-mono">
                           {item.key}
@@ -295,7 +295,7 @@ export default function IllustrationsPage() {
         </div>
 
         {/* Uploaded Packs */}
-        <div className="bg-bg-card rounded-card shadow-soft">
+        <div className="glass-card">
           <div className="p-5 border-b border-border">
             <h3 className="font-semibold text-text-primary">Uploaded Packs</h3>
             <p className="text-xs text-text-secondary mt-1">
@@ -308,7 +308,7 @@ export default function IllustrationsPage() {
               <p className="text-text-secondary">No illustration packs uploaded yet.</p>
               <button
                 onClick={() => setShowUploadModal(true)}
-                className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-btn bg-primary text-white text-sm font-medium hover:bg-primary-dark transition-colors"
+                className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-btn glass-button text-sm"
               >
                 <Upload size={16} /> Upload Your First Pack
               </button>
@@ -316,7 +316,7 @@ export default function IllustrationsPage() {
           ) : (
             <div className="divide-y divide-border">
               {packs.map((pack) => (
-                <div key={pack.pack_name} className="flex items-center justify-between px-5 py-4 hover:bg-bg-main/50 transition-colors">
+                <div key={pack.pack_name} className="flex items-center justify-between px-5 py-4 glass-row">
                   <div className="flex items-center gap-4">
                     <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
                       pack.is_active ? 'bg-success/10' : 'bg-primary/10'
@@ -372,7 +372,7 @@ export default function IllustrationsPage() {
         {showUploadModal && (
           <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowUploadModal(false)}>
             <div
-              className="bg-bg-card rounded-card shadow-elevated max-w-lg w-full animate-scale-in flex flex-col max-h-[90vh]"
+              className="glass-modal max-w-lg w-full animate-scale-in flex flex-col max-h-[90vh]"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Modal Header - fixed */}

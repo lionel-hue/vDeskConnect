@@ -53,7 +53,12 @@ export default function DashboardLayout({ children, title, subtitle, role = 'adm
   }
 
   return (
-    <div className="min-h-screen bg-bg-main">
+    <div className="min-h-screen bg-bg-main relative overflow-hidden">
+      {/* Background gradient for glass effect */}
+      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-primary/5 via-transparent to-primary-light/5" />
+      <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl -translate-y-1/2" />
+      <div className="absolute bottom-0 left-0 w-96 h-96 bg-primary-light/10 rounded-full blur-3xl translate-y-1/2" />
+      
       <Sidebar
         role={role}
         user={user}
@@ -64,7 +69,7 @@ export default function DashboardLayout({ children, title, subtitle, role = 'adm
       />
       <div className={`transition-all duration-300 ${sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'}`}>
         <TopBar title={title} subtitle={subtitle} user={user} onMobileMenuToggle={handleMobileMenuToggle} />
-        <main className="p-6">
+        <main className="p-6 relative z-10">
           {children}
         </main>
       </div>

@@ -148,11 +148,11 @@ export default function SuperAdminDashboard() {
           {stats.map((stat, i) => (
             <div
               key={i}
-              className="bg-bg-card rounded-card shadow-soft p-5 card-hover-lift animate-slide-up"
+              className="glass-stat animate-slide-up"
               style={{ animationDelay: `${i * 100}ms` }}
             >
               <div className="flex items-center justify-between mb-3">
-                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${stat.color}`}>
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center backdrop-blur-lg border border-white/10 ${stat.color}`}>
                   <stat.icon size={20} />
                 </div>
                 <div className={`flex items-center gap-1 text-xs font-medium ${
@@ -171,7 +171,7 @@ export default function SuperAdminDashboard() {
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Recent Schools */}
-          <div className="lg:col-span-2 bg-bg-card rounded-card shadow-soft">
+          <div className="lg:col-span-2 glass-card">
             <div className="flex items-center justify-between p-5 border-b border-border">
               <h3 className="font-semibold text-text-primary">Recent Schools</h3>
               <button className="text-sm text-primary hover:text-primary-dark transition-colors">
@@ -182,7 +182,7 @@ export default function SuperAdminDashboard() {
               {schools.map((school, i) => (
                 <div
                   key={i}
-                  className="flex items-center justify-between px-5 py-4 hover:bg-bg-main/50 transition-colors"
+                  className="flex items-center justify-between px-5 py-4 glass-row"
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
@@ -212,7 +212,7 @@ export default function SuperAdminDashboard() {
           </div>
 
           {/* Subscription Distribution */}
-          <div className="bg-bg-card rounded-card shadow-soft">
+          <div className="glass-card">
             <div className="p-5 border-b border-border">
               <h3 className="font-semibold text-text-primary">Subscription Plans</h3>
               <p className="text-xs text-text-secondary mt-1">Distribution across all schools</p>
@@ -242,8 +242,8 @@ export default function SuperAdminDashboard() {
           </div>
         </div>
 
-        {/* Quick Actions */}
-        <div className="bg-bg-card rounded-card shadow-soft p-5">
+        {/* Quick Actions - Glassmorphic */}
+        <div className="glass-card p-5">
           <h3 className="font-semibold text-text-primary mb-4">Quick Actions</h3>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {[
@@ -255,7 +255,7 @@ export default function SuperAdminDashboard() {
               <button
                 key={i}
                 onClick={() => router.push(action.href)}
-                className={`flex flex-col items-center gap-3 p-4 rounded-card ${action.color} transition-all duration-250 hover:scale-105`}
+                className={`flex flex-col items-center gap-3 p-4 rounded-card backdrop-blur-lg border border-white/10 ${action.color} transition-all duration-250 hover:scale-105`}
               >
                 <action.icon size={24} />
                 <span className="text-sm font-medium">{action.label}</span>

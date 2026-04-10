@@ -71,6 +71,143 @@
     @apply text-text-secondary text-sm mb-6;
   }
 
+  /* ===== LIQUID GLASSMORPHIC UTILITIES ===== */
+  
+  /* Glass Card - Primary UI element */
+  .glass-card {
+    @apply backdrop-blur-xl border rounded-card shadow-glass transition-all duration-300;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    border-color: rgba(255, 255, 255, 0.18);
+  }
+
+  .dark .glass-card {
+    background: linear-gradient(135deg, rgba(26, 26, 46, 0.6), rgba(26, 26, 46, 0.4));
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  /* Glass Panel - Larger containers */
+  .glass-panel {
+    @apply backdrop-blur-xl border rounded-panel shadow-glass-elevated transition-all duration-300;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.06));
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .dark .glass-panel {
+    background: linear-gradient(135deg, rgba(26, 26, 46, 0.7), rgba(26, 26, 46, 0.5));
+    border-color: rgba(255, 255, 255, 0.12);
+  }
+
+  /* Glass Input */
+  .glass-input {
+    @apply backdrop-blur-lg border rounded-btn px-4 py-3 text-sm transition-all duration-250 outline-none;
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(124, 107, 196, 0.2);
+    color: var(--text-primary);
+  }
+
+  .glass-input::placeholder {
+    color: var(--text-muted);
+  }
+
+  .glass-input:focus {
+    border-color: rgba(124, 107, 196, 0.5);
+    box-shadow: 0 0 0 3px rgba(124, 107, 196, 0.1);
+    background: rgba(255, 255, 255, 0.12);
+  }
+
+  .dark .glass-input {
+    background: rgba(15, 14, 26, 0.4);
+    border-color: rgba(124, 107, 196, 0.3);
+  }
+
+  /* Glass Button */
+  .glass-button {
+    @apply backdrop-blur-lg border rounded-btn font-medium transition-all duration-250 hover:scale-105 active:scale-95;
+    background: rgba(124, 107, 196, 0.2);
+    border-color: rgba(124, 107, 196, 0.3);
+    color: white;
+  }
+
+  .glass-button:hover {
+    background: rgba(124, 107, 196, 0.3);
+    border-color: rgba(124, 107, 196, 0.5);
+    box-shadow: 0 4px 16px rgba(124, 107, 196, 0.2);
+  }
+
+  /* Glass Header (for top bars) */
+  .glass-header {
+    @apply backdrop-blur-xl border-b sticky top-0 z-30;
+    background: linear-gradient(to right, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.05));
+    border-color: rgba(124, 107, 196, 0.15);
+  }
+
+  .dark .glass-header {
+    background: linear-gradient(to right, rgba(26, 26, 46, 0.7), rgba(26, 26, 46, 0.5));
+    border-color: rgba(124, 107, 196, 0.2);
+  }
+
+  /* Glass Sidebar */
+  .glass-sidebar {
+    @apply backdrop-blur-xl border;
+    background: linear-gradient(180deg, rgba(26, 26, 46, 0.85), rgba(26, 26, 46, 0.95));
+    border-color: rgba(124, 107, 196, 0.2);
+  }
+
+  /* Glass Modal */
+  .glass-modal {
+    @apply backdrop-blur-2xl border rounded-card shadow-glass-elevated;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.08));
+    border-color: rgba(255, 255, 255, 0.25);
+  }
+
+  .dark .glass-modal {
+    background: linear-gradient(135deg, rgba(26, 26, 46, 0.8), rgba(26, 26, 46, 0.6));
+    border-color: rgba(255, 255, 255, 0.15);
+  }
+
+  /* Glass Table Row */
+  .glass-row {
+    @apply transition-all duration-200;
+  }
+
+  .glass-row:hover {
+    background: rgba(124, 107, 196, 0.05);
+  }
+
+  .dark .glass-row:hover {
+    background: rgba(124, 107, 196, 0.1);
+  }
+
+  /* Glass Stat Card */
+  .glass-stat {
+    @apply backdrop-blur-lg border rounded-card shadow-glass p-5 transition-all duration-300 hover:shadow-glass-elevated hover:scale-[1.02];
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    border-color: rgba(255, 255, 255, 0.15);
+  }
+
+  .dark .glass-stat {
+    background: linear-gradient(135deg, rgba(26, 26, 46, 0.6), rgba(26, 26, 46, 0.4));
+    border-color: rgba(124, 107, 196, 0.2);
+  }
+
+  /* Enhanced shadows for glass */
+  .shadow-glass {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1), 0 2px 8px rgba(124, 107, 196, 0.05);
+  }
+
+  .shadow-glass-elevated {
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15), 0 4px 16px rgba(124, 107, 196, 0.08);
+  }
+
+  /* Gradient text for glass backgrounds */
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-white to-white/80;
+  }
+
+  .dark .text-gradient {
+    @apply bg-gradient-to-r from-primary-light to-white;
+  }
+
   /* Form inputs */
   .form-input {
     @apply w-full px-4 py-3 rounded-btn border border-border bg-bg-main text-text-primary placeholder-text-muted text-sm transition-all duration-250 ease-out outline-none focus:border-primary focus:ring-2 focus:ring-primary/20;
