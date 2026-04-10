@@ -61,6 +61,7 @@ class TeacherController extends Controller
             'subject_ids.*' => 'exists:subjects,id',
             'qualification' => 'nullable|string|max:255',
             'date_joined' => 'nullable|date',
+            'password' => 'nullable|string|min:8',
         ]);
 
         if ($validator->fails()) {
@@ -75,7 +76,7 @@ class TeacherController extends Controller
             return response()->json(['message' => 'You do not have permission to create teachers'], 403);
         }
 
-        $tempPassword = Str::random(10);
+        $tempPassword = $request->password ?: 'Secret123!';
 
         return DB::transaction(function () use ($request, $tempPassword, $user) {
             $teacher = User::create([
