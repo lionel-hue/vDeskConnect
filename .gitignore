@@ -23,7 +23,7 @@ pnpm-debug.log*
 lerna-debug.log*
 
 # IDE/Editor files
-.vscode/*
+.vscode
 !.vscode/extensions.json
 !.vscode/settings.json
 .idea/
