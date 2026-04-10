@@ -111,8 +111,34 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Grade Levels
         Route::get('grade-levels', [AcademicController::class, 'gradeLevelsIndex']);
+        Route::post('grade-levels', [AcademicController::class, 'createGradeLevel']);
+        Route::put('grade-levels/{id}', [AcademicController::class, 'updateGradeLevel']);
+        Route::delete('grade-levels/{id}', [AcademicController::class, 'deleteGradeLevel']);
+        Route::post('grade-levels/bulk', [AcademicController::class, 'bulkCreateGradeLevels']);
+
+        // Sections
+        Route::get('sections', [AcademicController::class, 'sectionsIndex']);
+        Route::get('grade-levels/{gradeLevelId}/sections', [AcademicController::class, 'sectionsIndex']);
+        Route::post('sections', [AcademicController::class, 'createSection']);
+        Route::put('sections/{id}', [AcademicController::class, 'updateSection']);
+        Route::delete('sections/{id}', [AcademicController::class, 'deleteSection']);
+
+        // Departments
+        Route::get('departments', [AcademicController::class, 'departmentsIndex']);
+        Route::post('departments', [AcademicController::class, 'createDepartment']);
+        Route::put('departments/{id}', [AcademicController::class, 'updateDepartment']);
+        Route::delete('departments/{id}', [AcademicController::class, 'deleteDepartment']);
 
         // Subjects
         Route::get('subjects', [AcademicController::class, 'subjectsIndex']);
+        Route::post('subjects', [AcademicController::class, 'createSubject']);
+        Route::put('subjects/{id}', [AcademicController::class, 'updateSubject']);
+        Route::delete('subjects/{id}', [AcademicController::class, 'deleteSubject']);
+
+        // Subject-to-Grade Mappings
+        Route::get('grade-levels/{gradeLevelId}/subjects', [AcademicController::class, 'gradeLevelSubjects']);
+        Route::post('subject-mappings', [AcademicController::class, 'assignSubjectToGrade']);
+        Route::post('subject-mappings/bulk', [AcademicController::class, 'bulkAssignSubjects']);
+        Route::delete('subject-mappings/{id}', [AcademicController::class, 'removeSubjectFromGrade']);
     });
 });

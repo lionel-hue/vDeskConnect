@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Settings, CalendarDays, BookOpen, Scale, Plus, Trash2, CheckCircle,
-  AlertTriangle, X, Save, Star, Copy
+  AlertTriangle, X, Save, Star, Copy, Edit2, School, Tag, Layers,
 } from 'lucide-react';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import { academicApi } from '@/lib/academic-api';
@@ -16,6 +16,10 @@ const TABS = {
   TERMS: 'terms',
   CA_WEEKS: 'ca_weeks',
   GRADE_SCALES: 'grade_scales',
+  GRADE_LEVELS: 'grade_levels',
+  SECTIONS: 'sections',
+  SUBJECTS: 'subjects',
+  MAPPINGS: 'mappings',
 };
 
 export default function AcademicPage() {
@@ -56,6 +60,37 @@ export default function AcademicPage() {
   const [scaleLoading, setScaleLoading] = useState(false);
   const [editingScaleId, setEditingScaleId] = useState(null);
 
+  // Phase 2 state
+  const [gradeLevels, setGradeLevels] = useState([]);
+  const [sections, setSections] = useState([]);
+  const [selectedGradeForSections, setSelectedGradeForSections] = useState(null);
+  const [subjects, setSubjects] = useState([]);
+  const [departments, setDepartments] = useState([]);
+  const [mappings, setMappings] = useState([]);
+  const [selectedGradeForMappings, setSelectedGradeForMappings] = useState(null);
+
+  // Phase 2 modals
+  const [showGradeLevelModal, setShowGradeLevelModal] = useState(false);
+  const [gradeLevelForm, setGradeLevelForm] = useState({ name: '', short_name: '', order: 1, cycle: '' });
+  const [showBulkGradeModal, setShowBulkGradeModal] = useState(false);
+  const [bulkGradeForm, setBulkGradeForm] = useState({ prefix: 'JSS', start_order: 1, count: 3, cycle: 'Junior' });
+  const [showSectionModal, setShowSectionModal] = useState(false);
+  const [sectionForm, setSectionForm] = useState({ grade_level_id: '', name: '', room_number: '', capacity: '' });
+  const [showSubjectModal, setShowSubjectModal] = useState(false);
+  const [subjectForm, setSubjectForm] = useState({ name: '', code: '', type: 'core', department_id: '' });
+  const [showDepartmentModal, setShowDepartmentModal] = useState(false);
+  const [departmentForm, setDepartmentForm] = useState({ name: '', code: '' });
+  const [showMappingModal, setShowMappingModal] = useState(false);
+  const [mappingForm, setMappingForm] = useState({ grade_level_ids: [], subject_ids: [], is_compulsory: true, department_id: '' });
+
+  // Phase 2 loading
+  const [gradeLevelLoading, setGradeLevelLoading] = useState(false);
+  const [sectionLoading, setSectionLoading] = useState(false);
+  const [subjectLoading, setSubjectLoading] = useState(false);
+  const [departmentLoading, setDepartmentLoading] = useState(false);
+  const [mappingLoading, setMappingLoading] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+
   // Fetch all data
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -67,13 +102,18 @@ export default function AcademicPage() {
       setSessions(sessionsRes.sessions || []);
       setGradeScales(gradeScalesRes.grade_scales || []);
 
-      // Fetch grade levels and subjects for CA weeks
-      const [gradesRes, subjectsRes] = await Promise.all([
-        api.get('/academic/grade-levels').catch(() => ({ grade_levels: [] })),
-        api.get('/academic/subjects').catch(() => ({ subjects: [] })),
+      // Fetch Phase 2 data
+      const [gradesRes, subjectsRes, departmentsRes] = await Promise.all([
+        academicApi.gradeLevels.getAll().catch(() => ({ grade_levels: [] })),
+        academicApi.subjects.getAll().catch(() => ({ subjects: [] })),
+        academicApi.departments.getAll().catch(() => ({ departments: [] })),
       ]);
       setGradeLevels(gradesRes.grade_levels || []);
       setSubjects(subjectsRes.subjects || []);
+      setDepartments(departmentsRes.departments || []);
+
+      // Fetch grade levels and subjects for CA weeks (reuse Phase 2 data)
+      // (already fetched above as gradesRes and subjectsRes)
 
       // If there's an active session, fetch its terms
       const activeSession = sessionsRes.sessions?.find(s => s.active);

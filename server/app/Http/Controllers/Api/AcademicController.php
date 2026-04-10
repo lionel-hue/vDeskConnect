@@ -754,4 +754,560 @@ class AcademicController extends Controller
 
         return response()->json(['subjects' => $subjects]);
     }
+
+    // ==================== PHASE 2: GRADE LEVELS CRUD ====================
+
+    /**
+     * Create a grade level.
+     */
+    public function createGradeLevel(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:100',
+            'short_name' => 'nullable|string|max:50',
+            'order' => 'required|integer|min:1',
+            'cycle' => 'nullable|string|max:50',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $user = $request->user();
+
+        $gradeLevel = GradeLevel::create([
+            'school_id' => $user->school_id,
+            'name' => $request->name,
+            'short_name' => $request->short_name,
+            'order' => $request->order,
+            'cycle' => $request->cycle,
+        ]);
+
+        return response()->json([
+            'message' => 'Grade level created successfully',
+            'grade_level' => $gradeLevel,
+        ], 201);
+    }
+
+    /**
+     * Update a grade level.
+     */
+    public function updateGradeLevel(Request $request, int $id): JsonResponse
+    {
+        $user = $request->user();
+        $gradeLevel = GradeLevel::where('school_id', $user->school_id)->findOrFail($id);
+
+        $validator = Validator::make($request->all(), [
+            'name' => 'sometimes|string|max:100',
+            'short_name' => 'nullable|string|max:50',
+            'order' => 'sometimes|integer|min:1',
+            'cycle' => 'nullable|string|max:50',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $gradeLevel->update($request->only(['name', 'short_name', 'order', 'cycle']));
+
+        return response()->json([
+            'message' => 'Grade level updated successfully',
+            'grade_level' => $gradeLevel,
+        ]);
+    }
+
+    /**
+     * Delete a grade level.
+     */
+    public function deleteGradeLevel(Request $request, int $id): JsonResponse
+    {
+        $user = $request->user();
+        $gradeLevel = GradeLevel::where('school_id', $user->school_id)->findOrFail($id);
+
+        // Check if any students or sections are using this grade level
+        if ($gradeLevel->sections()->count() > 0) {
+            return response()->json([
+                'message' => 'Cannot delete grade level with existing sections. Delete sections first.',
+            ], 400);
+        }
+
+        $gradeLevel->delete();
+
+        return response()->json(['message' => 'Grade level deleted successfully']);
+    }
+
+    /**
+     * Bulk create grade levels (e.g., JSS1, JSS2, JSS3 all at once).
+     */
+    public function bulkCreateGradeLevels(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'prefix' => 'required|string|max:50', // e.g., "JSS"
+            'start_order' => 'required|integer|min:1',
+            'count' => 'required|integer|min:1|max:20',
+            'cycle' => 'nullable|string|max:50',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $user = $request->user();
+
+        return DB::transaction(function () use ($request, $user) {
+            $gradeLevels = [];
+            for ($i = 0; $i < $request->count; $i++) {
+                $order = $request->start_order + $i;
+                $gradeLevel = GradeLevel::create([
+                    'school_id' => $user->school_id,
+                    'name' => "{$request->prefix} {$order}",
+                    'short_name' => "{$request->prefix}{$order}",
+                    'order' => $order,
+                    'cycle' => $request->cycle,
+                ]);
+                $gradeLevels[] = $gradeLevel;
+            }
+
+            return response()->json([
+                'message' => "Created {$request->count} grade levels",
+                'grade_levels' => $gradeLevels,
+            ], 201);
+        });
+    }
+
+    // ==================== PHASE 2: SECTIONS CRUD ====================
+
+    /**
+     * List sections for a grade level.
+     */
+    public function sectionsIndex(Request $request, int $gradeLevelId): JsonResponse
+    {
+        $user = $request->user();
+
+        $sections = Section::where('school_id', $user->school_id)
+            ->where('grade_level_id', $gradeLevelId)
+            ->get()
+            ->map(function ($section) {
+                return [
+                    'id' => $section->id,
+                    'grade_level_id' => $section->grade_level_id,
+                    'name' => $section->name,
+                    'room_number' => $section->room_number,
+                    'capacity' => $section->capacity,
+                ];
+            });
+
+        return response()->json(['sections' => $sections]);
+    }
+
+    /**
+     * Create a section.
+     */
+    public function createSection(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'grade_level_id' => 'required|exists:grade_levels,id',
+            'name' => 'required|string|max:50',
+            'room_number' => 'nullable|string|max:50',
+            'capacity' => 'nullable|integer|min:1',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $user = $request->user();
+        $gradeLevel = GradeLevel::where('school_id', $user->school_id)
+            ->findOrFail($request->grade_level_id);
+
+        $section = Section::create([
+            'school_id' => $user->school_id,
+            'grade_level_id' => $gradeLevel->id,
+            'name' => $request->name,
+            'room_number' => $request->room_number,
+            'capacity' => $request->capacity,
+        ]);
+
+        return response()->json([
+            'message' => 'Section created successfully',
+            'section' => $section,
+        ], 201);
+    }
+
+    /**
+     * Update a section.
+     */
+    public function updateSection(Request $request, int $id): JsonResponse
+    {
+        $user = $request->user();
+        $section = Section::where('school_id', $user->school_id)->findOrFail($id);
+
+        $validator = Validator::make($request->all(), [
+            'name' => 'sometimes|string|max:50',
+            'room_number' => 'nullable|string|max:50',
+            'capacity' => 'nullable|integer|min:1',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $section->update($request->only(['name', 'room_number', 'capacity']));
+
+        return response()->json([
+            'message' => 'Section updated successfully',
+            'section' => $section,
+        ]);
+    }
+
+    /**
+     * Delete a section.
+     */
+    public function deleteSection(Request $request, int $id): JsonResponse
+    {
+        $user = $request->user();
+        $section = Section::where('school_id', $user->school_id)->findOrFail($id);
+
+        $section->delete();
+
+        return response()->json(['message' => 'Section deleted successfully']);
+    }
+
+    // ==================== PHASE 2: DEPARTMENTS CRUD ====================
+
+    /**
+     * List all departments for the school.
+     */
+    public function departmentsIndex(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $departments = Department::where('school_id', $user->school_id)
+            ->orderBy('name')
+            ->get()
+            ->map(function ($dept) {
+                return [
+                    'id' => $dept->id,
+                    'name' => $dept->name,
+                    'code' => $dept->code,
+                ];
+            });
+
+        return response()->json(['departments' => $departments]);
+    }
+
+    /**
+     * Create a department.
+     */
+    public function createDepartment(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:100',
+            'code' => 'nullable|string|max:20',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $user = $request->user();
+
+        $department = Department::create([
+            'school_id' => $user->school_id,
+            'name' => $request->name,
+            'code' => $request->code,
+        ]);
+
+        return response()->json([
+            'message' => 'Department created successfully',
+            'department' => $department,
+        ], 201);
+    }
+
+    /**
+     * Update a department.
+     */
+    public function updateDepartment(Request $request, int $id): JsonResponse
+    {
+        $user = $request->user();
+        $department = Department::where('school_id', $user->school_id)->findOrFail($id);
+
+        $validator = Validator::make($request->all(), [
+            'name' => 'sometimes|string|max:100',
+            'code' => 'nullable|string|max:20',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $department->update($request->only(['name', 'code']));
+
+        return response()->json([
+            'message' => 'Department updated successfully',
+            'department' => $department,
+        ]);
+    }
+
+    /**
+     * Delete a department.
+     */
+    public function deleteDepartment(Request $request, int $id): JsonResponse
+    {
+        $user = $request->user();
+        $department = Department::where('school_id', $user->school_id)->findOrFail($id);
+
+        if ($department->subjects()->count() > 0) {
+            return response()->json([
+                'message' => 'Cannot delete department with assigned subjects. Reassign or delete subjects first.',
+            ], 400);
+        }
+
+        $department->delete();
+
+        return response()->json(['message' => 'Department deleted successfully']);
+    }
+
+    // ==================== PHASE 2: SUBJECTS CRUD ====================
+
+    /**
+     * Create a subject.
+     */
+    public function createSubject(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:100',
+            'code' => 'nullable|string|max:20',
+            'type' => 'required|in:core,elective,departmental',
+            'department_id' => 'nullable|exists:departments,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $user = $request->user();
+
+        $subject = Subject::create([
+            'school_id' => $user->school_id,
+            'name' => $request->name,
+            'code' => $request->code,
+            'type' => $request->type,
+            'department_id' => $request->department_id,
+        ]);
+
+        return response()->json([
+            'message' => 'Subject created successfully',
+            'subject' => $subject,
+        ], 201);
+    }
+
+    /**
+     * Update a subject.
+     */
+    public function updateSubject(Request $request, int $id): JsonResponse
+    {
+        $user = $request->user();
+        $subject = Subject::where('school_id', $user->school_id)->findOrFail($id);
+
+        $validator = Validator::make($request->all(), [
+            'name' => 'sometimes|string|max:100',
+            'code' => 'nullable|string|max:20',
+            'type' => 'sometimes|in:core,elective,departmental',
+            'department_id' => 'nullable|exists:departments,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $subject->update($request->only(['name', 'code', 'type', 'department_id']));
+
+        return response()->json([
+            'message' => 'Subject updated successfully',
+            'subject' => $subject,
+        ]);
+    }
+
+    /**
+     * Delete a subject.
+     */
+    public function deleteSubject(Request $request, int $id): JsonResponse
+    {
+        $user = $request->user();
+        $subject = Subject::where('school_id', $user->school_id)->findOrFail($id);
+
+        $subject->delete();
+
+        return response()->json(['message' => 'Subject deleted successfully']);
+    }
+
+    // ==================== PHASE 2: SUBJECT-TO-GRADE MAPPINGS ====================
+
+    /**
+     * Get subjects assigned to a grade level.
+     */
+    public function gradeLevelSubjects(Request $request, int $gradeLevelId): JsonResponse
+    {
+        $user = $request->user();
+
+        $mappings = GradeLevelSubject::where('school_id', $user->school_id)
+            ->where('grade_level_id', $gradeLevelId)
+            ->with(['subject', 'department'])
+            ->get()
+            ->map(function ($mapping) {
+                return [
+                    'id' => $mapping->id,
+                    'subject_id' => $mapping->subject_id,
+                    'subject_name' => $mapping->subject->name,
+                    'subject_code' => $mapping->subject->code,
+                    'subject_type' => $mapping->subject->type,
+                    'is_compulsory' => $mapping->is_compulsory,
+                    'department_id' => $mapping->department_id,
+                    'department_name' => $mapping->department?->name,
+                ];
+            });
+
+        return response()->json(['mappings' => $mappings]);
+    }
+
+    /**
+     * Assign a subject to a grade level.
+     */
+    public function assignSubjectToGrade(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'grade_level_id' => 'required|exists:grade_levels,id',
+            'subject_id' => 'required|exists:subjects,id',
+            'is_compulsory' => 'boolean',
+            'department_id' => 'nullable|exists:departments,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $user = $request->user();
+
+        // Check if already assigned
+        $existing = GradeLevelSubject::where('school_id', $user->school_id)
+            ->where('grade_level_id', $request->grade_level_id)
+            ->where('subject_id', $request->subject_id)
+            ->first();
+
+        if ($existing) {
+            return response()->json([
+                'message' => 'Subject is already assigned to this grade level.',
+            ], 409);
+        }
+
+        $mapping = GradeLevelSubject::create([
+            'school_id' => $user->school_id,
+            'grade_level_id' => $request->grade_level_id,
+            'subject_id' => $request->subject_id,
+            'is_compulsory' => $request->is_compulsory ?? true,
+            'department_id' => $request->department_id,
+        ]);
+
+        return response()->json([
+            'message' => 'Subject assigned to grade level successfully',
+            'mapping' => $mapping,
+        ], 201);
+    }
+
+    /**
+     * Bulk assign subjects to multiple grade levels.
+     */
+    public function bulkAssignSubjects(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'grade_level_ids' => 'required|array|min:1',
+            'grade_level_ids.*' => 'exists:grade_levels,id',
+            'subject_ids' => 'required|array|min:1',
+            'subject_ids.*' => 'exists:subjects,id',
+            'is_compulsory' => 'boolean',
+            'department_id' => 'nullable|exists:departments,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $user = $request->user();
+
+        return DB::transaction(function () use ($request, $user) {
+            $created = 0;
+            foreach ($request->grade_level_ids as $gradeLevelId) {
+                foreach ($request->subject_ids as $subjectId) {
+                    // Skip if already assigned
+                    $exists = GradeLevelSubject::where('school_id', $user->school_id)
+                        ->where('grade_level_id', $gradeLevelId)
+                        ->where('subject_id', $subjectId)
+                        ->exists();
+                    
+                    if (!$exists) {
+                        GradeLevelSubject::create([
+                            'school_id' => $user->school_id,
+                            'grade_level_id' => $gradeLevelId,
+                            'subject_id' => $subjectId,
+                            'is_compulsory' => $request->is_compulsory ?? true,
+                            'department_id' => $request->department_id,
+                        ]);
+                        $created++;
+                    }
+                }
+            }
+
+            return response()->json([
+                'message' => "Assigned {$created} subject(s) to " . count($request->grade_level_ids) . " grade level(s)",
+                'created_count' => $created,
+            ], 201);
+        });
+    }
+
+    /**
+     * Remove a subject from a grade level.
+     */
+    public function removeSubjectFromGrade(Request $request, int $mappingId): JsonResponse
+    {
+        $user = $request->user();
+        $mapping = GradeLevelSubject::where('school_id', $user->school_id)->findOrFail($mappingId);
+
+        $mapping->delete();
+
+        return response()->json(['message' => 'Subject removed from grade level']);
+    }
 }
