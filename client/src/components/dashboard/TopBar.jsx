@@ -11,9 +11,10 @@ export default function TopBar({ title, subtitle, user, onMobileMenuToggle }) {
         <div className="flex items-center gap-4">
           <button
             onClick={onMobileMenuToggle}
-            className="lg:hidden p-2 rounded-lg hover:bg-primary/10 transition-colors"
+            className="lg:hidden p-2 rounded-lg hover:bg-primary/10 transition-colors text-text-secondary"
+            aria-label="Open menu"
           >
-            <Menu size={20} className="text-text-secondary" />
+            <Menu size={20} />
           </button>
           <div>
             <h1 className="text-xl font-bold text-text-primary">{title}</h1>

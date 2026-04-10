@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -48,7 +48,22 @@ const SCHOOL_ADMIN_NAV = [
 
 export default function Sidebar({ role = 'admin', user, onLogout, collapsed: initialCollapsed = false, onToggle, mobileOpen, onMobileClose }) {
   const pathname = usePathname();
-  const [collapsed, setCollapsed] = useState(initialCollapsed);
+  
+  // Persist collapsed state in localStorage
+  const [collapsed, setCollapsed] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('sidebar-collapsed');
+      return stored !== null ? JSON.parse(stored) : initialCollapsed;
+    }
+    return initialCollapsed;
+  });
+
+  // Save collapsed state to localStorage whenever it changes
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('sidebar-collapsed', JSON.stringify(collapsed));
+    }
+  }, [collapsed]);
 
   const navItems = role === 'super_admin' ? SUPER_ADMIN_NAV : SCHOOL_ADMIN_NAV;
 
@@ -61,6 +76,7 @@ export default function Sidebar({ role = 'admin', user, onLogout, collapsed: ini
     setCollapsed(newState);
     onToggle?.(newState);
   };
+
   const closeMobile = () => {
     onMobileClose?.();
   };
@@ -70,7 +86,7 @@ export default function Sidebar({ role = 'admin', user, onLogout, collapsed: ini
       {/* Mobile overlay */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden backdrop-blur-sm"
           onClick={closeMobile}
         />
       )}
@@ -82,11 +98,11 @@ export default function Sidebar({ role = 'admin', user, onLogout, collapsed: ini
           ${mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}
       >
-        {/* Logo */}
+        {/* Header with Logo and Mobile Close */}
         <div className={`flex items-center ${collapsed ? 'justify-center' : 'justify-between'} p-4 border-b border-white/10`}>
           {!collapsed && (
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+            <div className="flex items-center gap-3 flex-1">
+              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
                   <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="white" />
                   <path d="M2 17L12 22L22 17" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -105,10 +121,21 @@ export default function Sidebar({ role = 'admin', user, onLogout, collapsed: ini
               </svg>
             </div>
           )}
+          
+          {/* Mobile Close Button */}
+          <button
+            onClick={closeMobile}
+            className="lg:hidden p-1.5 rounded-lg hover:bg-white/10 transition-colors"
+            aria-label="Close menu"
+          >
+            <X size={20} />
+          </button>
+
+          {/* Desktop Collapse Toggle */}
           {!collapsed && (
             <button
               onClick={toggleSidebar}
-              className="text-white/50 hover:text-white transition-colors hidden lg:flex"
+              className="text-white/50 hover:text-white transition-colors hidden lg:flex p-1.5 rounded-lg hover:bg-white/10"
             >
               <ChevronLeft size={18} />
             </button>
