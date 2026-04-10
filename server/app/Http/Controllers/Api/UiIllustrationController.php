@@ -44,7 +44,8 @@ class UiIllustrationController extends Controller
         $validator = Validator::make($request->all(), [
             'pack_name' => 'required|string|max:255',
             'illustrations' => 'required|array|min:1',
-            'illustrations.*' => 'required|file|mimes:svg,png,jpg,jpeg,webp|max:5120',
+            // Allow SVG, PNG, JPG, JPEG, WEBP. Note: SVG requires mime check or extension check.
+            'illustrations.*' => 'required|file|max:5120', // Max 5MB
         ]);
 
         if ($validator->fails()) {
@@ -54,20 +55,45 @@ class UiIllustrationController extends Controller
             ], 422);
         }
 
-        $packName = $request->input('pack_name');
+        // Sanitize pack name: lowercase, replace spaces/special chars with hyphens
+        $rawPackName = $request->input('pack_name');
+        $packName = preg_replace('/[^a-zA-Z0-9_\-]/', '-', strtolower(trim($rawPackName)));
+        $packName = preg_replace('/-+/', '-', $packName); // Remove multiple hyphens
+        $packName = trim($packName, '-');
+
+        if (empty($packName)) {
+            return response()->json(['message' => 'Invalid pack name'], 422);
+        }
+
         $uploaded = [];
 
         foreach ($request->file('illustrations') as $file) {
+            // Validate extension manually for SVG support
+            $extension = strtolower($file->getClientOriginalExtension());
+            $allowedExtensions = ['svg', 'png', 'jpg', 'jpeg', 'webp'];
+
+            if (!in_array($extension, $allowedExtensions)) {
+                continue; // Skip invalid files
+            }
+
             // Derive key from filename (strip extension)
             $filename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-            $extension = $file->getClientOriginalExtension();
+            // Sanitize filename key
+            $filename = preg_replace('/[^a-zA-Z0-9_\-]/', '_', strtolower($filename));
 
             // Determine section from key prefix
             $section = $this->detectSection($filename);
 
             // Generate storage path
             $storageFilename = sprintf('%s/%s.%s', $packName, $filename, $extension);
+
+            // Store file
             $path = $file->storeAs('illustrations', $storageFilename, 'public');
+
+            if (!$path) {
+                continue; // Skip if storage failed
+            }
+
             $url = Storage::url($path);
 
             $uiIllustration = UiIllustration::create([
@@ -80,6 +106,12 @@ class UiIllustrationController extends Controller
             ]);
 
             $uploaded[] = $uiIllustration;
+        }
+
+        if (count($uploaded) === 0) {
+            return response()->json([
+                'message' => 'No valid files were uploaded. Please ensure files are SVG, PNG, JPG, or WEBP.',
+            ], 422);
         }
 
         return response()->json([

@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import { api } from '@/lib/api';
+import { useIllustrations } from '@/contexts/IllustrationProvider';
 
 // Illustration keys the system expects
 const ILLUSTRATION_KEYS = [
@@ -38,6 +39,7 @@ const ILLUSTRATION_KEYS = [
 
 export default function IllustrationsPage() {
   const router = useRouter();
+  const { refresh: refreshIllustrations } = useIllustrations();
   const [loading, setLoading] = useState(true);
   const [activeIllustrations, setActiveIllustrations] = useState({});
   const [packs, setPacks] = useState([]);
@@ -108,7 +110,8 @@ export default function IllustrationsPage() {
       setPackName('');
       setSelectedFiles([]);
       setShowUploadModal(false);
-      await fetchData(); // Refresh list
+      await fetchData(); // Refresh local list
+      refreshIllustrations(); // Refresh global context for other pages
     } catch (err) {
       console.error('Upload failed:', err);
     } finally {
@@ -121,6 +124,7 @@ export default function IllustrationsPage() {
     try {
       await api.put(`/ui/illustrations/packs/${encodeURIComponent(packNameToActivate)}/activate`);
       await fetchData();
+      refreshIllustrations(); // Refresh global context
     } catch (err) {
       console.error('Activation failed:', err);
     } finally {
@@ -350,15 +354,20 @@ export default function IllustrationsPage() {
         {/* Upload Modal */}
         {showUploadModal && (
           <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowUploadModal(false)}>
-            <div className="bg-bg-card rounded-card shadow-elevated max-w-lg w-full p-6 animate-scale-in" onClick={(e) => e.stopPropagation()}>
-              <div className="flex items-center justify-between mb-6">
+            <div
+              className="bg-bg-card rounded-card shadow-elevated max-w-lg w-full animate-scale-in flex flex-col max-h-[90vh]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Modal Header - fixed */}
+              <div className="flex items-center justify-between p-5 border-b border-border flex-shrink-0">
                 <h3 className="text-lg font-bold text-text-primary">Upload Illustration Pack</h3>
                 <button onClick={() => setShowUploadModal(false)} className="text-text-muted hover:text-text-primary transition-colors">
                   <X size={20} />
                 </button>
               </div>
 
-              <div className="space-y-4">
+              {/* Modal Body - scrollable */}
+              <div className="p-5 space-y-4 overflow-y-auto flex-1">
                 <div>
                   <label className="form-label">Pack Name</label>
                   <input
@@ -372,8 +381,8 @@ export default function IllustrationsPage() {
 
                 <div>
                   <label className="form-label">Illustration Files</label>
-                  <div className="border-2 border-dashed border-border rounded-card p-8 text-center hover:border-primary/40 transition-colors">
-                    <Upload size={32} className="text-text-muted mx-auto mb-3" />
+                  <div className="border-2 border-dashed border-border rounded-card p-6 text-center hover:border-primary/40 transition-colors">
+                    <Upload size={28} className="text-text-muted mx-auto mb-2" />
                     <p className="text-sm text-text-secondary mb-1">
                       Drag & drop illustration files here
                     </p>
@@ -393,12 +402,12 @@ export default function IllustrationsPage() {
                     </label>
                   </div>
                   {selectedFiles.length > 0 && (
-                    <div className="mt-3 space-y-1">
+                    <div className="mt-3 space-y-1 max-h-32 overflow-y-auto">
                       {selectedFiles.map((file, i) => (
                         <div key={i} className="flex items-center gap-2 text-xs text-text-secondary">
-                          <Image size={14} className="text-primary" />
-                          <span>{file.name}</span>
-                          <span className="text-text-muted">({(file.size / 1024).toFixed(1)} KB)</span>
+                          <Image size={14} className="text-primary flex-shrink-0" />
+                          <span className="truncate">{file.name}</span>
+                          <span className="text-text-muted flex-shrink-0">({(file.size / 1024).toFixed(1)} KB)</span>
                         </div>
                       ))}
                     </div>
@@ -413,9 +422,14 @@ export default function IllustrationsPage() {
                 </div>
               </div>
 
-              <div className="flex gap-3 mt-6">
+              {/* Modal Footer - fixed */}
+              <div className="flex gap-3 p-5 border-t border-border flex-shrink-0 bg-bg-card">
                 <button
-                  onClick={() => setShowUploadModal(false)}
+                  onClick={() => {
+                    setShowUploadModal(false);
+                    setPackName('');
+                    setSelectedFiles([]);
+                  }}
                   className="flex-1 px-4 py-2.5 rounded-btn border border-border text-sm font-medium text-text-secondary hover:bg-bg-main transition-colors"
                 >
                   Cancel
