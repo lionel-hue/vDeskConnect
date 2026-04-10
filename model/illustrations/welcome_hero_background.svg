@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080">
+  <defs>
+    <!-- Gradients -->
+    <linearGradient id="bg-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2D2B55;stop-opacity:1" />
+      <stop offset="30%" style="stop-color:#5E4FA2;stop-opacity:1" />
+      <stop offset="70%" style="stop-color:#7C6BC4;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#A99DDB;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="light-ray" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.15" />
+      <stop offset="100%" style="stop-color:#ffffff;stop-opacity:0" />
+    </linearGradient>
+    
+    <radialGradient id="glow1" cx="20%" cy="30%">
+      <stop offset="0%" style="stop-color:#A99DDB;stop-opacity:0.4" />
+      <stop offset="100%" style="stop-color:#A99DDB;stop-opacity:0" />
+    </radialGradient>
+    
+    <radialGradient id="glow2" cx="80%" cy="70%">
+      <stop offset="0%" style="stop-color:#7C6BC4;stop-opacity:0.3" />
+      <stop offset="100%" style="stop-color:#7C6BC4;stop-opacity:0" />
+    </radialGradient>
+    
+    <!-- Filters -->
+    <filter id="blur1">
+      <feGaussianBlur stdDeviation="60"/>
+    </filter>
+    <filter id="blur2">
+      <feGaussianBlur stdDeviation="40"/>
+    </filter>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="8" stdDeviation="20" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1920" height="1080" fill="url(#bg-gradient)"/>
+  
+  <!-- Ambient glows -->
+  <ellipse cx="384" cy="324" rx="600" ry="500" fill="url(#glow1)" filter="url(#blur1)"/>
+  <ellipse cx="1536" cy="756" rx="700" ry="600" fill="url(#glow2)" filter="url(#blur1)"/>
+  
+  <!-- Light rays -->
+  <polygon points="0,0 960,540 0,1080" fill="url(#light-ray)" opacity="0.3"/>
+  <polygon points="1920,0 960,540 1920,1080" fill="url(#light-ray)" opacity="0.2"/>
+  
+  <!-- Abstract geometric shapes (modern educational feel) -->
+  <!-- Large circles representing knowledge/global reach -->
+  <circle cx="1600" cy="200" r="180" fill="#A99DDB" opacity="0.15" filter="url(#blur2)"/>
+  <circle cx="1650" cy="250" r="120" fill="#7C6BC4" opacity="0.2" filter="url(#blur2)"/>
+  
+  <circle cx="250" cy="850" r="200" fill="#5E4FA2" opacity="0.18" filter="url(#blur2)"/>
+  <circle cx="300" cy="900" r="140" fill="#A99DDB" opacity="0.15" filter="url(#blur2)"/>
+  
+  <!-- Rectangular panels (representing screens/learning materials) -->
+  <rect x="1400" y="600" width="350" height="250" rx="20" fill="#ffffff" opacity="0.06" filter="url(#blur2)" transform="rotate(-8 1575 725)"/>
+  <rect x="150" y="150" width="280" height="200" rx="16" fill="#ffffff" opacity="0.05" filter="url(#blur2)" transform="rotate(5 290 250)"/>
+  
+  <!-- Subtle grid pattern (technology/structure) -->
+  <g opacity="0.04" stroke="#ffffff" stroke-width="2">
+    <line x1="0" y1="0" x2="0" y2="1080"/>
+    <line x1="100" y1="0" x2="100" y2="1080"/>
+    <line x1="200" y1="0" x2="200" y2="1080"/>
+    <line x1="300" y1="0" x2="300" y2="1080"/>
+    <line x1="400" y1="0" x2="400" y2="1080"/>
+    <line x1="500" y1="0" x2="500" y2="1080"/>
+    <line x1="600" y1="0" x2="600" y2="1080"/>
+    <line x1="700" y1="0" x2="700" y2="1080"/>
+    <line x1="800" y1="0" x2="800" y2="1080"/>
+    <line x1="900" y1="0" x2="900" y2="1080"/>
+    <line x1="1000" y1="0" x2="1000" y2="1080"/>
+    <line x1="1100" y1="0" x2="1100" y2="1080"/>
+    <line x1="1200" y1="0" x2="1200" y2="1080"/>
+    <line x1="1300" y1="0" x2="1300" y2="1080"/>
+    <line x1="1400" y1="0" x2="1400" y2="1080"/>
+    <line x1="1500" y1="0" x2="1500" y2="1080"/>
+    <line x1="1600" y1="0" x2="1600" y2="1080"/>
+    <line x1="1700" y1="0" x2="1700" y2="1080"/>
+    <line x1="1800" y1="0" x2="1800" y2="1080"/>
+    <line x1="1900" y1="0" x2="1900" y2="1080"/>
+    <line x1="0" y1="0" x2="1920" y2="0"/>
+    <line x1="0" y1="100" x2="1920" y2="100"/>
+    <line x1="0" y1="200" x2="1920" y2="200"/>
+    <line x1="0" y1="300" x2="1920" y2="300"/>
+    <line x1="0" y1="400" x2="1920" y2="400"/>
+    <line x1="0" y1="500" x2="1920" y2="500"/>
+    <line x1="0" y1="600" x2="1920" y2="600"/>
+    <line x1="0" y1="700" x2="1920" y2="700"/>
+    <line x1="0" y1="800" x2="1920" y2="800"/>
+    <line x1="0" y1="900" x2="1920" y2="900"/>
+    <line x1="0" y1="1000" x2="1920" y2="1000"/>
+    <line x1="0" y1="1100" x2="1920" y2="1100"/>
+  </g>
+  
+  <!-- Abstract book/graduation cap shapes -->
+  <g opacity="0.08" fill="#ffffff" transform="translate(850, 100) scale(2)">
+    <!-- Simplified graduation cap -->
+    <polygon points="50,0 100,25 50,50 0,25"/>
+    <rect x="35" y="25" width="30" height="40"/>
+    <line x1="50" y1="50" x2="50" y2="80" stroke="#ffffff" stroke-width="3"/>
+    <circle cx="50" cy="82" r="4" fill="#ffffff"/>
+  </g>
+  
+  <!-- Floating particles (dynamic, alive feeling) -->
+  <circle cx="931" cy="461" r="3.1" fill="#ffffff" opacity="0.28"/>
+  <circle cx="1562" cy="292" r="4.3" fill="#ffffff" opacity="0.19"/>
+  <circle cx="1468" cy="719" r="4.2" fill="#ffffff" opacity="0.10"/>
+  <circle cx="647" cy="345" r="4.1" fill="#ffffff" opacity="0.22"/>
+  <circle cx="1147" cy="611" r="2.1" fill="#ffffff" opacity="0.25"/>
+  <circle cx="64" cy="923" r="4.5" fill="#ffffff" opacity="0.35"/>
+  <circle cx="106" cy="280" r="2.1" fill="#ffffff" opacity="0.17"/>
+  <circle cx="731" cy="407" r="4.4" fill="#ffffff" opacity="0.25"/>
+  <circle cx="314" cy="920" r="5.6" fill="#ffffff" opacity="0.29"/>
+  <circle cx="1715" cy="910" r="4.9" fill="#ffffff" opacity="0.31"/>
+  <circle cx="1602" cy="258" r="4.4" fill="#ffffff" opacity="0.29"/>
+  <circle cx="1482" cy="1034" r="3.4" fill="#ffffff" opacity="0.34"/>
+  <circle cx="919" cy="447" r="5.0" fill="#ffffff" opacity="0.18"/>
+  <circle cx="74" cy="843" r="6.0" fill="#ffffff" opacity="0.17"/>
+  <circle cx="1151" cy="655" r="4.9" fill="#ffffff" opacity="0.37"/>
+  <circle cx="1265" cy="716" r="4.2" fill="#ffffff" opacity="0.25"/>
+  <circle cx="1309" cy="314" r="4.1" fill="#ffffff" opacity="0.27"/>
+  <circle cx="446" cy="504" r="4.6" fill="#ffffff" opacity="0.19"/>
+  <circle cx="820" cy="360" r="2.6" fill="#ffffff" opacity="0.11"/>
+  <circle cx="1641" cy="652" r="2.0" fill="#ffffff" opacity="0.27"/>
+  <circle cx="1392" cy="953" r="2.1" fill="#ffffff" opacity="0.32"/>
+  <circle cx="519" cy="167" r="2.7" fill="#ffffff" opacity="0.30"/>
+  <circle cx="1233" cy="604" r="5.4" fill="#ffffff" opacity="0.31"/>
+  <circle cx="291" cy="496" r="5.5" fill="#ffffff" opacity="0.24"/>
+  <circle cx="1494" cy="984" r="2.3" fill="#ffffff" opacity="0.16"/>
+  <circle cx="514" cy="382" r="5.1" fill="#ffffff" opacity="0.28"/>
+  <circle cx="1106" cy="606" r="3.2" fill="#ffffff" opacity="0.19"/>
+  <circle cx="1616" cy="397" r="3.4" fill="#ffffff" opacity="0.13"/>
+  <circle cx="1715" cy="895" r="5.1" fill="#ffffff" opacity="0.34"/>
+  <circle cx="157" cy="679" r="6.0" fill="#ffffff" opacity="0.16"/>
+  
+  <!-- Wave pattern at bottom (fluidity, progress) -->
+  <path d="M 0 900 Q 240 850 480 900 T 960 900 T 1440 900 T 1920 900 L 1920 1080 L 0 1080 Z" 
+        fill="#1A1A2E" opacity="0.3" filter="url(#blur2)"/>
+  <path d="M 0 950 Q 320 900 640 950 T 1280 950 T 1920 950 L 1920 1080 L 0 1080 Z" 
+        fill="#2D2B55" opacity="0.4" filter="url(#blur2)"/>
+  
+  <!-- Subtle text overlay space indicator (center area) -->
+  <rect x="460" y="340" width="1000" height="400" rx="24" fill="#ffffff" opacity="0.02" filter="url(#blur2)"/>
+  
+  <!-- Vignette effect (draws focus to center) -->
+  <rect width="1920" height="1080" fill="none" stroke="#1A1A2E" stroke-width="200" opacity="0.3" filter="url(#blur1)"/>
+</svg>
