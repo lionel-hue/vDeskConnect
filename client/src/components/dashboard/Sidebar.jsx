@@ -95,7 +95,7 @@ export default function Sidebar({ role = 'admin', user, onLogout, collapsed: ini
       <aside
         className={`fixed top-0 left-0 h-full bg-sidebar text-white z-50 transition-all duration-300 ease-out flex flex-col
           ${collapsed ? 'lg:w-20' : 'lg:w-64'}
-          w-64 lg:w-auto
+          w-64
           ${mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}
       >
@@ -162,7 +162,10 @@ export default function Sidebar({ role = 'admin', user, onLogout, collapsed: ini
         {/* Navigation */}
         <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
           {navItems.map((item) => {
-            const isActive = pathname === item.href || pathname?.startsWith(item.href + '/');
+            // Exact match for dashboard, prefix match for sub-pages
+            const isActive = item.href === '/dashboard'
+              ? pathname === '/dashboard'
+              : (pathname === item.href || pathname?.startsWith(item.href + '/'));
             return (
               <Link
                 key={item.href}
