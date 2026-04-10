@@ -327,8 +327,15 @@ export default function StaffPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="form-label">Employee Number *</label>
-                  <input type="text" value={form.employee_number} onChange={e => setForm({...form, employee_number: e.target.value})}
-                    className={`form-input ${formErrors.employee_number ? 'border-error' : ''}`} placeholder="STF-2026-001" required />
+                  <div className="flex gap-2">
+                    <input type="text" value={form.employee_number} onChange={e => setForm({...form, employee_number: e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, '')})}
+                      className={`form-input flex-1 ${formErrors.employee_number ? 'border-error' : ''}`} placeholder="STF-2026-001" required />
+                    <button type="button" onClick={() => setForm({...form, employee_number: generateEmployeeNumber()})}
+                      className="px-3 py-2.5 rounded-btn bg-primary/10 text-primary hover:bg-primary/20 transition-colors text-xs font-medium whitespace-nowrap flex items-center gap-1.5 flex-shrink-0"
+                      title="Auto-generate employee number">
+                      <Hash size={14} /> Auto
+                    </button>
+                  </div>
                   {formErrors.employee_number && <p className="text-error text-xs mt-1">{formErrors.employee_number[0]}</p>}
                 </div>
                 <div>
