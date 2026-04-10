@@ -109,7 +109,7 @@ class TeacherController extends Controller
             return response()->json([
                 'message' => 'Teacher created successfully',
                 'teacher' => $this->formatTeacherResponse($teacher),
-                'temporary_password' => $tempPassword,
+                'temporary_password' => $request->password ? null : 'Secret123!',
             ], 201);
         });
     }
