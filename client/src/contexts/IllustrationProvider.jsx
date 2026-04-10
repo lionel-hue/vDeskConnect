@@ -16,8 +16,8 @@ export function IllustrationProvider({ children }) {
       const keyed = {};
       (data || []).forEach((ill) => { if (ill && ill.key && ill.url) keyed[ill.key] = ill.url; });
       setIllustrations(keyed);
-    } catch {
-      // Backend not ready yet — use fallback illustrations silently
+    } catch (err) {
+      console.error('Failed to fetch illustrations:', err);
       setIllustrations({});
     } finally {
       setLoading(false);

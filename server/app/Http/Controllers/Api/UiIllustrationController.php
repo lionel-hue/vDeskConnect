@@ -17,16 +17,7 @@ class UiIllustrationController extends Controller
     public function index(): JsonResponse
     {
         $illustrations = UiIllustration::where('is_active', true)
-            ->get(['id', 'key', 'url', 'section', 'pack_name'])
-            ->map(function ($illustration) {
-                return [
-                    'id' => $illustration->id,
-                    'key' => $illustration->key,
-                    'url' => $this->getFullUrl($illustration->url),
-                    'section' => $illustration->section,
-                    'pack_name' => $illustration->pack_name,
-                ];
-            });
+            ->get(['id', 'key', 'url', 'section', 'pack_name']);
 
         return response()->json($illustrations);
     }
@@ -38,16 +29,7 @@ class UiIllustrationController extends Controller
     {
         $illustrations = UiIllustration::where('is_active', true)
             ->where('section', $section)
-            ->get(['id', 'key', 'url', 'section', 'pack_name'])
-            ->map(function ($illustration) {
-                return [
-                    'id' => $illustration->id,
-                    'key' => $illustration->key,
-                    'url' => $this->getFullUrl($illustration->url),
-                    'section' => $illustration->section,
-                    'pack_name' => $illustration->pack_name,
-                ];
-            });
+            ->get(['id', 'key', 'url', 'section', 'pack_name']);
 
         return response()->json($illustrations);
     }
@@ -130,8 +112,6 @@ class UiIllustrationController extends Controller
                 'created_by' => $request->user()->id,
             ]);
 
-            // Return full URL in response
-            $uiIllustration->url = $this->getFullUrl($uiIllustration->url);
             $uploaded[] = $uiIllustration;
         }
 
@@ -166,24 +146,6 @@ class UiIllustrationController extends Controller
             return 'landing';
         }
         return 'other';
-    }
-
-    /**
-     * Convert storage URL to full URL.
-     */
-    private function getFullUrl(string $url): string
-    {
-        // If it's already a full URL, return it
-        if (str_starts_with($url, 'http://') || str_starts_with($url, 'https://')) {
-            return $url;
-        }
-
-        // If it starts with /storage, convert to full URL
-        if (str_starts_with($url, '/storage')) {
-            return rtrim(config('app.url'), '/') . $url;
-        }
-
-        return $url;
     }
 
     /**

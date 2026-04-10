@@ -1,10 +1,12 @@
 'use client';
 
+import { useState } from 'react';
 import { useIllustrations } from '@/contexts/IllustrationProvider';
 
 export default function IllustrationDisplay({ name, alt = '', className = '', fallback = null }) {
   const { getIllustration, loading } = useIllustrations();
   const src = getIllustration(name, fallback);
+  const [error, setError] = useState(false);
 
   // While loading, show skeleton
   if (loading) {
@@ -17,18 +19,22 @@ export default function IllustrationDisplay({ name, alt = '', className = '', fa
   }
 
   // If src is a string URL, render as image
-  if (src && typeof src === 'string') {
+  if (src && typeof src === 'string' && !error) {
     return (
       <img
         src={src}
         alt={alt || name}
         className={`auth-illustration ${className}`}
         loading="lazy"
+        onError={(e) => {
+          console.error(`Failed to load illustration: ${name}`, src);
+          setError(true);
+        }}
       />
     );
   }
 
-  // No illustration available — render fallback JSX
+  // No illustration available or error occurred — render fallback JSX
   if (fallback && typeof fallback !== 'string') {
     return <div className={className}>{fallback}</div>;
   }
