@@ -76,6 +76,17 @@ class TeacherController extends Controller
             return response()->json(['message' => 'You do not have permission to create teachers'], 403);
         }
 
+        // Check if employee number already exists in profiles
+        $existingEmployee = Profile::where('type', 'teacher')
+            ->where('data->employee_number', $request->employee_number)
+            ->exists();
+        if ($existingEmployee) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => ['employee_number' => ['This employee number already exists.']],
+            ], 422);
+        }
+
         $tempPassword = $request->password ?: 'Secret123!';
 
         return DB::transaction(function () use ($request, $tempPassword, $user) {
