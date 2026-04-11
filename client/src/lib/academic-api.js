@@ -97,6 +97,30 @@ export const academicApi = {
     assign: (data) => api.post('/academic/teacher-assignments', data),
     remove: (id) => api.delete(`/academic/teacher-assignments/${id}`),
   },
+
+  // ==================== PHASE 5: SCHEME OF WORK ====================
+
+  // Schemes of Work
+  schemes: {
+    getAll: (filters = {}) => {
+      const params = new URLSearchParams();
+      if (filters.grade_level_id) params.append('grade_level_id', filters.grade_level_id);
+      if (filters.subject_id) params.append('subject_id', filters.subject_id);
+      if (filters.term_id) params.append('term_id', filters.term_id);
+      if (filters.status) params.append('status', filters.status);
+      return api.get(`/academic/schemes?${params.toString()}`);
+    },
+    create: (data) => api.post('/academic/schemes', data),
+    update: (id, data) => api.put(`/academic/schemes/${id}`, data),
+    delete: (id) => api.delete(`/academic/schemes/${id}`),
+    publish: (id) => api.put(`/academic/schemes/${id}/publish`),
+    bulkCreate: (data) => api.post('/academic/schemes/bulk-create', data),
+  },
+
+  // AI Scheme Generator
+  aiScheme: {
+    generate: (data) => api.post('/ai/scheme-of-work', data),
+  },
 };
 
 export default academicApi;

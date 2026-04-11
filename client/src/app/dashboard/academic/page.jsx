@@ -42,6 +42,7 @@ export default function AcademicPage() {
   const [termForm, setTermForm] = useState({ name: '', start_date: '', end_date: '', order: 1, weeks_count: 12 });
   const [bulkTermForm, setBulkTermForm] = useState({ terms_count: 3, weeks_per_term: 12, term_prefix: 'Term', start_date: '' });
   const [termLoading, setTermLoading] = useState(false);
+  const [editingTermId, setEditingTermId] = useState(null);
 
   // CA Weeks state
   const [caWeeks, setCaWeeks] = useState([]);
@@ -210,13 +211,21 @@ export default function AcademicPage() {
     e.preventDefault();
     setTermLoading(true);
     try {
-      const res = await academicApi.terms.create({ ...termForm, session_id: selectedSessionId });
-      toast.success(res.message);
+      if (editingTermId) {
+        // Update existing term
+        const res = await academicApi.terms.update(editingTermId, termForm);
+        toast.success(res.message || 'Term updated successfully');
+      } else {
+        // Create new term
+        const res = await academicApi.terms.create({ ...termForm, session_id: selectedSessionId });
+        toast.success(res.message || 'Term created successfully');
+      }
       setShowTermModal(false);
       setTermForm({ name: '', start_date: '', end_date: '', order: 1, weeks_count: 12 });
+      setEditingTermId(null);
       handleFetchTerms(selectedSessionId);
     } catch (err) {
-      toast.error(err.data?.message || 'Failed to create term');
+      toast.error(err.data?.message || (editingTermId ? 'Failed to update term' : 'Failed to create term'));
     } finally {
       setTermLoading(false);
     }
@@ -246,6 +255,18 @@ export default function AcademicPage() {
     } catch (err) {
       toast.error('Failed to delete term');
     }
+  };
+
+  const handleEditTerm = (term) => {
+    setTermForm({
+      name: term.name,
+      start_date: term.start_date,
+      end_date: term.end_date,
+      order: term.order,
+      weeks_count: term.weeks_count || 12,
+    });
+    setEditingTermId(term.id);
+    setShowTermModal(true);
   };
 
   // ==================== CA WEEK HANDLERS ====================
@@ -813,13 +834,23 @@ export default function AcademicPage() {
                           {terms.map(term => (
                             <div key={term.id} className="p-3 md:p-4 border border-border dark:border-gray-600 rounded-lg bg-bg-main dark:bg-gray-750">
                               <div className="flex items-center justify-between mb-2">
-                                <h3 className="font-semibold text-text-primary text-sm md:text-base truncate">{term.name}</h3>
-                                <button
-                                  onClick={() => handleDeleteTerm(term.id)}
-                                  className="text-error hover:text-error/80 flex-shrink-0"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
+                                <h3 className="font-semibold text-text-primary text-sm md:text-base truncate flex-1">{term.name}</h3>
+                                <div className="flex gap-2 flex-shrink-0">
+                                  <button
+                                    onClick={() => handleEditTerm(term)}
+                                    className="text-info hover:text-info/80"
+                                    title="Edit term"
+                                  >
+                                    <Edit2 className="w-4 h-4" />
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteTerm(term.id)}
+                                    className="text-error hover:text-error/80"
+                                    title="Delete term"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </div>
                               </div>
                               <p className="text-xs md:text-sm text-text-secondary">
                                 {term.start_date} → {term.end_date}
@@ -1423,8 +1454,8 @@ export default function AcademicPage() {
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <div className="bg-card dark:bg-gray-800 rounded-card border border-border p-6 w-full max-w-lg">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-text-primary">Add Term</h3>
-                <button onClick={() => setShowTermModal(false)} className="text-text-muted hover:text-text-primary">
+                <h3 className="text-lg font-semibold text-text-primary">{editingTermId ? 'Edit Term' : 'Add Term'}</h3>
+                <button onClick={() => { setShowTermModal(false); setEditingTermId(null); }} className="text-text-muted hover:text-text-primary">
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -1488,9 +1519,9 @@ export default function AcademicPage() {
                   </div>
                 </div>
                 <div className="flex gap-3">
-                  <button type="button" onClick={() => setShowTermModal(false)} className="flex-1 px-4 py-2 text-sm md:text-base border border-border dark:border-gray-600 rounded-lg hover:bg-bg-main dark:hover:bg-gray-700 text-text-primary">Cancel</button>
+                  <button type="button" onClick={() => { setShowTermModal(false); setEditingTermId(null); }} className="flex-1 px-4 py-2 text-sm md:text-base border border-border dark:border-gray-600 rounded-lg hover:bg-bg-main dark:hover:bg-gray-700 text-text-primary">Cancel</button>
                   <button type="submit" disabled={termLoading} className="flex-1 px-4 py-2 text-sm md:text-base bg-primary text-white rounded-lg hover:bg-primary-dark disabled:opacity-50">
-                    {termLoading ? 'Creating...' : 'Create Term'}
+                    {termLoading ? (editingTermId ? 'Updating...' : 'Creating...') : (editingTermId ? 'Update Term' : 'Create Term')}
                   </button>
                 </div>
               </form>

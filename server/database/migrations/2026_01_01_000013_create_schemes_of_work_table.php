@@ -16,6 +16,9 @@ return new class extends Migration
             $table->foreignId('term_id')->constrained('academic_terms')->onDelete('cascade');
             $table->integer('week_number');
             $table->string('topic');
+            $table->json('aspects')->nullable(); // { objectives, activities, resources, evaluation }
+            $table->string('status')->default('draft'); // draft, published
+            $table->foreignId('created_by')->nullable()->constrained('users')->onDelete('set null');
             $table->timestamps();
         });
     }

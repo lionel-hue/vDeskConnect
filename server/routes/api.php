@@ -148,5 +148,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('teachers', [AcademicController::class, 'teachersIndex']);
         Route::post('teacher-assignments', [AcademicController::class, 'assignTeacher']);
         Route::delete('teacher-assignments/{id}', [AcademicController::class, 'removeTeacherAssignment']);
+
+        // Scheme of Work (Phase 5)
+        Route::get('schemes', [AcademicController::class, 'schemesIndex']);
+        Route::post('schemes', [AcademicController::class, 'createScheme']);
+        Route::put('schemes/{id}', [AcademicController::class, 'updateScheme']);
+        Route::delete('schemes/{id}', [AcademicController::class, 'deleteScheme']);
+        Route::put('schemes/{id}/publish', [AcademicController::class, 'publishScheme']);
+        Route::post('schemes/bulk-create', [AcademicController::class, 'bulkCreateSchemes']);
+        Route::post('ai/scheme-of-work', [AcademicController::class, 'generateSchemeAI']);
     });
 });

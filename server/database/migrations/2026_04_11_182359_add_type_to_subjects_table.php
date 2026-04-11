@@ -6,13 +6,19 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
         Schema::table('subjects', function (Blueprint $table) {
-            $table->string('type')->default('core')->after('department_id'); // core, elective, departmental
+            $table->string('type')->default('core')->after('department_id');
         });
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
         Schema::table('subjects', function (Blueprint $table) {

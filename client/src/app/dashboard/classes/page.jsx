@@ -29,6 +29,14 @@ export default function ClassesPage() {
   const [sections, setSections] = useState([]);
   const [assignLoading, setAssignLoading] = useState(false);
 
+  // Scheme of Work state
+  const [schemes, setSchemes] = useState([]);
+  const [schemeFilters, setSchemeFilters] = useState({ subject_id: '', term_id: '' });
+  const [showSchemeModal, setShowSchemeModal] = useState(false);
+  const [schemeForm, setSchemeForm] = useState({ week_number: '', topic: '', aspects: { objectives: '', activities: '', resources: '', evaluation: '' } });
+  const [schemeLoading, setSchemeLoading] = useState(false);
+  const [editingScheme, setEditingScheme] = useState(null);
+
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
@@ -62,11 +70,27 @@ export default function ClassesPage() {
     }
   }, [toast]);
 
+  const fetchSchemes = useCallback(async (gradeLevelId, filters = {}) => {
+    try {
+      const res = await academicApi.schemes.getAll({ grade_level_id: gradeLevelId, ...filters });
+      setSchemes(res.schemes || []);
+    } catch (err) {
+      toast.error('Failed to load schemes');
+    }
+  }, [toast]);
+
   useEffect(() => {
     const token = api.getToken();
     if (!token) { router.push('/login'); return; }
     fetchData();
   }, [fetchData, router]);
+
+  // Load schemes when scheme tab is activated
+  useEffect(() => {
+    if (selectedGrade && activeDetailTab === 'scheme') {
+      fetchSchemes(selectedGrade, schemeFilters);
+    }
+  }, [activeDetailTab, selectedGrade, schemeFilters, fetchSchemes]);
 
   const handleAssignTeacher = async (e) => {
     e.preventDefault();
@@ -95,6 +119,69 @@ export default function ClassesPage() {
       fetchGradeDetail(selectedGrade);
     } catch (err) {
       toast.error('Failed to remove assignment');
+    }
+  };
+
+  // ==================== SCHEME OF WORK HANDLERS ====================
+  const handleSchemeSubmit = async (e) => {
+    e.preventDefault();
+    setSchemeLoading(true);
+    try {
+      const data = {
+        ...schemeForm,
+        grade_level_id: selectedGrade,
+        aspects: schemeForm.aspects.objectives || schemeForm.aspects.activities || schemeForm.aspects.resources || schemeForm.aspects.evaluation
+          ? schemeForm.aspects
+          : null,
+      };
+
+      if (editingScheme) {
+        await academicApi.schemes.update(editingScheme.id, data);
+        toast.success('Scheme updated successfully');
+      } else {
+        await academicApi.schemes.create(data);
+        toast.success('Scheme created successfully');
+      }
+
+      setShowSchemeModal(false);
+      setSchemeForm({ week_number: '', topic: '', aspects: { objectives: '', activities: '', resources: '', evaluation: '' } });
+      setEditingScheme(null);
+      fetchSchemes(selectedGrade, schemeFilters);
+    } catch (err) {
+      toast.error(err.data?.message || 'Failed to save scheme');
+    } finally {
+      setSchemeLoading(false);
+    }
+  };
+
+  const handleEditScheme = (scheme) => {
+    setEditingScheme(scheme);
+    setSchemeForm({
+      week_number: scheme.week_number,
+      topic: scheme.topic,
+      aspects: scheme.aspects || { objectives: '', activities: '', resources: '', evaluation: '' },
+    });
+    setShowSchemeModal(true);
+  };
+
+  const handleDeleteScheme = async (id) => {
+    if (!confirm('Delete this scheme entry?')) return;
+    try {
+      await academicApi.schemes.delete(id);
+      toast.success('Scheme deleted');
+      fetchSchemes(selectedGrade, schemeFilters);
+    } catch (err) {
+      toast.error('Failed to delete scheme');
+    }
+  };
+
+  const handlePublishScheme = async (id) => {
+    try {
+      await academicApi.schemes.publish(id);
+      toast.success('Scheme published');
+      fetchSchemes(selectedGrade, schemeFilters);
+    } catch (err) {
+      toast.error('Failed to publish scheme');
     }
   };
 
@@ -149,6 +236,7 @@ export default function ClassesPage() {
                 { id: 'subjects', label: 'Subjects', icon: Tag },
                 { id: 'students', label: 'Students', icon: GraduationCap },
                 { id: 'teachers', label: 'Teachers', icon: UserRound },
+                { id: 'scheme', label: 'Scheme of Work', icon: BookOpen },
               ].map(tab => (
                 <button
                   key={tab.id}
@@ -311,6 +399,123 @@ export default function ClassesPage() {
                     )}
                   </div>
                 )}
+
+                {/* Scheme of Work Tab */}
+                {activeDetailTab === 'scheme' && (
+                  <div className="bg-card dark:bg-gray-800 rounded-card border border-border p-4 md:p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h2 className="text-base md:text-lg font-semibold text-text-primary">Scheme of Work</h2>
+                      <button
+                        onClick={() => {
+                          setEditingScheme(null);
+                          setSchemeForm({ week_number: '', topic: '', aspects: { objectives: '', activities: '', resources: '', evaluation: '' } });
+                          setShowSchemeModal(true);
+                        }}
+                        className="flex items-center gap-1 md:gap-2 px-3 md:px-4 py-2 text-xs md:text-sm bg-primary text-white rounded-lg hover:bg-primary-dark"
+                      >
+                        <Plus className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                        Add Week
+                      </button>
+                    </div>
+
+                    {/* Filters */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                      <div>
+                        <label className="block text-xs md:text-sm font-medium text-text-secondary mb-1">Subject</label>
+                        <select
+                          value={schemeFilters.subject_id}
+                          onChange={e => {
+                            const newFilters = { ...schemeFilters, subject_id: e.target.value };
+                            setSchemeFilters(newFilters);
+                            fetchSchemes(selectedGrade, newFilters);
+                          }}
+                          className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm md:text-base text-text-primary"
+                        >
+                          <option value="">All Subjects</option>
+                          {gradeDetail.subjects.map(sub => (
+                            <option key={sub.id} value={sub.subject_id}>{sub.subject_name}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-xs md:text-sm font-medium text-text-secondary mb-1">Term</label>
+                        <select
+                          value={schemeFilters.term_id}
+                          onChange={e => {
+                            const newFilters = { ...schemeFilters, term_id: e.target.value };
+                            setSchemeFilters(newFilters);
+                            fetchSchemes(selectedGrade, newFilters);
+                          }}
+                          className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm md:text-base text-text-primary"
+                        >
+                          <option value="">All Terms</option>
+                          {gradeDetail.terms?.map(term => (
+                            <option key={term.id} value={term.id}>{term.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Schemes List */}
+                    {schemes.length === 0 ? (
+                      <p className="text-text-secondary text-center py-8 text-sm">No schemes created yet. Click "Add Week" to create one.</p>
+                    ) : (
+                      <div className="space-y-3">
+                        {schemes.map(scheme => (
+                          <div key={scheme.id} className="p-3 md:p-4 border border-border dark:border-gray-600 rounded-lg">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <span className="px-2 py-0.5 bg-primary/10 text-primary text-xs rounded-full font-semibold">Week {scheme.week_number}</span>
+                                  <span className={`px-2 py-0.5 text-xs rounded-full ${
+                                    scheme.status === 'published' ? 'bg-success/10 text-success' : 'bg-warning/10 text-warning'
+                                  }`}>
+                                    {scheme.status === 'published' ? 'Published' : 'Draft'}
+                                  </span>
+                                </div>
+                                <h3 className="font-semibold text-text-primary text-sm md:text-base">{scheme.topic}</h3>
+                                {scheme.subject && (
+                                  <p className="text-xs text-text-muted mt-1">{scheme.subject.name} • {scheme.term?.name}</p>
+                                )}
+                                {scheme.aspects && (
+                                  <div className="mt-2 space-y-1 text-xs text-text-secondary">
+                                    {scheme.aspects.objectives && <p><strong>Objectives:</strong> {scheme.aspects.objectives.slice(0, 100)}...</p>}
+                                    {scheme.aspects.activities && <p><strong>Activities:</strong> {scheme.aspects.activities.slice(0, 100)}...</p>}
+                                  </div>
+                                )}
+                              </div>
+                              <div className="flex gap-2 flex-shrink-0">
+                                {scheme.status === 'draft' && (
+                                  <button
+                                    onClick={() => handlePublishScheme(scheme.id)}
+                                    className="text-success hover:text-success/80"
+                                    title="Publish"
+                                  >
+                                    <CheckCircle className="w-4 h-4" />
+                                  </button>
+                                )}
+                                <button
+                                  onClick={() => handleEditScheme(scheme)}
+                                  className="text-info hover:text-info/80"
+                                  title="Edit"
+                                >
+                                  <Edit2 className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteScheme(scheme.id)}
+                                  className="text-error hover:text-error/80"
+                                  title="Delete"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </>
             )}
           </div>
@@ -419,6 +624,162 @@ export default function ClassesPage() {
                 <div className="flex gap-3">
                   <button type="button" onClick={() => setShowAssignModal(false)} className="flex-1 px-4 py-2 text-sm md:text-base border border-border dark:border-gray-600 rounded-lg hover:bg-bg-main dark:hover:bg-gray-700 text-text-primary">Cancel</button>
                   <button type="submit" disabled={assignLoading} className="flex-1 px-4 py-2 text-sm md:text-base bg-primary text-white rounded-lg hover:bg-primary-dark disabled:opacity-50">{assignLoading ? 'Assigning...' : 'Assign Teacher'}</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* ==================== SCHEME OF WORK MODAL ==================== */}
+        {showSchemeModal && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-card dark:bg-gray-800 rounded-card border border-border p-4 md:p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-base md:text-lg font-semibold text-text-primary">
+                  {editingScheme ? 'Edit Scheme Entry' : 'Add Scheme Entry'}
+                </h3>
+                <button onClick={() => { setShowSchemeModal(false); setEditingScheme(null); }} className="text-text-muted hover:text-text-primary">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <form onSubmit={handleSchemeSubmit} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs md:text-sm font-medium text-text-secondary mb-1">Week Number *</label>
+                    <input
+                      type="number"
+                      value={schemeForm.week_number}
+                      onChange={e => setSchemeForm({ ...schemeForm, week_number: e.target.value })}
+                      className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm md:text-base text-text-primary"
+                      min="1"
+                      max="20"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs md:text-sm font-medium text-text-secondary mb-1">Subject *</label>
+                    <select
+                      value={schemeForm.subject_id || ''}
+                      onChange={e => setSchemeForm({ ...schemeForm, subject_id: e.target.value })}
+                      className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm md:text-base text-text-primary"
+                      required
+                    >
+                      <option value="">Select Subject</option>
+                      {gradeDetail?.subjects.map(sub => (
+                        <option key={sub.id} value={sub.subject_id}>{sub.subject_name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs md:text-sm font-medium text-text-secondary mb-1">Term *</label>
+                  <select
+                    value={schemeForm.term_id || ''}
+                    onChange={e => setSchemeForm({ ...schemeForm, term_id: e.target.value })}
+                    className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm md:text-base text-text-primary"
+                    required
+                  >
+                    <option value="">Select Term</option>
+                    {gradeDetail?.terms?.map(term => (
+                      <option key={term.id} value={term.id}>{term.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs md:text-sm font-medium text-text-secondary mb-1">Topic *</label>
+                  <input
+                    type="text"
+                    value={schemeForm.topic}
+                    onChange={e => setSchemeForm({ ...schemeForm, topic: e.target.value })}
+                    className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm md:text-base text-text-primary"
+                    required
+                  />
+                </div>
+
+                {/* Aspects (Collapsible) */}
+                <div className="space-y-3">
+                  <details className="border border-border dark:border-gray-600 rounded-lg">
+                    <summary className="px-3 py-2 cursor-pointer text-sm font-medium text-text-primary">Objectives (Optional)</summary>
+                    <div className="p-3">
+                      <textarea
+                        value={schemeForm.aspects.objectives}
+                        onChange={e => setSchemeForm({
+                          ...schemeForm,
+                          aspects: { ...schemeForm.aspects, objectives: e.target.value }
+                        })}
+                        className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm text-text-primary"
+                        rows="3"
+                        placeholder="Learning objectives..."
+                      />
+                    </div>
+                  </details>
+
+                  <details className="border border-border dark:border-gray-600 rounded-lg">
+                    <summary className="px-3 py-2 cursor-pointer text-sm font-medium text-text-primary">Activities (Optional)</summary>
+                    <div className="p-3">
+                      <textarea
+                        value={schemeForm.aspects.activities}
+                        onChange={e => setSchemeForm({
+                          ...schemeForm,
+                          aspects: { ...schemeForm.aspects, activities: e.target.value }
+                        })}
+                        className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm text-text-primary"
+                        rows="3"
+                        placeholder="Teaching activities..."
+                      />
+                    </div>
+                  </details>
+
+                  <details className="border border-border dark:border-gray-600 rounded-lg">
+                    <summary className="px-3 py-2 cursor-pointer text-sm font-medium text-text-primary">Resources (Optional)</summary>
+                    <div className="p-3">
+                      <textarea
+                        value={schemeForm.aspects.resources}
+                        onChange={e => setSchemeForm({
+                          ...schemeForm,
+                          aspects: { ...schemeForm.aspects, resources: e.target.value }
+                        })}
+                        className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm text-text-primary"
+                        rows="3"
+                        placeholder="Teaching resources/materials..."
+                      />
+                    </div>
+                  </details>
+
+                  <details className="border border-border dark:border-gray-600 rounded-lg">
+                    <summary className="px-3 py-2 cursor-pointer text-sm font-medium text-text-primary">Evaluation (Optional)</summary>
+                    <div className="p-3">
+                      <textarea
+                        value={schemeForm.aspects.evaluation}
+                        onChange={e => setSchemeForm({
+                          ...schemeForm,
+                          aspects: { ...schemeForm.aspects, evaluation: e.target.value }
+                        })}
+                        className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm text-text-primary"
+                        rows="3"
+                        placeholder="Assessment/evaluation methods..."
+                      />
+                    </div>
+                  </details>
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => { setShowSchemeModal(false); setEditingScheme(null); }}
+                    className="flex-1 px-4 py-2 text-sm md:text-base border border-border dark:border-gray-600 rounded-lg hover:bg-bg-main dark:hover:bg-gray-700 text-text-primary"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={schemeLoading}
+                    className="flex-1 px-4 py-2 text-sm md:text-base bg-primary text-white rounded-lg hover:bg-primary-dark disabled:opacity-50"
+                  >
+                    {schemeLoading ? 'Saving...' : (editingScheme ? 'Update Scheme' : 'Add Scheme')}
+                  </button>
                 </div>
               </form>
             </div>

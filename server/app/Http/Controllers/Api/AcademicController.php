@@ -13,6 +13,8 @@ use App\Models\Department;
 use App\Models\Section;
 use App\Models\GradeLevelSubject;
 use App\Models\TeacherSubject;
+use App\Models\SchemeOfWork;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -741,8 +743,8 @@ class AcademicController extends Controller
         $user = $request->user();
 
         $gradeLevels = GradeLevel::where('school_id', $user->school_id)
-            ->ordered()
-            ->withCount(['sections', 'caWeeks'])
+            ->orderBy('order')
+            ->with(['sections'])
             ->get()
             ->map(function ($gl) use ($user) {
                 // Count students in this grade level
@@ -772,7 +774,7 @@ class AcademicController extends Controller
                     'order' => $gl->order,
                     'cycle' => $gl->cycle,
                     'students_count' => $studentCount,
-                    'sections_count' => $gl->sections_count,
+                    'sections_count' => $gl->sections->count(),
                     'subjects_count' => $subjectCount,
                     'teachers_count' => $teacherCount,
                 ];
@@ -858,6 +860,28 @@ class AcademicController extends Controller
                 ];
             })->values();
 
+        // Terms for this school (get terms from active session, or all terms)
+        $activeSession = AcademicSession::where('school_id', $user->school_id)
+            ->where('active', true)
+            ->first();
+        
+        $terms = [];
+        if ($activeSession) {
+            $terms = AcademicTerm::where('session_id', $activeSession->id)
+                ->orderBy('order')
+                ->get()
+                ->map(function ($term) {
+                    return [
+                        'id' => $term->id,
+                        'name' => $term->name,
+                        'start_date' => $term->start_date,
+                        'end_date' => $term->end_date,
+                        'order' => $term->order,
+                        'weeks_count' => $term->weeks_count,
+                    ];
+                });
+        }
+
         return response()->json([
             'grade_level' => [
                 'id' => $gradeLevel->id,
@@ -874,6 +898,7 @@ class AcademicController extends Controller
             'sections' => $sections,
             'subjects' => $subjectMappings,
             'teachers' => $teacherAssignments,
+            'terms' => $terms,
         ]);
     }
 
@@ -1549,5 +1574,236 @@ class AcademicController extends Controller
         $assignment->delete();
 
         return response()->json(['message' => 'Teacher assignment removed']);
+    }
+
+    // ==================== PHASE 5: SCHEME OF WORK ====================
+
+    /**
+     * List all schemes of work for the authenticated user's school.
+     */
+    public function schemesIndex(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $query = SchemeOfWork::forSchool($user->school_id)
+            ->with(['subject', 'gradeLevel', 'term', 'creator']);
+
+        // Apply filters
+        if ($request->has('grade_level_id')) {
+            $query->forGrade($request->grade_level_id);
+        }
+        if ($request->has('subject_id')) {
+            $query->forSubject($request->subject_id);
+        }
+        if ($request->has('term_id')) {
+            $query->forTerm($request->term_id);
+        }
+        if ($request->has('status')) {
+            if ($request->status === 'published') {
+                $query->published();
+            } elseif ($request->status === 'draft') {
+                $query->draft();
+            }
+        }
+
+        $schemes = $query->orderBy('week_number')->get();
+
+        return response()->json(['schemes' => $schemes]);
+    }
+
+    /**
+     * Create a new scheme of work entry.
+     */
+    public function createScheme(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        
+        $validator = Validator::make($request->all(), [
+            'subject_id' => 'required|exists:subjects,id',
+            'grade_level_id' => 'required|exists:grade_levels,id',
+            'term_id' => 'required|exists:academic_terms,id',
+            'week_number' => 'required|integer|min:1|max:20',
+            'topic' => 'required|string|max:255',
+            'aspects' => 'nullable|array',
+            'aspects.objectives' => 'nullable|string',
+            'aspects.activities' => 'nullable|string',
+            'aspects.resources' => 'nullable|string',
+            'aspects.evaluation' => 'nullable|string',
+            'status' => 'nullable|in:draft,published',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $scheme = SchemeOfWork::create([
+            'school_id' => $user->school_id,
+            'subject_id' => $request->subject_id,
+            'grade_level_id' => $request->grade_level_id,
+            'term_id' => $request->term_id,
+            'week_number' => $request->week_number,
+            'topic' => $request->topic,
+            'aspects' => $request->aspects,
+            'status' => $request->status ?? 'draft',
+            'created_by' => $user->id,
+        ]);
+
+        return response()->json([
+            'message' => 'Scheme of work created',
+            'scheme' => $scheme->load(['subject', 'gradeLevel', 'term']),
+        ], 201);
+    }
+
+    /**
+     * Update a scheme of work entry.
+     */
+    public function updateScheme(Request $request, int $id): JsonResponse
+    {
+        $user = $request->user();
+        $scheme = SchemeOfWork::forSchool($user->school_id)->findOrFail($id);
+
+        $validator = Validator::make($request->all(), [
+            'topic' => 'sometimes|string|max:255',
+            'aspects' => 'nullable|array',
+            'aspects.objectives' => 'nullable|string',
+            'aspects.activities' => 'nullable|string',
+            'aspects.resources' => 'nullable|string',
+            'aspects.evaluation' => 'nullable|string',
+            'status' => 'sometimes|in:draft,published',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $scheme->update($request->only(['topic', 'aspects', 'status']));
+
+        return response()->json([
+            'message' => 'Scheme of work updated',
+            'scheme' => $scheme->fresh()->load(['subject', 'gradeLevel', 'term']),
+        ]);
+    }
+
+    /**
+     * Delete a scheme of work entry.
+     */
+    public function deleteScheme(Request $request, int $id): JsonResponse
+    {
+        $user = $request->user();
+        $scheme = SchemeOfWork::forSchool($user->school_id)->findOrFail($id);
+
+        $scheme->delete();
+
+        return response()->json(['message' => 'Scheme of work deleted']);
+    }
+
+    /**
+     * Publish a scheme of work entry.
+     */
+    public function publishScheme(Request $request, int $id): JsonResponse
+    {
+        $user = $request->user();
+        $scheme = SchemeOfWork::forSchool($user->school_id)->findOrFail($id);
+
+        $scheme->update(['status' => 'published']);
+
+        return response()->json([
+            'message' => 'Scheme of work published',
+            'scheme' => $scheme->fresh()->load(['subject', 'gradeLevel', 'term']),
+        ]);
+    }
+
+    /**
+     * Bulk create scheme of work entries for a subject + grade + term.
+     */
+    public function bulkCreateSchemes(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        
+        $validator = Validator::make($request->all(), [
+            'subject_id' => 'required|exists:subjects,id',
+            'grade_level_id' => 'required|exists:grade_levels,id',
+            'term_id' => 'required|exists:academic_terms,id',
+            'weeks' => 'required|array|min:1',
+            'weeks.*.week_number' => 'required|integer|min:1|max:20',
+            'weeks.*.topic' => 'required|string|max:255',
+            'weeks.*.aspects' => 'nullable|array',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $created = [];
+        foreach ($request->weeks as $weekData) {
+            $scheme = SchemeOfWork::create([
+                'school_id' => $user->school_id,
+                'subject_id' => $request->subject_id,
+                'grade_level_id' => $request->grade_level_id,
+                'term_id' => $request->term_id,
+                'week_number' => $weekData['week_number'],
+                'topic' => $weekData['topic'],
+                'aspects' => $weekData['aspects'] ?? null,
+                'status' => 'draft',
+                'created_by' => $user->id,
+            ]);
+            $created[] = $scheme;
+        }
+
+        return response()->json([
+            'message' => count($created) . ' scheme entries created',
+            'schemes' => $created,
+        ], 201);
+    }
+
+    /**
+     * AI Scheme Generator (Stubbed for now).
+     */
+    public function generateSchemeAI(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'subject_id' => 'required|exists:subjects,id',
+            'grade_level_id' => 'required|exists:grade_levels,id',
+            'term_id' => 'required|exists:academic_terms,id',
+            'weeks' => 'required|array|min:1',
+            'weeks.*' => 'required|integer|min:1|max:20',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        // TODO: Integrate with AI provider (OpenAI, Claude, etc.)
+        // For now, return stub data
+        $stubSchemes = [];
+        foreach ($request->weeks as $weekNumber) {
+            $stubSchemes[] = [
+                'week_number' => $weekNumber,
+                'topic' => "AI Generated Topic for Week {$weekNumber}",
+                'aspects' => [
+                    'objectives' => "AI generated objectives for week {$weekNumber}",
+                    'activities' => "AI generated activities for week {$weekNumber}",
+                    'resources' => "AI generated resources for week {$weekNumber}",
+                    'evaluation' => "AI generated evaluation for week {$weekNumber}",
+                ],
+            ];
+        }
+
+        return response()->json([
+            'message' => 'AI scheme generated (stub)',
+            'schemes' => $stubSchemes,
+        ]);
     }
 }
