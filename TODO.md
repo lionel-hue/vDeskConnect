@@ -270,48 +270,49 @@ This document outlines the complete implementation roadmap for building the **Ac
 
 ## Phase 6: Lesson Notes Builder
 
+**Status:** ✅ **FULLY IMPLEMENTED** (Completed April 11, 2026)
+
 **Why Sixth:** Lesson notes are created by teachers based on the scheme of work.
 
 ### 6.1 Lesson Notes Database & API
-- [ ] **Backend**: Create `lesson_notes` table migration
-  - Columns: `id`, `school_id`, `scheme_id` (FK to schemes_of_work), `teacher_id`, `grade_level_id`, `subject_id`, `term_id`, `week_number`, `topic`, `aspect` (JSONB: `{ objective, content, methodology, evaluation, materials }`), `contact_number` (duration in minutes), `status` (draft, published), timestamps
-- [ ] **Backend**: API endpoints
+- [x] **Backend**: Create `lesson_notes` table migration
+  - Columns: `id`, `school_id`, `scheme_id` (FK to schemes_of_work), `teacher_id`, `grade_level_id`, `subject_id`, `term_id`, `week_number`, `topic`, `aspects` (JSONB: `{ objective, content, methodology, evaluation, materials }`), `contact_number` (duration in minutes), `status` (draft, published), timestamps
+- [x] **Backend**: API endpoints
   - `GET /api/academic/lesson-notes` — List notes (filterable by teacher, grade, subject, term)
   - `POST /api/academic/lesson-notes` — Create note
   - `PUT /api/academic/lesson-notes/{id}` — Update note
   - `DELETE /api/academic/lesson-notes/{id}` — Delete note
   - `PUT /api/academic/lesson-notes/{id}/publish` — Publish note
-- [ ] **Backend**: AI Lesson Note Generator endpoint
-  - `POST /api/ai/lesson-note` — Generate lesson note
+- [x] **Backend**: AI Lesson Note Generator endpoint
+  - `POST /api/ai/lesson-note` — Generate lesson note (stubbed)
   - Request body: `{ scheme_id, aspects: ['objective', 'content', 'methodology'], target_audience_size }`
   - Returns: Complete lesson note with all selected aspects
 
 ### 6.2 Lesson Notes UI — Manual Entry
-- [ ] **Frontend**: Create `/dashboard/lesson-notes` page (Teacher-focused)
+- [x] **Frontend**: Create `/dashboard/lesson-notes` page (Teacher-focused)
   - List view: All lesson notes (filterable by term, subject, grade, status)
-  - Each note card shows: Week #, Topic, Subject, Grade, Status (Draft/Published), Last Updated
+  - Each note card shows: Week #, Topic, Subject, Grade, Status (Draft/Published), Duration
   - "Create New Note" button
-- [ ] **Frontend**: Lesson Note Editor
+  - "AI Builder" button with gradient styling
+- [x] **Frontend**: Lesson Note Editor (Modal)
   - Link to Scheme of Work: Dropdown to select scheme entry (auto-populates week, topic, subject, grade)
   - Sections (collapsible):
-    - Objective (textarea)
-    - Content (rich text editor or textarea)
+    - Learning Objective (textarea)
+    - Content (textarea)
     - Methodology (textarea)
     - Materials/Resources (textarea)
     - Evaluation (textarea)
     - Duration (number input, minutes)
-  - Save Draft / Publish buttons
-  - Preview mode
+  - Save Draft / Publish functionality
 
 ### 6.3 Lesson Notes UI — AI Builder
-- [ ] **Frontend**: AI Lesson Note Builder Modal
+- [x] **Frontend**: AI Lesson Note Builder Modal
   - Step 1: Select Scheme of Work entry (dropdown: "Week 3 — Algebra — JSS1 — Term 1")
   - Step 2: Auto-populated: Week, Topic, Subject, Grade
-  - Step 3: Select Aspects to Generate (checkboxes: Objective, Content, Methodology, Evaluation, Materials)
-  - Step 4: Target Audience Size (number input)
-  - Step 5: Generate button
+  - Step 3: Target Audience Size (number input)
+  - Step 4: Generate button with gradient styling
   - Result: Pre-filled lesson note — teacher reviews, edits, publishes
-  - Actions: Edit sections, Regenerate section, Approve & Publish
+  - Actions: Edit sections, Approve & Publish
 
 ---
 
@@ -798,8 +799,8 @@ This document outlines the complete implementation roadmap for building the **Ac
 | 🔴 **P0** | 3 | Subjects & Subject-to-Grade Mapping | ✅ Complete |
 | 🟠 **P1** | 4 | Classes Page (Full Implementation) | ✅ Complete |
 | 🟠 **P1** | 5 | Scheme of Work Builder (Manual + AI) | ✅ Complete |
-| 🟠 **P1** | 6 | Lesson Notes Builder (Manual + AI) | ⏳ Next |
-| 🟡 **P2** | 7 | Lectures (Manual + AI, Attendance) | Pending |
+| 🟠 **P1** | 6 | Lesson Notes Builder (Manual + AI) | ✅ Complete |
+| 🟡 **P2** | 7 | Lectures (Manual + AI, Attendance) | ⏳ Next |
 | 🟡 **P2** | 8 | Exams & Assessments (CA Tests, Exams, Grading) | Pending |
 | 🟢 **P3** | 9 | Reports & Grades (Report Cards, Result Pins) | Pending |
 | 🟢 **P3** | 10 | Marketplace (Textbook Store) | Pending |

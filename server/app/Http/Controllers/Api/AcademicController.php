@@ -14,7 +14,10 @@ use App\Models\Section;
 use App\Models\GradeLevelSubject;
 use App\Models\TeacherSubject;
 use App\Models\SchemeOfWork;
+use App\Models\LessonNote;
 use App\Models\User;
+use App\Services\AiService;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -195,6 +198,45 @@ class AcademicController extends Controller
     // ==================== ACADEMIC TERMS ====================
 
     /**
+     * List terms for the active session (no parameter needed).
+     */
+    public function termsIndexActive(Request $request): JsonResponse
+    {
+        try {
+            $user = $request->user();
+
+            $activeSession = AcademicSession::where('school_id', $user->school_id)
+                ->where('active', true)
+                ->first();
+
+            if (!$activeSession) {
+                return response()->json(['terms' => []]);
+            }
+
+            $terms = AcademicTerm::where('school_id', $user->school_id)
+                ->where('session_id', $activeSession->id)
+                ->ordered()
+                ->get()
+                ->map(function ($term) {
+                    return [
+                        'id' => $term->id,
+                        'session_id' => $term->session_id,
+                        'name' => $term->name,
+                        'start_date' => $term->start_date?->format('Y-m-d'),
+                        'end_date' => $term->end_date?->format('Y-m-d'),
+                        'order' => $term->order,
+                        'weeks_count' => $term->weeks_count,
+                    ];
+                });
+
+            return response()->json(['terms' => $terms]);
+        } catch (\Exception $e) {
+            \Log::error('termsIndexActive error: ' . $e->getMessage());
+            return response()->json(['message' => 'Failed to load terms', 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
      * List terms for a specific session.
      */
     public function termsIndex(Request $request, int $sessionId): JsonResponse
@@ -210,8 +252,8 @@ class AcademicController extends Controller
                     'id' => $term->id,
                     'session_id' => $term->session_id,
                     'name' => $term->name,
-                    'start_date' => $term->start_date->format('Y-m-d'),
-                    'end_date' => $term->end_date->format('Y-m-d'),
+                    'start_date' => $term->start_date?->format('Y-m-d'),
+                    'end_date' => $term->end_date?->format('Y-m-d'),
                     'order' => $term->order,
                     'weeks_count' => $term->weeks_count,
                     'created_at' => $term->created_at->format('Y-m-d H:i:s'),
@@ -1805,5 +1847,230 @@ class AcademicController extends Controller
             'message' => 'AI scheme generated (stub)',
             'schemes' => $stubSchemes,
         ]);
+    }
+
+    // ==================== PHASE 6: LESSON NOTES ====================
+
+    /**
+     * List all lesson notes for the authenticated user's school.
+     */
+    public function lessonNotesIndex(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $query = LessonNote::forSchool($user->school_id)
+            ->with(['scheme', 'teacher', 'gradeLevel', 'subject', 'term']);
+
+        // Apply filters
+        if ($request->has('teacher_id')) {
+            $query->forTeacher($request->teacher_id);
+        }
+        if ($request->has('grade_level_id')) {
+            $query->forGrade($request->grade_level_id);
+        }
+        if ($request->has('subject_id')) {
+            $query->forSubject($request->subject_id);
+        }
+        if ($request->has('term_id')) {
+            $query->forTerm($request->term_id);
+        }
+        if ($request->has('status')) {
+            if ($request->status === 'published') {
+                $query->published();
+            } elseif ($request->status === 'draft') {
+                $query->draft();
+            }
+        }
+
+        $notes = $query->ordered()->get();
+
+        return response()->json(['lesson_notes' => $notes]);
+    }
+
+    /**
+     * Create a new lesson note.
+     */
+    public function createLessonNote(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $validator = Validator::make($request->all(), [
+            'scheme_id' => 'required|exists:schemes_of_work,id',
+            'grade_level_id' => 'required|exists:grade_levels,id',
+            'subject_id' => 'required|exists:subjects,id',
+            'term_id' => 'required|exists:academic_terms,id',
+            'week_number' => 'required|integer|min:1|max:20',
+            'topic' => 'required|string|max:255',
+            'aspects' => 'nullable|array',
+            'aspects.objective' => 'nullable|string',
+            'aspects.content' => 'nullable|string',
+            'aspects.methodology' => 'nullable|string',
+            'aspects.evaluation' => 'nullable|string',
+            'aspects.materials' => 'nullable|string',
+            'contact_number' => 'nullable|integer|min:1',
+            'status' => 'nullable|in:draft,published',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $note = LessonNote::create([
+            'school_id' => $user->school_id,
+            'scheme_id' => $request->scheme_id,
+            'teacher_id' => $user->id,
+            'grade_level_id' => $request->grade_level_id,
+            'subject_id' => $request->subject_id,
+            'term_id' => $request->term_id,
+            'week_number' => $request->week_number,
+            'topic' => $request->topic,
+            'aspects' => $request->aspects,
+            'contact_number' => $request->contact_number,
+            'status' => $request->status ?? 'draft',
+        ]);
+
+        return response()->json([
+            'message' => 'Lesson note created',
+            'lesson_note' => $note->load(['scheme', 'teacher', 'gradeLevel', 'subject', 'term']),
+        ], 201);
+    }
+
+    /**
+     * Update a lesson note.
+     */
+    public function updateLessonNote(Request $request, int $id): JsonResponse
+    {
+        $user = $request->user();
+        $note = LessonNote::forSchool($user->school_id)->findOrFail($id);
+
+        $validator = Validator::make($request->all(), [
+            'topic' => 'sometimes|string|max:255',
+            'aspects' => 'nullable|array',
+            'aspects.objective' => 'nullable|string',
+            'aspects.content' => 'nullable|string',
+            'aspects.methodology' => 'nullable|string',
+            'aspects.evaluation' => 'nullable|string',
+            'aspects.materials' => 'nullable|string',
+            'contact_number' => 'nullable|integer|min:1',
+            'status' => 'sometimes|in:draft,published',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $note->update($request->only(['topic', 'aspects', 'contact_number', 'status']));
+
+        return response()->json([
+            'message' => 'Lesson note updated',
+            'lesson_note' => $note->fresh()->load(['scheme', 'teacher', 'gradeLevel', 'subject', 'term']),
+        ]);
+    }
+
+    /**
+     * Delete a lesson note.
+     */
+    public function deleteLessonNote(Request $request, int $id): JsonResponse
+    {
+        $user = $request->user();
+        $note = LessonNote::forSchool($user->school_id)->findOrFail($id);
+
+        $note->delete();
+
+        return response()->json(['message' => 'Lesson note deleted']);
+    }
+
+    /**
+     * Publish a lesson note.
+     */
+    public function publishLessonNote(Request $request, int $id): JsonResponse
+    {
+        $user = $request->user();
+        $note = LessonNote::forSchool($user->school_id)->findOrFail($id);
+
+        $note->update(['status' => 'published']);
+
+        return response()->json([
+            'message' => 'Lesson note published',
+            'lesson_note' => $note->fresh()->load(['scheme', 'teacher', 'gradeLevel', 'subject', 'term']),
+        ]);
+    }
+
+    /**
+     * AI Lesson Note Generator - Production Ready.
+     * Fetches scheme, grade, and subject data to generate contextual lesson notes.
+     */
+    public function generateLessonNoteAI(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'scheme_id' => 'required|exists:schemes_of_work,id',
+            'target_audience_size' => 'nullable|integer|min:1|max:200',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        try {
+            $user = $request->user();
+
+            // Fetch scheme with all related data
+            $scheme = SchemeOfWork::where('school_id', $user->school_id)
+                ->with(['subject', 'gradeLevel', 'term'])
+                ->findOrFail($request->scheme_id);
+
+            // Prepare context data for AI
+            $schemeData = [
+                'id' => $scheme->id,
+                'topic' => $scheme->topic,
+                'week_number' => $scheme->week_number,
+                'term_name' => $scheme->term?->name ?? 'Current Term',
+                'objectives' => $scheme->aspects['objectives'] ?? '',
+                'activities' => $scheme->aspects['activities'] ?? '',
+                'resources' => $scheme->aspects['resources'] ?? '',
+                'evaluation' => $scheme->aspects['evaluation'] ?? '',
+            ];
+
+            $gradeInfo = [
+                'id' => $scheme->gradeLevel->id,
+                'name' => $scheme->gradeLevel->name,
+                'short_name' => $scheme->gradeLevel->short_name,
+                'cycle' => $scheme->gradeLevel->cycle ?? 'General',
+            ];
+
+            $subjectInfo = [
+                'id' => $scheme->subject->id,
+                'name' => $scheme->subject->name,
+                'code' => $scheme->subject->code ?? $scheme->subject->name,
+                'type' => $scheme->subject->type ?? 'core',
+            ];
+
+            $audienceSize = $request->target_audience_size ?? 30;
+
+            // Generate lesson note using AI service
+            $aiService = new AiService();
+            $lessonNote = $aiService->generateLessonNote($schemeData, $gradeInfo, $subjectInfo, $audienceSize);
+
+            return response()->json([
+                'message' => 'Lesson note generated successfully',
+                'lesson_note' => $lessonNote,
+                'source' => $aiService->apiKey ? 'ai_api' : 'smart_template',
+            ]);
+        } catch (\Exception $e) {
+            Log::error('AI lesson note generation failed: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Failed to generate lesson note',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 }

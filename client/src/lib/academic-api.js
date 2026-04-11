@@ -121,6 +121,30 @@ export const academicApi = {
   aiScheme: {
     generate: (data) => api.post('/ai/scheme-of-work', data),
   },
+
+  // ==================== PHASE 6: LESSON NOTES ====================
+
+  // Lesson Notes
+  lessonNotes: {
+    getAll: (filters = {}) => {
+      const params = new URLSearchParams();
+      if (filters.teacher_id) params.append('teacher_id', filters.teacher_id);
+      if (filters.grade_level_id) params.append('grade_level_id', filters.grade_level_id);
+      if (filters.subject_id) params.append('subject_id', filters.subject_id);
+      if (filters.term_id) params.append('term_id', filters.term_id);
+      if (filters.status) params.append('status', filters.status);
+      return api.get(`/academic/lesson-notes?${params.toString()}`);
+    },
+    create: (data) => api.post('/academic/lesson-notes', data),
+    update: (id, data) => api.put(`/academic/lesson-notes/${id}`, data),
+    delete: (id) => api.delete(`/academic/lesson-notes/${id}`),
+    publish: (id) => api.put(`/academic/lesson-notes/${id}/publish`),
+  },
+
+  // AI Lesson Note Generator
+  aiLessonNote: {
+    generate: (data) => api.post('/ai/lesson-note', data),
+  },
 };
 
 export default academicApi;

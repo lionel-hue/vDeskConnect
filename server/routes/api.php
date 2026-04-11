@@ -85,7 +85,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Academic Terms
         Route::prefix('terms')->group(function () {
-            Route::get('/', [AcademicController::class, 'termsIndex']); // requires session_id param
+            Route::get('/', [AcademicController::class, 'termsIndexActive']); // returns terms for active session
             Route::get('/session/{sessionId}', [AcademicController::class, 'termsIndex']);
             Route::post('/', [AcademicController::class, 'createTerm']);
             Route::post('/bulk', [AcademicController::class, 'bulkCreateTerms']);
@@ -156,6 +156,18 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('schemes/{id}', [AcademicController::class, 'deleteScheme']);
         Route::put('schemes/{id}/publish', [AcademicController::class, 'publishScheme']);
         Route::post('schemes/bulk-create', [AcademicController::class, 'bulkCreateSchemes']);
-        Route::post('ai/scheme-of-work', [AcademicController::class, 'generateSchemeAI']);
+
+        // Lesson Notes (Phase 6)
+        Route::get('lesson-notes', [AcademicController::class, 'lessonNotesIndex']);
+        Route::post('lesson-notes', [AcademicController::class, 'createLessonNote']);
+        Route::put('lesson-notes/{id}', [AcademicController::class, 'updateLessonNote']);
+        Route::delete('lesson-notes/{id}', [AcademicController::class, 'deleteLessonNote']);
+        Route::put('lesson-notes/{id}/publish', [AcademicController::class, 'publishLessonNote']);
+    });
+
+    // AI Endpoints (outside academic group)
+    Route::prefix('ai')->group(function () {
+        Route::post('scheme-of-work', [AcademicController::class, 'generateSchemeAI']);
+        Route::post('lesson-note', [AcademicController::class, 'generateLessonNoteAI']);
     });
 });
