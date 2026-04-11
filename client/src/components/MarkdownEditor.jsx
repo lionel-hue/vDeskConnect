@@ -95,7 +95,7 @@ export default function MarkdownEditor({
       {/* Markdown hint */}
       {!isPreview && (
         <p className="text-xs text-text-muted">
-          💡 Supports Markdown: **bold**, *italic*, - lists, ### headers, > quotes
+          💡 Supports Markdown: {'**bold**'}, {'*italic*'}, {'- lists'}, {'### headers'}, {'>'} quotes
         </p>
       )}
     </div>
