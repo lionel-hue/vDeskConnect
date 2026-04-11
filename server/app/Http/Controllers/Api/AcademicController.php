@@ -12,6 +12,7 @@ use App\Models\Subject;
 use App\Models\Department;
 use App\Models\Section;
 use App\Models\GradeLevelSubject;
+use App\Models\TeacherSubject;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -741,18 +742,139 @@ class AcademicController extends Controller
 
         $gradeLevels = GradeLevel::where('school_id', $user->school_id)
             ->ordered()
+            ->withCount(['sections', 'caWeeks'])
             ->get()
-            ->map(function ($gl) {
+            ->map(function ($gl) use ($user) {
+                // Count students in this grade level
+                $studentCount = \DB::table('profiles')
+                    ->join('users', 'profiles.user_id', '=', 'users.id')
+                    ->where('users.school_id', $user->school_id)
+                    ->where('users.role', 'student')
+                    ->where('profiles.data->grade_level_id', $gl->id)
+                    ->count();
+
+                // Count teachers assigned to this grade
+                $teacherCount = \DB::table('teacher_subjects')
+                    ->where('school_id', $user->school_id)
+                    ->where('grade_level_id', $gl->id)
+                    ->distinct('teacher_id')
+                    ->count('teacher_id');
+
+                // Count subjects assigned to this grade
+                $subjectCount = GradeLevelSubject::where('school_id', $user->school_id)
+                    ->where('grade_level_id', $gl->id)
+                    ->count();
+
                 return [
                     'id' => $gl->id,
                     'name' => $gl->name,
                     'short_name' => $gl->short_name,
                     'order' => $gl->order,
                     'cycle' => $gl->cycle,
+                    'students_count' => $studentCount,
+                    'sections_count' => $gl->sections_count,
+                    'subjects_count' => $subjectCount,
+                    'teachers_count' => $teacherCount,
                 ];
             });
 
         return response()->json(['grade_levels' => $gradeLevels]);
+    }
+
+    /**
+     * Get grade level detail with full stats.
+     */
+    public function gradeLevelDetail(Request $request, int $id): JsonResponse
+    {
+        $user = $request->user();
+        $gradeLevel = GradeLevel::where('school_id', $user->school_id)->findOrFail($id);
+
+        // Students in this grade
+        $students = \DB::table('profiles')
+            ->join('users', 'profiles.user_id', '=', 'users.id')
+            ->where('users.school_id', $user->school_id)
+            ->where('users.role', 'student')
+            ->where('profiles.data->grade_level_id', $id)
+            ->select('users.id', 'users.email', 'profiles.data as profile_data')
+            ->get()
+            ->map(function ($s) {
+                $data = is_string($s->profile_data) ? json_decode($s->profile_data, true) : (array) $s->profile_data;
+                return [
+                    'id' => $s->id,
+                    'email' => $s->email,
+                    'first_name' => $data['first_name'] ?? '',
+                    'last_name' => $data['last_name'] ?? '',
+                    'admission_number' => $data['admission_number'] ?? '',
+                ];
+            });
+
+        // Sections in this grade
+        $sections = Section::where('school_id', $user->school_id)
+            ->where('grade_level_id', $id)
+            ->get();
+
+        // Subjects assigned to this grade
+        $subjectMappings = GradeLevelSubject::where('school_id', $user->school_id)
+            ->where('grade_level_id', $id)
+            ->with(['subject', 'department'])
+            ->get()
+            ->map(function ($m) {
+                return [
+                    'id' => $m->id,
+                    'subject_id' => $m->subject_id,
+                    'subject_name' => $m->subject->name,
+                    'subject_code' => $m->subject->code,
+                    'subject_type' => $m->subject->type,
+                    'is_compulsory' => $m->is_compulsory,
+                    'department_name' => $m->department?->name,
+                ];
+            });
+
+        // Teachers assigned to this grade
+        $teacherAssignments = \DB::table('teacher_subjects')
+            ->join('users', 'teacher_subjects.teacher_id', '=', 'users.id')
+            ->leftJoin('profiles', 'users.id', '=', 'profiles.user_id')
+            ->leftJoin('subjects', 'teacher_subjects.subject_id', '=', 'subjects.id')
+            ->where('teacher_subjects.school_id', $user->school_id)
+            ->where('teacher_subjects.grade_level_id', $id)
+            ->select(
+                'users.id as teacher_id',
+                'users.email',
+                'profiles.data as profile_data',
+                'subjects.name as subject_name',
+                'teacher_subjects.section_id'
+            )
+            ->get()
+            ->groupBy('teacher_id')
+            ->map(function ($assignments, $teacherId) {
+                $first = $assignments->first();
+                $data = is_string($first->profile_data) ? json_decode($first->profile_data, true) : (array) $first->profile_data;
+                return [
+                    'teacher_id' => $teacherId,
+                    'email' => $first->email,
+                    'name' => ($data['first_name'] ?? '') . ' ' . ($data['last_name'] ?? ''),
+                    'subjects' => $assignments->pluck('subject_name')->filter()->unique()->toArray(),
+                    'section_id' => $first->section_id,
+                ];
+            })->values();
+
+        return response()->json([
+            'grade_level' => [
+                'id' => $gradeLevel->id,
+                'name' => $gradeLevel->name,
+                'short_name' => $gradeLevel->short_name,
+                'cycle' => $gradeLevel->cycle,
+                'order' => $gradeLevel->order,
+                'students_count' => $students->count(),
+                'sections_count' => $sections->count(),
+                'subjects_count' => $subjectMappings->count(),
+                'teachers_count' => $teacherAssignments->count(),
+            ],
+            'students' => $students,
+            'sections' => $sections,
+            'subjects' => $subjectMappings,
+            'teachers' => $teacherAssignments,
+        ]);
     }
 
     // ==================== SUBJECTS ====================
@@ -1349,5 +1471,83 @@ class AcademicController extends Controller
             ->delete();
 
         return response()->json(['message' => "CA configuration deleted successfully ($deleted records removed)"]);
+    }
+
+    // ==================== PHASE 4: TEACHER ASSIGNMENTS ====================
+
+    /**
+     * List all teachers available for assignment.
+     */
+    public function teachersIndex(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $teachers = User::where('school_id', $user->school_id)
+            ->where('role', 'teacher')
+            ->with('profile')
+            ->get()
+            ->map(function ($teacher) {
+                $data = $teacher->profile?->data ?? [];
+                return [
+                    'id' => $teacher->id,
+                    'email' => $teacher->email,
+                    'name' => ($data['first_name'] ?? '') . ' ' . ($data['last_name'] ?? ''),
+                ];
+            });
+
+        return response()->json(['teachers' => $teachers]);
+    }
+
+    /**
+     * Assign a teacher to a subject + grade level.
+     */
+    public function assignTeacher(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'teacher_id' => 'required|exists:users,id',
+            'subject_id' => 'required|exists:subjects,id',
+            'grade_level_id' => 'required|exists:grade_levels,id',
+            'section_id' => 'nullable|exists:sections,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $user = $request->user();
+
+        // Verify teacher belongs to school
+        $teacher = User::where('school_id', $user->school_id)
+            ->where('role', 'teacher')
+            ->findOrFail($request->teacher_id);
+
+        $assignment = TeacherSubject::create([
+            'school_id' => $user->school_id,
+            'teacher_id' => $teacher->id,
+            'subject_id' => $request->subject_id,
+            'grade_level_id' => $request->grade_level_id,
+            'section_id' => $request->section_id,
+        ]);
+
+        return response()->json([
+            'message' => 'Teacher assigned successfully',
+            'assignment' => $assignment,
+        ], 201);
+    }
+
+    /**
+     * Remove a teacher assignment.
+     */
+    public function removeTeacherAssignment(Request $request, int $id): JsonResponse
+    {
+        $user = $request->user();
+        $assignment = TeacherSubject::where('school_id', $user->school_id)->findOrFail($id);
+
+        $assignment->delete();
+
+        return response()->json(['message' => 'Teacher assignment removed']);
     }
 }

@@ -113,6 +113,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Grade Levels
         Route::get('grade-levels', [AcademicController::class, 'gradeLevelsIndex']);
+        Route::get('grade-levels/{id}', [AcademicController::class, 'gradeLevelDetail']);
         Route::post('grade-levels', [AcademicController::class, 'createGradeLevel']);
         Route::put('grade-levels/{id}', [AcademicController::class, 'updateGradeLevel']);
         Route::delete('grade-levels/{id}', [AcademicController::class, 'deleteGradeLevel']);
@@ -142,5 +143,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('subject-mappings', [AcademicController::class, 'assignSubjectToGrade']);
         Route::post('subject-mappings/bulk', [AcademicController::class, 'bulkAssignSubjects']);
         Route::delete('subject-mappings/{id}', [AcademicController::class, 'removeSubjectFromGrade']);
+
+        // Teacher Assignments (Phase 4)
+        Route::get('teachers', [AcademicController::class, 'teachersIndex']);
+        Route::post('teacher-assignments', [AcademicController::class, 'assignTeacher']);
+        Route::delete('teacher-assignments/{id}', [AcademicController::class, 'removeTeacherAssignment']);
     });
 });

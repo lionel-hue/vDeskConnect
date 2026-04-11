@@ -87,6 +87,16 @@ export const academicApi = {
     bulkAssign: (data) => api.post('/academic/subject-mappings/bulk', data),
     remove: (id) => api.delete(`/academic/subject-mappings/${id}`),
   },
+
+  // Teacher Assignments (Phase 4)
+  gradeLevelDetail: (id) => api.get(`/academic/grade-levels/${id}`),
+  teachers: {
+    getAll: () => api.get('/academic/teachers'),
+  },
+  teacherAssignments: {
+    assign: (data) => api.post('/academic/teacher-assignments', data),
+    remove: (id) => api.delete(`/academic/teacher-assignments/${id}`),
+  },
 };
 
 export default academicApi;
