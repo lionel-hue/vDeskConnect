@@ -191,6 +191,39 @@ export default function ClassesPage() {
     }
   };
 
+  // Regenerate scheme aspects with AI
+  const handleRegenerateSchemeAI = async () => {
+    if (!editingScheme) return;
+    setSchemeLoading(true);
+    try {
+      const aiRes = await academicApi.aiScheme.generate({
+        grade_level_id: selectedGrade,
+        subject_id: schemeForm.subject_id || editingScheme.subject_id,
+        term_id: schemeForm.term_id || editingScheme.term_id,
+        weeks: [parseInt(schemeForm.week_number || editingScheme.week_number)],
+        topics: [schemeForm.topic || editingScheme.topic],
+      });
+
+      if (aiRes.schemes && aiRes.schemes.length > 0) {
+        const aiAspects = aiRes.schemes[0].aspects || {};
+        setSchemeForm({
+          ...schemeForm,
+          aspects: {
+            objectives: aiAspects.objectives || schemeForm.aspects.objectives,
+            activities: aiAspects.activities || schemeForm.aspects.activities,
+            resources: aiAspects.resources || schemeForm.aspects.resources,
+            evaluation: aiAspects.evaluation || schemeForm.aspects.evaluation,
+          },
+        });
+        toast.success('Scheme aspects regenerated with AI!');
+      }
+    } catch (err) {
+      toast.error(err.data?.message || 'Failed to regenerate');
+    } finally {
+      setSchemeLoading(false);
+    }
+  };
+
   // ==================== SCHEME AI BUILDER HANDLERS ====================
   const handleSchemeAISubmit = async (e) => {
     e.preventDefault();
@@ -707,9 +740,22 @@ export default function ClassesPage() {
                 <h3 className="text-base md:text-lg font-semibold text-text-primary">
                   {editingScheme ? 'Edit Scheme Entry' : 'Add Scheme Entry'}
                 </h3>
-                <button onClick={() => { setShowSchemeModal(false); setEditingScheme(null); }} className="text-text-muted hover:text-text-primary">
-                  <X className="w-5 h-5" />
-                </button>
+                <div className="flex items-center gap-2">
+                  {editingScheme && (
+                    <button
+                      type="button"
+                      onClick={handleRegenerateSchemeAI}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600"
+                      disabled={schemeLoading}
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      Regenerate with AI
+                    </button>
+                  )}
+                  <button onClick={() => { setShowSchemeModal(false); setEditingScheme(null); }} className="text-text-muted hover:text-text-primary">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
               <form onSubmit={handleSchemeSubmit} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">

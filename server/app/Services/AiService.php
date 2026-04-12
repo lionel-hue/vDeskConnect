@@ -236,8 +236,8 @@ PROMPT;
         $evaluation = $this->generateEvaluation($subjectName, $gradeLevel, $topic);
 
         return [
-            'scheme_id' => $scheme['id'],
-            'week_number' => $scheme['week_number'],
+            'scheme_id' => $scheme['id'] ?? null,
+            'week_number' => $scheme['week_number'] ?? 1,
             'topic' => $topic,
             'aspects' => [
                 'objective' => $objective,
@@ -252,97 +252,232 @@ PROMPT;
 
     protected function generateObjective(string $subject, string $grade, string $topic): string
     {
-        $templates = [
-            'mathematics' => "By the end of this lesson on {$topic}, students should be able to:\n1. Define and explain key concepts related to {$topic}\n2. Apply mathematical procedures to solve problems involving {$topic}\n3. Demonstrate understanding through worked examples and practice exercises\n4. Connect {$topic} to real-world applications",
-            'english' => "By the end of this lesson on {$topic}, students should be able to:\n1. Identify and analyze key elements of {$topic}\n2. Demonstrate comprehension through reading and discussion\n3. Apply language skills in writing and speaking activities\n4. Express ideas clearly and coherently about {$topic}",
-            'science' => "By the end of this lesson on {$topic}, students should be able to:\n1. Explain the scientific concepts underlying {$topic}\n2. Describe processes and phenomena related to {$topic}\n3. Apply scientific inquiry methods to investigate {$topic}\n4. Relate {$topic} to everyday life and environmental contexts",
-            'biology' => "By the end of this lesson on {$topic}, students should be able to:\n1. Describe the structure and function related to {$topic}\n2. Explain biological processes and their significance\n3. Analyze relationships between organisms and their environment\n4. Apply knowledge of {$topic} to real-world biological scenarios",
-            'chemistry' => "By the end of this lesson on {$topic}, students should be able to:\n1. Identify chemical properties and reactions related to {$topic}\n2. Write balanced equations where applicable\n3. Explain the practical applications of {$topic}\n4. Perform safe laboratory procedures related to {$topic}",
-            'physics' => "By the end of this lesson on {$topic}, students should be able to:\n1. State and explain physical laws and principles related to {$topic}\n2. Solve numerical problems using appropriate formulas\n3. Conduct experiments to verify concepts of {$topic}\n4. Apply physics principles to everyday situations",
-            'social studies' => "By the end of this lesson on {$topic}, students should be able to:\n1. Describe key events and concepts related to {$topic}\n2. Analyze causes and effects of historical/social phenomena\n3. Discuss the relevance of {$topic} to contemporary society\n4. Develop critical thinking about {$topic} through discussion",
-            'history' => "By the end of this lesson on {$topic}, students should be able to:\n1. Chronologically sequence key events related to {$topic}\n2. Identify important figures and their contributions\n3. Analyze the causes and consequences of {$topic}\n4. Draw connections between {$topic} and present-day society",
-            'geography' => "By the end of this lesson on {$topic}, students should be able to:\n1. Locate and describe geographical features related to {$topic}\n2. Interpret maps and geographical data\n3. Explain the relationship between human activities and {$topic}\n4. Analyze environmental impacts related to {$topic}",
-            'civic education' => "By the end of this lesson on {$topic}, students should be able to:\n1. Explain rights and responsibilities related to {$topic}\n2. Discuss the importance of {$topic} in democratic governance\n3. Analyze case studies related to {$topic}\n4. Demonstrate civic virtues in classroom discussions",
+        $isJunior = strpos($grade, 'jss') !== false || strpos($grade, 'junior') !== false || strpos($grade, 'basic') !== false;
+        $isSenior = strpos($grade, 'ss') !== false || strpos($grade, 'senior') !== false || strpos($grade, 'grade 10') !== false || strpos($grade, 'grade 11') !== false || strpos($grade, 'grade 12') !== false;
+
+        // Build truly unique objectives based on specific topic keywords
+        $topicShort = strlen($topic) > 30 ? substr($topic, 0, 28) . '...' : $topic;
+
+        $subjectVerbs = [
+            'mathematics' => ['solve', 'calculate', 'apply', 'demonstrate', 'analyze', 'compute', 'evaluate'],
+            'english' => ['analyze', 'demonstrate', 'express', 'interpret', 'compose', 'evaluate', 'critique'],
+            'science' => ['explain', 'investigate', 'demonstrate', 'apply', 'analyze', 'hypothesize', 'observe'],
+            'biology' => ['describe', 'explain', 'analyze', 'identify', 'demonstrate', 'compare', 'evaluate'],
+            'chemistry' => ['explain', 'calculate', 'identify', 'demonstrate', 'analyze', 'predict', 'evaluate'],
+            'physics' => ['apply', 'calculate', 'explain', 'demonstrate', 'analyze', 'solve', 'evaluate'],
+            'history' => ['analyze', 'evaluate', 'compare', 'explain', 'interpret', 'assess', 'discuss'],
+            'geography' => ['describe', 'analyze', 'interpret', 'explain', 'compare', 'evaluate', 'locate'],
+            'civic education' => ['explain', 'discuss', 'analyze', 'demonstrate', 'evaluate', 'apply', 'identify'],
         ];
 
-        return $templates[$subject] ?? "By the end of this lesson on {$topic}, students should be able to:\n1. Understand and explain key concepts related to {$topic}\n2. Apply knowledge through practical examples and exercises\n3. Demonstrate comprehension through class participation\n4. Connect {$topic} to real-life situations and other subjects";
+        $verbs = $subjectVerbs[$subject] ?? ['understand', 'explain', 'demonstrate', 'apply', 'analyze'];
+        
+        // Resolve fallbacks before string interpolation
+        $verb3 = $verbs[3] ?? 'Connect';
+        $verb4 = $verbs[4] ?? 'Demonstrate';
+
+        $levelDesc = $isJunior ? 'foundational' : ($isSenior ? 'advanced' : 'intermediate');
+
+        return "By the end of this lesson on **{$topicShort}**, {$grade} students should be able to:
+
+1. **{$verbs[0]}** key concepts related to {$topicShort} using {$levelDesc} terminology
+2. **{$verbs[1]}** practical applications of {$topicShort} through guided exercises
+3. **{$verbs[2]}** understanding by solving/analyzing problems involving {$topicShort}
+4. **{$verb3}** {$topicShort} to real-world scenarios and previous lessons
+5. **{$verb4}** mastery through class participation and written assessments";
     }
 
     protected function generateContent(string $subject, string $grade, string $topic): string
     {
-        $isJunior = strpos($grade, 'jss') !== false || strpos($grade, 'junior') !== false;
-        $isSenior = strpos($grade, 'ss') !== false || strpos($grade, 'senior') !== false;
+        $isJunior = strpos($grade, 'jss') !== false || strpos($grade, 'junior') !== false || strpos($grade, 'basic') !== false;
+        $level = $isJunior ? 'foundation level with simple language, concrete examples, and step-by-step explanations' : 'advanced level with detailed explanations, critical analysis, and complex problem-solving';
 
-        $level = $isJunior ? 'foundation level with simple language and concrete examples' : 'advanced level with detailed explanations and critical analysis';
+        $topicShort = strlen($topic) > 25 ? substr($topic, 0, 23) . '...' : $topic;
 
-        $structure = "LESSON CONTENT (40 minutes):
+        $subjectSpecific = [
+            'mathematics' => "
+**Key Mathematical Concepts:**
+- Definition and properties of {$topicShort}
+- Formulas, rules, and procedures
+- Step-by-step worked examples
+- Common errors and how to avoid them
+- Practice problems of increasing difficulty",
+            'english' => "
+**Key Language Concepts:**
+- Grammar rules and usage related to {$topicShort}
+- Vocabulary and terminology
+- Reading comprehension passages
+- Writing exercises and examples
+- Speaking and listening activities",
+            'science' => "
+**Key Scientific Concepts:**
+- Scientific principles underlying {$topicShort}
+- Observations and experimental evidence
+- Real-world applications and examples
+- Safety considerations (if applicable)
+- Environmental and social implications",
+            'biology' => "
+**Key Biological Concepts:**
+- Structure and function related to {$topicShort}
+- Biological processes and mechanisms
+- Classification and relationships
+- Health and environmental relevance
+- Laboratory observations (if applicable)",
+            'chemistry' => "
+**Key Chemical Concepts:**
+- Chemical properties and reactions of {$topicShort}
+- Equations and stoichiometry
+- Practical applications and industries
+- Safety protocols for experiments
+- Environmental impact considerations",
+            'physics' => "
+**Key Physical Concepts:**
+- Physical laws and principles of {$topicShort}
+- Mathematical relationships and formulas
+- Experimental verification methods
+- Technological applications
+- Problem-solving strategies",
+            'history' => "
+**Key Historical Concepts:**
+- Chronological events related to {$topicShort}
+- Important figures and their contributions
+- Causes and consequences analysis
+- Primary and secondary sources
+- Connections to modern society",
+            'geography' => "
+**Key Geographical Concepts:**
+- Physical and human geography of {$topicShort}
+- Maps, charts, and data interpretation
+- Human-environment interactions
+- Spatial patterns and relationships
+- Regional and global significance",
+        ];
 
-**INTRODUCTION (5 minutes):**
-- Begin with a thought-provoking question or real-life scenario related to {$topic}
-- Activate prior knowledge by asking students what they already know about {$topic}
-- Clearly state the lesson objectives and outline the lesson structure
-- Create interest through a brief demonstration, story, or visual aid
+        $specificContent = $subjectSpecific[$subject] ?? "
+**Key Concepts:**
+- Core principles and definitions of {$topicShort}
+- Important facts and terminology
+- Practical applications and examples
+- Common misconceptions to avoid
+- Connections to other subjects";
 
-**MAIN CONTENT DELIVERY (20 minutes):**
-- Present the key concepts of {$topic} using {$level}
-- Use the whiteboard to outline main points, definitions, and key terms
-- Provide clear, step-by-step explanations with relevant examples
-- Use visual aids, diagrams, or models to illustrate abstract concepts
-- Connect {$topic} to previous lessons and real-world applications
-- Pause periodically to check understanding and address questions
+        return "### LESSON CONTENT: {$topicShort} (40 minutes)
 
-Key Points to Cover:
-1. Definition and meaning of {$topic}
-2. Key concepts, principles, or rules related to {$topic}
-3. Examples and applications of {$topic}
-4. Common misconceptions and how to avoid them
+#### **INTRODUCTION (5 minutes)**
+- **Hook:** Begin with a thought-provoking question: *\"What do you already know about {$topicShort}?\"*
+- Share a real-life scenario or story that demonstrates why {$topicShort} matters
+- Clearly state the learning objectives on the board
+- Connect to previous lessons: *\"Last week we learned about [related topic], today we build on that...\"*
 
-**STUDENT PRACTICE (10 minutes):**
-- Guide students through worked examples related to {$topic}
-- Have students work in pairs or small groups on practice exercises
-- Circulate the classroom to provide individual support and feedback
-- Encourage students to explain their reasoning and thought process
-- Address common errors and misconceptions as they arise
+#### **MAIN DELIVERY (20 minutes)**
 
-**CONCLUSION (5 minutes):**
-- Summarize the main points covered in the lesson
-- Ask students to share one thing they learned about {$topic}
-- Preview the next lesson and how it connects to today's topic
+{$specificContent}
+
+**Teaching Approach ({$level}):**
+1. **Direct Instruction (8 mins):** Present core concepts using visual aids, whiteboard diagrams, and clear explanations
+2. **Interactive Examples (7 mins):** Work through 2-3 examples with student participation. Ask: *\"What do you think comes next?\"*
+3. **Real-World Connection (5 mins):** Show how {$topicShort} applies to everyday life, careers, or current events
+
+#### **STUDENT PRACTICE (10 minutes)**
+- **Guided Practice (5 mins):** Students work in pairs on structured exercises related to {$topicShort}
+- **Independent Practice (5 mins):** Individual work on application problems
+- **Teacher Circulation:** Walk around the classroom, provide individual support, address common difficulties
+
+#### **CONCLUSION (5 minutes)**
+- Summarize the 3-5 key takeaways from today's lesson on {$topicShort}
+- Exit Ticket: Students write one thing they learned and one question they still have
+- Preview next lesson: *\"Next time, we'll explore how {$topicShort} connects to [upcoming topic]...\"*
 - Assign relevant homework or practice exercises";
-
-        return $structure;
     }
 
     protected function generateMethodology(string $subject, string $grade): string
     {
-        $isJunior = strpos($grade, 'jss') !== false || strpos($grade, 'junior') !== false;
+        $isJunior = strpos($grade, 'jss') !== false || strpos($grade, 'junior') !== false || strpos($grade, 'basic') !== false;
+        $topicLower = strtolower($grade);
 
         if ($isJunior) {
-            return "TEACHING METHODOLOGY:
+            return "### TEACHING METHODOLOGY FOR {$grade}
 
-1. **Direct Instruction (10 mins):** Teacher-led presentation of key concepts with clear explanations and demonstrations
-2. **Interactive Discussion (10 mins):** Question-and-answer session to engage students and check understanding
-3. **Guided Practice (10 mins):** Teacher works through examples with student participation
-4. **Collaborative Learning (5 mins):** Pair or group work on practice exercises
-5. **Differentiation Strategies:**
-   - For struggling students: Provide additional scaffolding, simplified examples, and one-on-one support
-   - For advanced students: Offer extension problems and deeper exploration questions
-   - Use visual, auditory, and kinesthetic approaches to accommodate different learning styles
-6. **Classroom Management:** Establish clear expectations, use positive reinforcement, and maintain an inclusive learning environment";
+#### **1. Multi-Sensory Instruction (10 mins)**
+- Use **visual aids**: charts, diagrams, color-coded notes, and实物 models
+- Incorporate **hands-on manipulatives** for concrete understanding
+- Use **simple, clear language** appropriate for {$grade} level
+- Repeat key concepts 2-3 times using different examples
+
+#### **2. Interactive Questioning (10 mins)**
+- Ask **open-ended questions**: *\"What do you notice about...?\"*, *\"How would you explain this to a friend?\"*
+- Use **think-pair-share**: Students think individually, discuss with partner, then share with class
+- Encourage **student volunteers** to come to the board and demonstrate solutions
+
+#### **3. Collaborative Learning (10 mins)**
+- **Small groups (3-4 students)** work on guided practice exercises
+- Assign **group roles**: Leader, Recorder, Materials Manager, Presenter
+- Provide **differentiated worksheets**: easier versions for struggling students, challenge problems for advanced learners
+
+#### **4. Differentiation Strategies**
+- **For struggling learners:**
+  - Provide step-by-step templates and graphic organizers
+  - Use peer tutoring: pair with a stronger student
+  - Offer additional one-on-one support during practice time
+  - Break complex tasks into smaller, manageable steps
+
+- **For advanced learners:**
+  - Provide extension problems and real-world application challenges
+  - Encourage them to help explain concepts to peers
+  - Offer independent research or project opportunities
+
+- **For diverse learning styles:**
+  - **Visual:** Diagrams, charts, color-coding, videos
+  - **Auditory:** Discussions, read-alouds, verbal explanations
+  - **Kinesthetic:** Hands-on activities, movement-based learning, manipulatives
+  - **Reading/Writing:** Note-taking, worksheets, journaling
+
+#### **5. Classroom Management**
+- Establish clear expectations and routines
+- Use positive reinforcement: praise effort, not just correct answers
+- Implement a **participation system** (e.g., cold calling, random name generator)
+- Maintain an inclusive environment where all students feel safe to ask questions";
         }
 
-        return "TEACHING METHODOLOGY:
+        return "### TEACHING METHODOLOGY FOR {$grade}
 
-1. **Lecture with Interactive Elements (10 mins):** Structured presentation with periodic questioning and student responses
-2. **Problem-Based Learning (10 mins):** Present real-world problems related to the topic for students to analyze
-3. **Peer Discussion (10 mins):** Structured discussions where students explain concepts to each other
-4. **Independent Practice (5 mins):** Individual work on application problems
-5. **Differentiation Strategies:**
-   - Provide tiered assignments based on student readiness levels
-   - Use Socratic questioning to promote critical thinking
-   - Incorporate technology tools where available
-   - Allow student choice in how they demonstrate understanding
-6. **Assessment for Learning:** Use exit tickets, thumbs up/down, and random questioning to monitor understanding throughout the lesson";
+#### **1. Socratic Seminar & Discussion (10 mins)**
+- Use **probing questions** to promote critical thinking: *\"What evidence supports this conclusion?\"*, *\"How might this apply to a different context?\"*
+- Facilitate **student-led discussions** where learners debate different perspectives
+- Encourage **evidence-based arguments** using data, examples, and logical reasoning
+
+#### **2. Problem-Based Learning (10 mins)**
+- Present **authentic, complex problems** related to the topic
+- Students work in **small teams** to analyze, hypothesize, and propose solutions
+- Emphasize **process over product**: how they think matters more than the answer
+
+#### **3. Flipped Classroom Elements (5 mins)**
+- Assign **pre-reading or video content** for homework
+- Use class time for **application, analysis, and synthesis**
+- Provide **guided notes** or graphic organizers for students to use during independent study
+
+#### **4. Technology Integration**
+- Use **digital tools**: interactive simulations, online quizzes, educational apps
+- Incorporate **multimedia resources**: videos, podcasts, virtual labs
+- Utilize **learning management systems** for assignment distribution and feedback
+
+#### **5. Differentiation Strategies**
+- **Tiered assignments**: Same content, different complexity levels
+- **Choice boards**: Students select how they demonstrate understanding (essay, presentation, project, etc.)
+- **Flexible grouping**: Mix ability levels for peer learning, sometimes group by skill for targeted instruction
+- **Scaffolding**: Provide sentence starters, templates, and partially completed examples
+
+#### **6. Assessment for Learning**
+- **Formative checks**: Thumbs up/down, exit tickets, whiteboard responses
+- **Peer assessment**: Students review each other's work using rubrics
+- **Self-reflection**: Learning journals, goal-setting exercises
+- **Immediate feedback**: Address misconceptions in real-time during practice
+
+#### **7. Real-World Connections**
+- Invite **guest speakers** from relevant professions
+- Use **current events** and news articles as discussion prompts
+- Assign **community-based projects** that apply classroom learning
+- Discuss **career pathways** related to the subject matter";
     }
 
     protected function generateMaterials(string $subject, string $grade): string

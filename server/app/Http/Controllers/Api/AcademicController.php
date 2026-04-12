@@ -1871,6 +1871,7 @@ class AcademicController extends Controller
                 // Use the lesson note AI to generate scheme aspects
                 $result = $aiService->generateLessonNote($schemeData, $gradeInfo, $subjectInfo, 30);
 
+                // Map lesson note aspects to scheme aspects
                 $generatedSchemes[] = [
                     'week_number' => $weekNumber,
                     'topic' => $topic,
