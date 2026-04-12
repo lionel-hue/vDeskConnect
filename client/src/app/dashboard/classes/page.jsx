@@ -767,68 +767,64 @@ export default function ClassesPage() {
                   />
                 </div>
 
-                {/* Aspects (Collapsible) */}
+                {/* Aspects (Collapsible with Markdown Support) */}
                 <div className="space-y-3">
-                  <details className="border border-border dark:border-gray-600 rounded-lg">
-                    <summary className="px-3 py-2 cursor-pointer text-sm font-medium text-text-primary">Objectives (Optional)</summary>
+                  <details className="border border-border dark:border-gray-600 rounded-lg" open>
+                    <summary className="px-3 py-2 cursor-pointer text-sm font-medium text-text-primary">Objectives</summary>
                     <div className="p-3">
-                      <textarea
+                      <MarkdownEditor
                         value={schemeForm.aspects.objectives}
-                        onChange={e => setSchemeForm({
+                        onChange={value => setSchemeForm({
                           ...schemeForm,
-                          aspects: { ...schemeForm.aspects, objectives: e.target.value }
+                          aspects: { ...schemeForm.aspects, objectives: value }
                         })}
-                        className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm text-text-primary"
-                        rows="3"
                         placeholder="Learning objectives..."
+                        rows={3}
                       />
                     </div>
                   </details>
 
-                  <details className="border border-border dark:border-gray-600 rounded-lg">
-                    <summary className="px-3 py-2 cursor-pointer text-sm font-medium text-text-primary">Activities (Optional)</summary>
+                  <details className="border border-border dark:border-gray-600 rounded-lg" open>
+                    <summary className="px-3 py-2 cursor-pointer text-sm font-medium text-text-primary">Activities</summary>
                     <div className="p-3">
-                      <textarea
+                      <MarkdownEditor
                         value={schemeForm.aspects.activities}
-                        onChange={e => setSchemeForm({
+                        onChange={value => setSchemeForm({
                           ...schemeForm,
-                          aspects: { ...schemeForm.aspects, activities: e.target.value }
+                          aspects: { ...schemeForm.aspects, activities: value }
                         })}
-                        className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm text-text-primary"
-                        rows="3"
                         placeholder="Teaching activities..."
+                        rows={3}
                       />
                     </div>
                   </details>
 
                   <details className="border border-border dark:border-gray-600 rounded-lg">
-                    <summary className="px-3 py-2 cursor-pointer text-sm font-medium text-text-primary">Resources (Optional)</summary>
+                    <summary className="px-3 py-2 cursor-pointer text-sm font-medium text-text-primary">Resources</summary>
                     <div className="p-3">
-                      <textarea
+                      <MarkdownEditor
                         value={schemeForm.aspects.resources}
-                        onChange={e => setSchemeForm({
+                        onChange={value => setSchemeForm({
                           ...schemeForm,
-                          aspects: { ...schemeForm.aspects, resources: e.target.value }
+                          aspects: { ...schemeForm.aspects, resources: value }
                         })}
-                        className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm text-text-primary"
-                        rows="3"
                         placeholder="Teaching resources/materials..."
+                        rows={3}
                       />
                     </div>
                   </details>
 
                   <details className="border border-border dark:border-gray-600 rounded-lg">
-                    <summary className="px-3 py-2 cursor-pointer text-sm font-medium text-text-primary">Evaluation (Optional)</summary>
+                    <summary className="px-3 py-2 cursor-pointer text-sm font-medium text-text-primary">Evaluation</summary>
                     <div className="p-3">
-                      <textarea
+                      <MarkdownEditor
                         value={schemeForm.aspects.evaluation}
-                        onChange={e => setSchemeForm({
+                        onChange={value => setSchemeForm({
                           ...schemeForm,
-                          aspects: { ...schemeForm.aspects, evaluation: e.target.value }
+                          aspects: { ...schemeForm.aspects, evaluation: value }
                         })}
-                        className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm text-text-primary"
-                        rows="3"
                         placeholder="Assessment/evaluation methods..."
+                        rows={3}
                       />
                     </div>
                   </details>

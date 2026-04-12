@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Eye, Edit3, Maximize2, X } from 'lucide-react';
@@ -21,49 +21,52 @@ export default function MarkdownEditor({
   const [isPreview, setIsPreview] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
 
+  // Ensure value is always a string
+  const safeValue = typeof value === 'string' ? value : '';
+
+  const markdownComponents = useMemo(() => ({
+    h1: ({ node, ...props }) => <h1 className="text-2xl font-bold text-text-primary mt-6 mb-3 pb-2 border-b border-border" {...props} />,
+    h2: ({ node, ...props }) => <h2 className="text-xl font-bold text-text-primary mt-5 mb-2" {...props} />,
+    h3: ({ node, ...props }) => <h3 className="text-lg font-semibold text-text-primary mt-4 mb-2" {...props} />,
+    h4: ({ node, ...props }) => <h4 className="text-base font-semibold text-text-primary mt-3 mb-1" {...props} />,
+    p: ({ node, ...props }) => <p className="text-sm text-text-primary mb-3 leading-relaxed" {...props} />,
+    ul: ({ node, ...props }) => <ul className="list-disc list-outside ml-5 text-sm text-text-primary mb-3 space-y-1.5" {...props} />,
+    ol: ({ node, ...props }) => <ol className="list-decimal list-outside ml-5 text-sm text-text-primary mb-3 space-y-1.5" {...props} />,
+    li: ({ node, ...props }) => <li className="text-sm text-text-secondary leading-relaxed pl-1" {...props} />,
+    strong: ({ node, ...props }) => <strong className="font-semibold text-text-primary" {...props} />,
+    em: ({ node, ...props }) => <em className="italic text-text-secondary" {...props} />,
+    code: ({ node, inline, ...props }) =>
+      inline ? (
+        <code className="px-1.5 py-0.5 bg-primary/10 text-primary rounded text-xs font-mono" {...props} />
+      ) : (
+        <code className="block bg-bg-main dark:bg-gray-750 border border-border rounded-lg p-3 my-3 overflow-x-auto text-xs font-mono" {...props} />
+      ),
+    blockquote: ({ node, ...props }) => (
+      <blockquote className="border-l-4 border-primary/40 bg-primary/5 pl-4 py-3 my-3 text-text-secondary italic rounded-r-lg" {...props} />
+    ),
+    hr: ({ node, ...props }) => <hr className="my-4 border-border" {...props} />,
+    table: ({ node, ...props }) => (
+      <div className="overflow-x-auto my-3">
+        <table className="w-full text-sm border-collapse" {...props} />
+      </div>
+    ),
+    th: ({ node, ...props }) => (
+      <th className="border border-border bg-bg-main dark:bg-gray-750 px-3 py-2 text-left font-semibold text-text-primary" {...props} />
+    ),
+    td: ({ node, ...props }) => (
+      <td className="border border-border px-3 py-2 text-text-secondary" {...props} />
+    ),
+  }), []);
+
   const renderMarkdown = (content) => {
-    if (!content) return <p className="text-text-muted italic">Nothing to preview yet...</p>;
+    if (!content || content.trim() === '') {
+      return <p className="text-text-muted italic">Nothing to preview yet...</p>;
+    }
 
     return (
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
-        components={{
-          h1: ({ children }) => <h1 className="text-2xl font-bold text-text-primary mt-6 mb-3 pb-2 border-b border-border">{children}</h1>,
-          h2: ({ children }) => <h2 className="text-xl font-bold text-text-primary mt-5 mb-2">{children}</h2>,
-          h3: ({ children }) => <h3 className="text-lg font-semibold text-text-primary mt-4 mb-2">{children}</h3>,
-          h4: ({ children }) => <h4 className="text-base font-semibold text-text-primary mt-3 mb-1">{children}</h4>,
-          p: ({ children }) => <p className="text-sm text-text-primary mb-3 leading-relaxed">{children}</p>,
-          ul: ({ children }) => <ul className="list-disc list-outside ml-5 text-sm text-text-primary mb-3 space-y-1.5">{children}</ul>,
-          ol: ({ children }) => <ol className="list-decimal list-outside ml-5 text-sm text-text-primary mb-3 space-y-1.5">{children}</ol>,
-          li: ({ children }) => <li className="text-sm text-text-secondary leading-relaxed pl-1">{children}</li>,
-          strong: ({ children }) => <strong className="font-semibold text-text-primary">{children}</strong>,
-          em: ({ children }) => <em className="italic text-text-secondary">{children}</em>,
-          code: ({ children }) => (
-            <code className="px-1.5 py-0.5 bg-primary/10 text-primary rounded text-xs font-mono">{children}</code>
-          ),
-          pre: ({ children }) => (
-            <pre className="bg-bg-main dark:bg-gray-750 border border-border rounded-lg p-3 my-3 overflow-x-auto">
-              {children}
-            </pre>
-          ),
-          blockquote: ({ children }) => (
-            <blockquote className="border-l-4 border-primary/40 bg-primary/5 pl-4 py-3 my-3 text-text-secondary italic rounded-r-lg">{children}</blockquote>
-          ),
-          hr: () => <hr className="my-4 border-border" />,
-          table: ({ children }) => (
-            <div className="overflow-x-auto my-3">
-              <table className="w-full text-sm border-collapse">
-                {children}
-              </table>
-            </div>
-          ),
-          th: ({ children }) => (
-            <th className="border border-border bg-bg-main dark:bg-gray-750 px-3 py-2 text-left font-semibold text-text-primary">{children}</th>
-          ),
-          td: ({ children }) => (
-            <td className="border border-border px-3 py-2 text-text-secondary">{children}</td>
-          ),
-        }}
+        components={markdownComponents}
       >
         {content}
       </ReactMarkdown>
@@ -99,7 +102,7 @@ export default function MarkdownEditor({
                   </>
                 )}
               </button>
-              {isPreview && value && (
+              {isPreview && safeValue && (
                 <button
                   type="button"
                   onClick={() => setIsExpanded(true)}
@@ -118,12 +121,12 @@ export default function MarkdownEditor({
           {isPreview ? (
             // Preview Mode - Rendered Markdown
             <div className="w-full min-h-[150px] max-h-[400px] overflow-y-auto px-4 py-3 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm text-text-primary prose prose-sm dark:prose-invert max-w-none">
-              {renderMarkdown(value)}
+              {renderMarkdown(safeValue)}
             </div>
           ) : (
             // Edit Mode - Raw Markdown Textarea
             <textarea
-              value={value}
+              value={safeValue}
               onChange={e => onChange(e.target.value)}
               placeholder={placeholder}
               rows={rows}
@@ -164,7 +167,7 @@ export default function MarkdownEditor({
             {/* Content */}
             <div className="flex-1 overflow-y-auto px-6 py-4">
               <div className="prose prose-sm dark:prose-invert max-w-none">
-                {renderMarkdown(value)}
+                {renderMarkdown(safeValue)}
               </div>
             </div>
 
