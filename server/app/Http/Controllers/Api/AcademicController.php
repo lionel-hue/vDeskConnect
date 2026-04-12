@@ -1808,16 +1808,20 @@ class AcademicController extends Controller
     }
 
     /**
-     * AI Scheme Generator (Stubbed for now).
+     * AI Scheme Generator - Production Ready.
+     * Generates scheme of work aspects based on grade level, subject, term, and topics.
      */
     public function generateSchemeAI(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
-            'subject_id' => 'required|exists:subjects,id',
+            'scheme_id' => 'nullable|exists:schemes_of_work,id',
             'grade_level_id' => 'required|exists:grade_levels,id',
+            'subject_id' => 'required|exists:subjects,id',
             'term_id' => 'required|exists:academic_terms,id',
             'weeks' => 'required|array|min:1',
             'weeks.*' => 'required|integer|min:1|max:20',
+            'topics' => 'nullable|array',
+            'topics.*' => 'string|max:255',
         ]);
 
         if ($validator->fails()) {
@@ -1827,26 +1831,70 @@ class AcademicController extends Controller
             ], 422);
         }
 
-        // TODO: Integrate with AI provider (OpenAI, Claude, etc.)
-        // For now, return stub data
-        $stubSchemes = [];
-        foreach ($request->weeks as $weekNumber) {
-            $stubSchemes[] = [
-                'week_number' => $weekNumber,
-                'topic' => "AI Generated Topic for Week {$weekNumber}",
-                'aspects' => [
-                    'objectives' => "AI generated objectives for week {$weekNumber}",
-                    'activities' => "AI generated activities for week {$weekNumber}",
-                    'resources' => "AI generated resources for week {$weekNumber}",
-                    'evaluation' => "AI generated evaluation for week {$weekNumber}",
-                ],
-            ];
-        }
+        try {
+            $user = $request->user();
 
-        return response()->json([
-            'message' => 'AI scheme generated (stub)',
-            'schemes' => $stubSchemes,
-        ]);
+            // Fetch grade and subject info
+            $gradeLevel = GradeLevel::findOrFail($request->grade_level_id);
+            $subject = Subject::findOrFail($request->subject_id);
+            $term = AcademicTerm::findOrFail($request->term_id);
+
+            $aiService = new AiService();
+            $generatedSchemes = [];
+
+            foreach ($request->weeks as $index => $weekNumber) {
+                $topic = $request->topics[$index] ?? "Week {$weekNumber} Topic";
+
+                // Generate aspects using AI service
+                $schemeData = [
+                    'topic' => $topic,
+                    'week_number' => $weekNumber,
+                    'term_name' => $term->name,
+                    'objectives' => '',
+                    'activities' => '',
+                    'resources' => '',
+                    'evaluation' => '',
+                ];
+
+                $gradeInfo = [
+                    'name' => $gradeLevel->name,
+                    'short_name' => $gradeLevel->short_name,
+                    'cycle' => $gradeLevel->cycle ?? 'General',
+                ];
+
+                $subjectInfo = [
+                    'name' => $subject->name,
+                    'code' => $subject->code ?? $subject->name,
+                    'type' => $subject->type ?? 'core',
+                ];
+
+                // Use the lesson note AI to generate scheme aspects
+                $result = $aiService->generateLessonNote($schemeData, $gradeInfo, $subjectInfo, 30);
+
+                $generatedSchemes[] = [
+                    'week_number' => $weekNumber,
+                    'topic' => $topic,
+                    'aspects' => [
+                        'objectives' => $result['aspects']['objective'] ?? '',
+                        'activities' => $result['aspects']['content'] ?? '',
+                        'resources' => $result['aspects']['materials'] ?? '',
+                        'evaluation' => $result['aspects']['evaluation'] ?? '',
+                    ],
+                ];
+            }
+
+            return response()->json([
+                'message' => 'Scheme generated successfully',
+                'schemes' => $generatedSchemes,
+                'source' => $aiService->apiKey ? 'ai_api' : 'smart_template',
+            ]);
+        } catch (\Exception $e) {
+            Log::error('AI scheme generation failed: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Failed to generate scheme',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     // ==================== PHASE 6: LESSON NOTES ====================
@@ -2011,6 +2059,7 @@ class AcademicController extends Controller
         $validator = Validator::make($request->all(), [
             'scheme_id' => 'required|exists:schemes_of_work,id',
             'target_audience_size' => 'nullable|integer|min:1|max:200',
+            'topic_override' => 'nullable|string|max:255',
         ]);
 
         if ($validator->fails()) {
@@ -2028,10 +2077,13 @@ class AcademicController extends Controller
                 ->with(['subject', 'gradeLevel', 'term'])
                 ->findOrFail($request->scheme_id);
 
+            // Use topic_override if provided, otherwise use scheme's topic
+            $topic = $request->topic_override ?? $scheme->topic;
+
             // Prepare context data for AI
             $schemeData = [
                 'id' => $scheme->id,
-                'topic' => $scheme->topic,
+                'topic' => $topic, // Use overridden topic
                 'week_number' => $scheme->week_number,
                 'term_name' => $scheme->term?->name ?? 'Current Term',
                 'objectives' => $scheme->aspects['objectives'] ?? '',

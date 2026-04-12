@@ -187,6 +187,35 @@ export default function LessonNotesPage() {
     });
   };
 
+  const handleRegenerateWithAI = async () => {
+    if (!noteForm.scheme_id) {
+      toast.error('Please link to a scheme entry first');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      // Send the user's EDITED topic to AI so it generates content for the NEW topic
+      const res = await academicApi.aiLessonNote.generate({
+        scheme_id: noteForm.scheme_id,
+        target_audience_size: 30,
+        topic_override: noteForm.topic, // Pass user's edited topic
+      });
+      const aiNote = res.lesson_note;
+      setNoteForm({
+        ...noteForm,
+        week_number: aiNote.week_number || noteForm.week_number,
+        topic: noteForm.topic, // KEEP user's edited topic, don't revert to AI's
+        aspects: aiNote.aspects || noteForm.aspects,
+        contact_number: aiNote.contact_number || noteForm.contact_number,
+      });
+      toast.success('Lesson note regenerated with AI!');
+    } catch (err) {
+      toast.error(err.data?.message || 'Failed to regenerate');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const handleSchemeSelect = (schemeId) => {
     const scheme = schemes.find(s => s.id == schemeId);
     if (scheme) {
@@ -362,9 +391,22 @@ export default function LessonNotesPage() {
                 <h3 className="text-base md:text-lg font-semibold text-text-primary">
                   {editingNote ? 'Edit Lesson Note' : 'Create Lesson Note'}
                 </h3>
-                <button onClick={() => { setShowModal(false); setEditingNote(null); }} className="text-text-muted hover:text-text-primary">
-                  <X className="w-5 h-5" />
-                </button>
+                <div className="flex items-center gap-2">
+                  {editingNote && editingNote.scheme_id && (
+                    <button
+                      type="button"
+                      onClick={handleRegenerateWithAI}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600"
+                      disabled={submitting}
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      Regenerate with AI
+                    </button>
+                  )}
+                  <button onClick={() => { setShowModal(false); setEditingNote(null); }} className="text-text-muted hover:text-text-primary">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
               <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Scheme Selector */}

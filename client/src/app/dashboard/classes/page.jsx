@@ -4,9 +4,10 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   School, Users, BookOpen, UserRound, Plus, Trash2, X, Edit2,
-  GraduationCap, Layers, Tag, ChevronLeft, CheckCircle
+  GraduationCap, Layers, Tag, ChevronLeft, CheckCircle, Sparkles
 } from 'lucide-react';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
+import MarkdownEditor from '@/components/MarkdownEditor';
 import { academicApi } from '@/lib/academic-api';
 import { api } from '@/lib/api';
 import { useToast } from '@/contexts/ToastProvider';
@@ -36,6 +37,11 @@ export default function ClassesPage() {
   const [schemeForm, setSchemeForm] = useState({ week_number: '', topic: '', aspects: { objectives: '', activities: '', resources: '', evaluation: '' } });
   const [schemeLoading, setSchemeLoading] = useState(false);
   const [editingScheme, setEditingScheme] = useState(null);
+
+  // Scheme AI Builder state
+  const [showSchemeAIModal, setShowSchemeAIModal] = useState(false);
+  const [schemeAIForm, setSchemeAIForm] = useState({ week_number: '', subject_id: '', term_id: '', topic: '' });
+  const [schemeAILoading, setSchemeAILoading] = useState(false);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -182,6 +188,60 @@ export default function ClassesPage() {
       fetchSchemes(selectedGrade, schemeFilters);
     } catch (err) {
       toast.error('Failed to publish scheme');
+    }
+  };
+
+  // ==================== SCHEME AI BUILDER HANDLERS ====================
+  const handleSchemeAISubmit = async (e) => {
+    e.preventDefault();
+    setSchemeAILoading(true);
+    try {
+      // First create a temporary scheme to get an ID for AI generation
+      const schemeData = {
+        week_number: parseInt(schemeAIForm.week_number),
+        topic: schemeAIForm.topic,
+        grade_level_id: selectedGrade,
+        subject_id: schemeAIForm.subject_id,
+        term_id: schemeAIForm.term_id,
+        aspects: { objectives: '', activities: '', resources: '', evaluation: '' },
+        status: 'draft',
+      };
+
+      // Create scheme first
+      const created = await academicApi.schemes.create(schemeData);
+      const schemeId = created.scheme.id;
+
+      // Now call AI to generate aspects
+      const aiRes = await academicApi.aiScheme.generate({
+        scheme_id: schemeId,
+        grade_level_id: selectedGrade,
+        subject_id: schemeAIForm.subject_id,
+        term_id: schemeAIForm.term_id,
+        weeks: [parseInt(schemeAIForm.week_number)],
+        topics: [schemeAIForm.topic],
+      });
+
+      // Update the scheme with AI-generated aspects
+      if (aiRes.schemes && aiRes.schemes.length > 0) {
+        const aiAspects = aiRes.schemes[0].aspects || {};
+        await academicApi.schemes.update(schemeId, {
+          aspects: {
+            objectives: aiAspects.objectives || '',
+            activities: aiAspects.activities || '',
+            resources: aiAspects.resources || '',
+            evaluation: aiAspects.evaluation || '',
+          },
+        });
+      }
+
+      toast.success('Scheme generated with AI!');
+      setShowSchemeAIModal(false);
+      setSchemeAIForm({ week_number: '', subject_id: '', term_id: '', topic: '' });
+      fetchSchemes(selectedGrade, schemeFilters);
+    } catch (err) {
+      toast.error(err.data?.message || 'Failed to generate scheme');
+    } finally {
+      setSchemeAILoading(false);
     }
   };
 
@@ -405,17 +465,26 @@ export default function ClassesPage() {
                   <div className="bg-card dark:bg-gray-800 rounded-card border border-border p-4 md:p-6">
                     <div className="flex items-center justify-between mb-4">
                       <h2 className="text-base md:text-lg font-semibold text-text-primary">Scheme of Work</h2>
-                      <button
-                        onClick={() => {
-                          setEditingScheme(null);
-                          setSchemeForm({ week_number: '', topic: '', aspects: { objectives: '', activities: '', resources: '', evaluation: '' } });
-                          setShowSchemeModal(true);
-                        }}
-                        className="flex items-center gap-1 md:gap-2 px-3 md:px-4 py-2 text-xs md:text-sm bg-primary text-white rounded-lg hover:bg-primary-dark"
-                      >
-                        <Plus className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                        Add Week
-                      </button>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setShowSchemeAIModal(true)}
+                          className="flex items-center gap-1 md:gap-2 px-3 md:px-4 py-2 text-xs md:text-sm bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600"
+                        >
+                          <Sparkles className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                          AI Builder
+                        </button>
+                        <button
+                          onClick={() => {
+                            setEditingScheme(null);
+                            setSchemeForm({ week_number: '', topic: '', aspects: { objectives: '', activities: '', resources: '', evaluation: '' } });
+                            setShowSchemeModal(true);
+                          }}
+                          className="flex items-center gap-1 md:gap-2 px-3 md:px-4 py-2 text-xs md:text-sm bg-primary text-white rounded-lg hover:bg-primary-dark"
+                        >
+                          <Plus className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                          Add Week
+                        </button>
+                      </div>
                     </div>
 
                     {/* Filters */}
@@ -779,6 +848,104 @@ export default function ClassesPage() {
                     className="flex-1 px-4 py-2 text-sm md:text-base bg-primary text-white rounded-lg hover:bg-primary-dark disabled:opacity-50"
                   >
                     {schemeLoading ? 'Saving...' : (editingScheme ? 'Update Scheme' : 'Add Scheme')}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* ==================== SCHEME AI BUILDER MODAL ==================== */}
+        {showSchemeAIModal && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-card dark:bg-gray-800 rounded-card border border-border p-4 md:p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-base md:text-lg font-semibold text-text-primary flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-purple-500" />
+                  AI Scheme Builder
+                </h3>
+                <button onClick={() => setShowSchemeAIModal(false)} className="text-text-muted hover:text-text-primary">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <form onSubmit={handleSchemeAISubmit} className="space-y-4">
+                {/* User fills these */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs md:text-sm font-medium text-text-secondary mb-1">Week Number *</label>
+                    <input
+                      type="number"
+                      value={schemeAIForm.week_number}
+                      onChange={e => setSchemeAIForm({ ...schemeAIForm, week_number: e.target.value })}
+                      className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm text-text-primary"
+                      min="1"
+                      max="20"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs md:text-sm font-medium text-text-secondary mb-1">Subject *</label>
+                    <select
+                      value={schemeAIForm.subject_id}
+                      onChange={e => setSchemeAIForm({ ...schemeAIForm, subject_id: e.target.value })}
+                      className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm text-text-primary"
+                      required
+                    >
+                      <option value="">Select Subject</option>
+                      {gradeDetail?.subjects.map(sub => (
+                        <option key={sub.id} value={sub.subject_id}>{sub.subject_name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs md:text-sm font-medium text-text-secondary mb-1">Term *</label>
+                  <select
+                    value={schemeAIForm.term_id}
+                    onChange={e => setSchemeAIForm({ ...schemeAIForm, term_id: e.target.value })}
+                    className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm text-text-primary"
+                    required
+                  >
+                    <option value="">Select Term</option>
+                    {gradeDetail?.terms?.map(term => (
+                      <option key={term.id} value={term.id}>{term.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs md:text-sm font-medium text-text-secondary mb-1">Topic *</label>
+                  <input
+                    type="text"
+                    value={schemeAIForm.topic}
+                    onChange={e => setSchemeAIForm({ ...schemeAIForm, topic: e.target.value })}
+                    className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm md:text-base text-text-primary"
+                    placeholder="e.g., Introduction to Algebra"
+                    required
+                  />
+                </div>
+
+                <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-3">
+                  <p className="text-xs text-purple-700 dark:text-purple-300">
+                    <strong>AI will generate:</strong> Objectives, Activities, Resources, and Evaluation based on the grade level ({gradeDetail?.grade_level?.name}), subject, and topic you provide.
+                  </p>
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowSchemeAIModal(false)}
+                    className="flex-1 px-4 py-2 text-sm md:text-base border border-border dark:border-gray-600 rounded-lg hover:bg-bg-main dark:hover:bg-gray-700 text-text-primary"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={schemeAILoading || !schemeAIForm.week_number || !schemeAIForm.subject_id || !schemeAIForm.term_id || !schemeAIForm.topic}
+                    className="flex-1 px-4 py-2 text-sm md:text-base bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 disabled:opacity-50"
+                  >
+                    {schemeAILoading ? 'Generating...' : 'Generate with AI'}
                   </button>
                 </div>
               </form>
