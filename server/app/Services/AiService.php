@@ -14,9 +14,12 @@ class AiService
 
     public function __construct()
     {
+        // Prefer specific working model over aliases to avoid 404s
         $this->apiKey = config('services.ai.api_key') ?? env('AI_API_KEY');
         $this->baseUrl = config('services.ai.base_url') ?? env('AI_BASE_URL', 'https://generativelanguage.googleapis.com/v1beta');
-        $this->model = config('services.ai.model') ?? env('AI_MODEL', 'gemini-1.5-flash');
+        
+        // Use gemini-2.0-flash which is confirmed working, or fallback to the alias
+        $this->model = config('services.ai.model') ?? env('AI_MODEL', 'gemini-2.0-flash');
         $this->provider = config('services.ai.provider') ?? env('AI_PROVIDER', 'gemini');
     }
 
@@ -60,6 +63,7 @@ class AiService
     {
         $url = "{$this->baseUrl}/models/{$this->model}:generateContent?key={$this->apiKey}";
 
+        // Use higher temperature for more creative/varied results
         $response = Http::withHeaders([
             'Content-Type' => 'application/json',
         ])->timeout(60)->post($url, [
@@ -73,10 +77,15 @@ class AiService
                 ]
             ],
             'generationConfig' => [
-                'temperature' => 0.7,
-                'maxOutputTokens' => 4000,
+                'temperature' => 0.9, // High creativity
+                'maxOutputTokens' => 4096,
                 'topP' => 0.95,
+                'topK' => 40,
             ],
+            'safetySettings' => [
+                ['category' => 'HARM_CATEGORY_HARASSMENT', 'threshold' => 'BLOCK_ONLY_HIGH'],
+                ['category' => 'HARM_CATEGORY_HATE_SPEECH', 'threshold' => 'BLOCK_ONLY_HIGH'],
+            ]
         ]);
 
         if ($response->successful()) {
@@ -134,48 +143,33 @@ class AiService
         $evaluation = $scheme['evaluation'] ?? 'Not specified';
 
         return <<<PROMPT
-Generate a comprehensive lesson note for a teacher based on the following context:
+You are a creative and expert pedagogical content creator. Generate a unique, highly engaging lesson note based on the context below.
 
-**Subject:** {$subject['name']} ({$subject['code']})
-**Grade Level:** {$grade['name']} ({$grade['cycle']} cycle)
-**Topic:** {$scheme['topic']}
-**Week Number:** {$scheme['week_number']}
-**Term:** {$scheme['term_name']}
-**Duration:** 40 minutes
-**Class Size:** {$audienceSize} students
+**Context:**
+- **Subject:** {$subject['name']} ({$subject['code']})
+- **Grade:** {$grade['name']} (Cycle: {$grade['cycle']})
+- **Topic:** {$scheme['topic']}
+- **Week:** {$scheme['week_number']}
+- **Term:** {$scheme['term_name']}
+- **Class Size:** {$audienceSize} students
+- **Existing Scheme Objectives:** {$objectives}
 
-**Scheme Objectives (if provided):** {$objectives}
-**Scheme Activities (if provided):** {$activities}
-**Scheme Resources (if provided):** {$resources}
-**Scheme Evaluation (if provided):** {$evaluation}
+**Requirements:**
+1. **Be Creative & Unique:** Do not use generic templates. Vary your sentence structure, tone, and examples. Make it feel fresh and original.
+2. **Real-World Relevance:** Use specific, modern, and relatable examples relevant to students' daily lives.
+3. **Interactive:** Include specific questions to ask the class and specific group activities.
+4. **Differentiation:** Provide concrete strategies for struggling AND advanced students.
+5. **Format:** Use Markdown. Use headers, bold text for key terms, and bullet points.
 
-Please generate a complete lesson note with the following sections:
+**Generate these 5 sections:**
 
-1. **LEARNING OBJECTIVE:** Clear, measurable objectives using Bloom's taxonomy verbs. Specify what students should know, understand, and be able to do by the end of the lesson.
+1. **OBJECTIVE:** 3-5 specific, measurable goals using Bloom's Taxonomy verbs. Start each with a bold verb.
+2. **CONTENT:** A step-by-step flow. Introduction (Hook), Main Delivery (Concepts + Examples), Practice, Conclusion. Include a "Teacher Script" or "Key Question" for each part.
+3. **METHODOLOGY:** Specific teaching methods (e.g., Think-Pair-Share, Jigsaw, Gamification) suitable for this topic.
+4. **MATERIALS:** A list of specific physical and digital tools needed.
+5. **EVALUATION:** 3-4 formative assessment questions and a creative "Exit Ticket" idea.
 
-2. **CONTENT:** Detailed, step-by-step lesson content including:
-   - Introduction/Hook (5 mins): How to grab students' attention
-   - Main Content Delivery (20 mins): Key concepts, explanations, examples
-   - Student Practice (10 mins): Guided and independent practice activities
-   - Conclusion (5 mins): Summary and key takeaways
-
-3. **METHODOLOGY:** Specific teaching strategies and methods appropriate for this grade level and subject. Include differentiation strategies for diverse learners.
-
-4. **MATERIALS/RESOURCES:** Concrete list of materials needed (textbooks, worksheets, manipulatives, technology, etc.)
-
-5. **EVALUATION/ASSESSMENT:**
-   - Formative assessment questions during the lesson
-   - Exit ticket or quick assessment to check understanding
-   - Sample questions with expected answers
-
-Make the content:
-- Age-appropriate for {$grade['name']} students
-- Aligned with best pedagogical practices
-- Engaging and interactive
-- Include real-world examples where relevant
-- Provide clear time allocations for each section
-
-Output ONLY the lesson note content in a structured format.
+**Output ONLY the Markdown content.**
 PROMPT;
     }
 
@@ -221,12 +215,16 @@ PROMPT;
     /**
      * Smart fallback: Generate contextual lesson note using intelligent templates.
      * This produces real, useful content based on the subject, grade, and topic.
+     * Includes randomization to prevent repetitive output.
      */
     protected function generateSmartFallback(array $scheme, array $grade, array $subject, int $audienceSize): array
     {
         $gradeLevel = strtolower($grade['name']);
         $subjectName = strtolower($subject['name']);
         $topic = $scheme['topic'];
+
+        // Seed random based on topic to get consistent but varied results
+        srand(crc32($topic . $gradeLevel));
 
         // Build contextual content based on subject and grade
         $objective = $this->generateObjective($subjectName, $gradeLevel, $topic);

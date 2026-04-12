@@ -3,11 +3,14 @@
 import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import 'katex/dist/katex.min.css';
 import { Eye, Edit3, Maximize2, X } from 'lucide-react';
 
 /**
  * MarkdownEditor Component
- * A textarea with Markdown preview toggle and fullscreen expand option.
+ * Supports Markdown, GitHub Flavored Markdown, and LaTeX Math!
  */
 export default function MarkdownEditor({
   value = '',
@@ -65,11 +68,14 @@ export default function MarkdownEditor({
 
         <div className="relative">
           {isPreview ? (
-            // Preview Mode - Rendered Markdown
+            // Preview Mode - Rendered Markdown with Math Support
             <div className="w-full min-h-[150px] max-h-[400px] overflow-y-auto px-4 py-3 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm text-text-primary">
               {safeValue.trim() ? (
                 <div className="prose prose-sm dark:prose-invert max-w-none">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm, remarkMath]}
+                    rehypePlugins={[rehypeKatex]}
+                  >
                     {safeValue}
                   </ReactMarkdown>
                 </div>
@@ -92,7 +98,7 @@ export default function MarkdownEditor({
         {/* Markdown hint */}
         {!isPreview && (
           <p className="text-xs text-text-muted">
-            💡 Supports Markdown: {'**bold**'}, {'*italic*'}, {'- lists'}, {'### headers'}
+            💡 Supports Markdown: **bold**, *italic*, - lists, ### headers, and Math: $x + y$
           </p>
         )}
       </div>
@@ -121,7 +127,10 @@ export default function MarkdownEditor({
             {/* Content */}
             <div className="flex-1 overflow-y-auto px-6 py-4">
               <div className="prose prose-sm dark:prose-invert max-w-none">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm, remarkMath]}
+                  rehypePlugins={[rehypeKatex]}
+                >
                   {safeValue}
                 </ReactMarkdown>
               </div>
