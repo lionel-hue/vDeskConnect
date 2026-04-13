@@ -1,8 +1,8 @@
-const API_BASE = typeof window !== 'undefined' ? '' : process.env.NEXT_PUBLIC_API_URL || '';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
 
 class ApiClient {
   constructor() {
-    this.baseURL = API_BASE || '';
+    this.baseURL = API_BASE;
     this.token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
   }
 

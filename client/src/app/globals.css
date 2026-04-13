@@ -219,8 +219,8 @@
   /* Glass Modal */
   .glass-modal {
     @apply backdrop-blur-2xl border rounded-card shadow-glass-elevated;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.08));
-    border-color: rgba(255, 255, 255, 0.25);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.85), rgba(240, 238, 247, 0.75));
+    border-color: rgba(255, 255, 255, 0.5);
   }
 
   .dark .glass-modal {

@@ -17,7 +17,12 @@ class UiIllustrationController extends Controller
     public function index(): JsonResponse
     {
         $illustrations = UiIllustration::where('is_active', true)
-            ->get(['id', 'key', 'url', 'section', 'pack_name']);
+            ->get(['id', 'key', 'url', 'section', 'pack_name'])
+            ->map(function ($ill) {
+                // Return full URL to avoid CORS issues when frontend is on a different origin
+                $ill->url = url($ill->url);
+                return $ill;
+            });
 
         return response()->json($illustrations);
     }
