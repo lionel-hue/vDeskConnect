@@ -34,7 +34,11 @@ class UiIllustrationController extends Controller
     {
         $illustrations = UiIllustration::where('is_active', true)
             ->where('section', $section)
-            ->get(['id', 'key', 'url', 'section', 'pack_name']);
+            ->get(['id', 'key', 'url', 'section', 'pack_name'])
+            ->map(function ($ill) {
+                $ill->url = url($ill->url);
+                return $ill;
+            });
 
         return response()->json($illustrations);
     }
