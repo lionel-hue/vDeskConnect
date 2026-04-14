@@ -228,6 +228,9 @@ export default function StaffPage() {
                       </td>
                       <td className="px-5 py-4">
                         <div className="flex items-center justify-end gap-1">
+                          <button onClick={() => setViewingStaff(s)} className="p-2 rounded-lg hover:bg-info/10 text-text-muted hover:text-info transition-all" title="View">
+                            <Eye size={16} />
+                          </button>
                           <button onClick={() => openEditModal(s)} className="p-2 rounded-lg hover:bg-primary/10 text-text-muted hover:text-primary transition-all" title="Edit">
                             <Edit2 size={16} />
                           </button>
