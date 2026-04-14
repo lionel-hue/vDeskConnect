@@ -23,6 +23,27 @@ export default function LessonNotesPage() {
   const [terms, setTerms] = useState([]);
   const [schemes, setSchemes] = useState([]);
 
+  // Helper: strip markdown formatting for clean text preview
+  const stripMarkdown = (text) => {
+    return text
+      .replace(/!\[.*?\]\(.*?\)/g, '')
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+      .replace(/^#{1,6}\s+/gm, '')
+      .replace(/\*\*(.+?)\*\*/g, '$1')
+      .replace(/\*(.+?)\*/g, '$1')
+      .replace(/__(.+?)__/g, '$1')
+      .replace(/_(.+?)_/g, '$1')
+      .replace(/~~(.+?)~~/g, '$1')
+      .replace(/^>\s+/gm, '')
+      .replace(/^[-*+]\s+/gm, '')
+      .replace(/^\d+\.\s+/gm, '')
+      .replace(/`{1,3}[^`]*`{1,3}/g, '')
+      .replace(/\n{2,}/g, ' ')
+      .replace(/\n/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  };
+
   // Modal state
   const [showModal, setShowModal] = useState(false);
   const [showAIModal, setShowAIModal] = useState(false);
@@ -164,11 +185,21 @@ export default function LessonNotesPage() {
         contact_number: aiNote.contact_number,
       });
 
+      // Check if AI was actually used or if it fell back to templates
+      if (res.ai_unavailable) {
+        toast.warning(
+          `AI unavailable — used template instead. ${res.ai_reason || ''}`.trim(),
+        );
+      } else {
+        toast.success('AI generated lesson note! Review and edit before saving.');
+      }
+
       setShowAIModal(false);
       setShowModal(true);
-      toast.success('AI generated lesson note! Review and edit before saving.');
     } catch (err) {
-      toast.error(err.data?.message || 'Failed to generate lesson note');
+      console.error('AI lesson note generation failed:', err);
+      const msg = err.data?.message || err.data?.error || err.message || 'Failed to generate lesson note';
+      toast.error(msg);
     } finally {
       setSubmitting(false);
     }
@@ -208,9 +239,19 @@ export default function LessonNotesPage() {
         aspects: aiNote.aspects || noteForm.aspects,
         contact_number: aiNote.contact_number || noteForm.contact_number,
       });
-      toast.success('Lesson note regenerated with AI!');
+
+      // Check if AI was actually used or if it fell back to templates
+      if (res.ai_unavailable) {
+        toast.warning(
+          `AI unavailable — used template instead. ${res.ai_reason || ''}`.trim(),
+        );
+      } else {
+        toast.success('Lesson note regenerated with AI!');
+      }
     } catch (err) {
-      toast.error(err.data?.message || 'Failed to regenerate');
+      console.error('AI regeneration failed:', err);
+      const msg = err.data?.message || err.data?.error || err.message || 'Failed to regenerate with AI';
+      toast.error(msg);
     } finally {
       setSubmitting(false);
     }
@@ -375,7 +416,7 @@ export default function LessonNotesPage() {
 
                 {note.aspects && note.aspects.objective && (
                   <p className="mt-3 text-xs text-text-muted line-clamp-2">
-                    <strong>Objective:</strong> {note.aspects.objective.slice(0, 100)}...
+                    <strong>Objective:</strong> {stripMarkdown(note.aspects.objective).slice(0, 120)}…
                   </p>
                 )}
               </div>
