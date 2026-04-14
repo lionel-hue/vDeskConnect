@@ -38,7 +38,7 @@ return [
     'ai' => [
         'api_key' => env('AI_API_KEY'),
         'base_url' => env('AI_BASE_URL', 'https://generativelanguage.googleapis.com/v1beta'),
-        'model' => env('AI_MODEL', 'gemini-1.5-flash'),
+        'model' => env('AI_MODEL', 'gemini-2.0-flash'),
         'provider' => env('AI_PROVIDER', 'gemini'),
     ],
 

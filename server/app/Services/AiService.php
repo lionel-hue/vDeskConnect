@@ -14,13 +14,13 @@ class AiService
 
     public function __construct()
     {
-        // Prefer specific working model over aliases to avoid 404s
-        $this->apiKey = config('services.ai.api_key') ?? env('AI_API_KEY');
-        $this->baseUrl = config('services.ai.base_url') ?? env('AI_BASE_URL', 'https://generativelanguage.googleapis.com/v1beta');
-        
-        // Use gemini-2.0-flash which is confirmed working, or fallback to the alias
-        $this->model = config('services.ai.model') ?? env('AI_MODEL', 'gemini-2.0-flash');
-        $this->provider = config('services.ai.provider') ?? env('AI_PROVIDER', 'gemini');
+        // Directly use env() to avoid config cache issues
+        $this->apiKey = env('AI_API_KEY');
+        $this->baseUrl = env('AI_BASE_URL', 'https://generativelanguage.googleapis.com/v1beta');
+
+        // Use gemini-2.0-flash which is confirmed working
+        $this->model = env('AI_MODEL', 'gemini-2.0-flash');
+        $this->provider = env('AI_PROVIDER', 'gemini');
     }
 
     /**
@@ -28,10 +28,16 @@ class AiService
      */
     public function generateLessonNote(array $schemeData, array $gradeInfo, array $subjectInfo, int $audienceSize = 30): array
     {
+        Log::info('generateLessonNote called', [
+            'hasApiKey' => !empty($this->apiKey),
+            'apiKeyStart' => !empty($this->apiKey) ? substr($this->apiKey, 0, 10) . '...' : 'none',
+        ]);
+
         if ($this->apiKey) {
             return $this->generateWithAI($schemeData, $gradeInfo, $subjectInfo, $audienceSize);
         }
 
+        Log::warning('AI API key not configured, using smart fallback');
         // Fallback: Generate contextual lesson note using intelligent templating
         return $this->generateSmartFallback($schemeData, $gradeInfo, $subjectInfo, $audienceSize);
     }
@@ -42,6 +48,13 @@ class AiService
     protected function generateWithAI(array $schemeData, array $gradeInfo, array $subjectInfo, int $audienceSize): array
     {
         try {
+            Log::info('AI Service: Using AI API', [
+                'model' => $this->model,
+                'provider' => $this->provider,
+                'hasApiKey' => !empty($this->apiKey),
+                'baseUrl' => $this->baseUrl,
+            ]);
+
             $prompt = $this->buildPrompt($schemeData, $gradeInfo, $subjectInfo, $audienceSize);
 
             if ($this->provider === 'gemini') {
@@ -52,6 +65,7 @@ class AiService
             return $this->callOpenAICompatibleAPI($prompt, $schemeData);
         } catch (\Exception $e) {
             Log::error('AI service error: ' . $e->getMessage());
+            Log::error('AI service stack trace: ' . $e->getTraceAsString());
             return $this->generateSmartFallback($schemeData, $gradeInfo, $subjectInfo, $audienceSize);
         }
     }
