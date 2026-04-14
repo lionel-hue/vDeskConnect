@@ -136,6 +136,49 @@ export default function ClassesPage() {
     }
   };
 
+  // ==================== STUDENT ASSIGNMENT HANDLERS ====================
+  const handleOpenStudentAssign = () => {
+    // Filter out students already in this grade
+    const alreadyAssignedIds = new Set((gradeDetail?.students || []).map(s => s.id));
+    const availableStudents = students.filter(s => !alreadyAssignedIds.has(s.id));
+    if (availableStudents.length === 0) {
+      toast.info('No unassigned students available.');
+      return;
+    }
+    setSelectedStudentIds([]);
+    setShowStudentAssignModal(true);
+  };
+
+  const toggleStudent = (studentId) => {
+    setSelectedStudentIds(prev =>
+      prev.includes(studentId) ? prev.filter(id => id !== studentId) : [...prev, studentId]
+    );
+  };
+
+  const handleAssignStudents = async () => {
+    if (selectedStudentIds.length === 0) {
+      toast.error('Select at least one student');
+      return;
+    }
+    setStudentAssignLoading(true);
+    try {
+      // Bulk update students grade_level_id
+      await Promise.all(
+        selectedStudentIds.map(id =>
+          api.put(`/students/${id}`, { grade_level_id: selectedGrade })
+        )
+      );
+      toast.success(`${selectedStudentIds.length} student(s) assigned successfully`);
+      setShowStudentAssignModal(false);
+      setSelectedStudentIds([]);
+      fetchGradeDetail(selectedGrade);
+    } catch (err) {
+      toast.error(err.data?.message || 'Failed to assign students');
+    } finally {
+      setStudentAssignLoading(false);
+    }
+  };
+
   // ==================== SCHEME OF WORK HANDLERS ====================
   const handleSchemeSubmit = async (e) => {
     e.preventDefault();
@@ -484,9 +527,18 @@ export default function ClassesPage() {
                 {/* Students Tab */}
                 {activeDetailTab === 'students' && (
                   <div className="bg-card dark:bg-gray-800 rounded-card border border-border p-4 md:p-6">
-                    <h2 className="text-base md:text-lg font-semibold text-text-primary mb-4">Students</h2>
+                    <div className="flex items-center justify-between mb-4">
+                      <h2 className="text-base md:text-lg font-semibold text-text-primary">Students</h2>
+                      <button
+                        onClick={handleOpenStudentAssign}
+                        className="flex items-center gap-1 md:gap-2 px-3 md:px-4 py-2 text-xs md:text-sm bg-primary text-white rounded-lg hover:bg-primary-dark"
+                      >
+                        <Plus className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                        Assign Students
+                      </button>
+                    </div>
                     {gradeDetail.students.length === 0 ? (
-                      <p className="text-text-secondary text-center py-8 text-sm">No students enrolled in this grade.</p>
+                      <p className="text-text-secondary text-center py-8 text-sm">No students enrolled in this grade. Assign students from the Students tab or use the button above.</p>
                     ) : (
                       <div className="overflow-x-auto">
                         <table className="w-full text-sm md:text-base">
@@ -1053,6 +1105,58 @@ export default function ClassesPage() {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* ==================== STUDENT ASSIGNMENT MODAL ==================== */}
+        {showStudentAssignModal && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-card dark:bg-gray-800 rounded-card border border-border p-4 md:p-6 w-full max-w-lg max-h-[80vh] flex flex-col">
+              <div className="flex items-center justify-between mb-4 flex-shrink-0">
+                <h3 className="text-base md:text-lg font-semibold text-text-primary">Assign Students to {gradeDetail?.grade_level?.name}</h3>
+                <button onClick={() => { setShowStudentAssignModal(false); setSelectedStudentIds([]); }} className="text-text-muted hover:text-text-primary">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto mb-4">
+                <p className="text-xs text-text-secondary mb-3">Select students to assign to this grade level.</p>
+                <div className="space-y-1">
+                  {students
+                    .filter(s => !(gradeDetail?.students || []).map(gs => gs.id).includes(s.id))
+                    .map(student => (
+                      <label
+                        key={student.id}
+                        className="flex items-center gap-3 p-3 border border-border dark:border-gray-600 rounded-lg cursor-pointer hover:bg-bg-main dark:hover:bg-gray-750 transition-colors"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedStudentIds.includes(student.id)}
+                          onChange={() => toggleStudent(student.id)}
+                          className="w-4 h-4 flex-shrink-0"
+                        />
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-medium text-text-primary truncate">{student.first_name} {student.last_name}</p>
+                          <p className="text-xs text-text-muted truncate">{student.email}</p>
+                        </div>
+                        {student.admission_number && (
+                          <span className="text-xs font-mono bg-bg-main px-2 py-1 rounded text-text-secondary flex-shrink-0">
+                            {student.admission_number}
+                          </span>
+                        )}
+                      </label>
+                    ))}
+                </div>
+              </div>
+              <div className="flex items-center justify-between flex-shrink-0">
+                <p className="text-xs text-text-secondary">{selectedStudentIds.length} selected</p>
+                <div className="flex gap-3">
+                  <button type="button" onClick={() => { setShowStudentAssignModal(false); setSelectedStudentIds([]); }} className="px-4 py-2 text-sm border border-border dark:border-gray-600 rounded-lg hover:bg-bg-main dark:hover:bg-gray-700 text-text-primary">Cancel</button>
+                  <button type="button" disabled={studentAssignLoading || selectedStudentIds.length === 0} onClick={handleAssignStudents} className="px-4 py-2 text-sm bg-primary text-white rounded-lg hover:bg-primary-dark disabled:opacity-50">
+                    {studentAssignLoading ? 'Assigning...' : `Assign ${selectedStudentIds.length} Student(s)`}
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         )}
