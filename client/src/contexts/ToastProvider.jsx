@@ -20,6 +20,7 @@ export function ToastProvider({ children }) {
   const success = useCallback((msg, dur) => addToast(msg, 'success', dur), [addToast]);
   const error = useCallback((msg, dur) => addToast(msg, 'error', dur), [addToast]);
   const info = useCallback((msg, dur) => addToast(msg, 'info', dur), [addToast]);
+  const warning = useCallback((msg, dur) => addToast(msg, 'warning', dur), [addToast]);
 
   const typeStyles = {
     success: 'bg-success/10 text-success border border-success/20',
