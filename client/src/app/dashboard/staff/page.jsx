@@ -131,6 +131,16 @@ export default function StaffPage() {
 
   const fullName = (s) => `${s.first_name || ''} ${s.last_name || ''}`.trim() || s.email;
 
+  const DetailRow = ({ icon: Icon, label, value }) => (
+    <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-bg-main/50">
+      <Icon size={16} className="text-text-muted flex-shrink-0" />
+      <div className="min-w-0 flex-1">
+        <p className="text-xs text-text-muted">{label}</p>
+        <p className="text-sm text-text-primary truncate">{value}</p>
+      </div>
+    </div>
+  );
+
   const generateEmployeeNumber = () => {
     const year = new Date().getFullYear();
     const seq = Math.floor(Math.random() * 9000 + 1000);
