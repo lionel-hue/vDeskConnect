@@ -311,6 +311,27 @@ export default function ClassesPage() {
     return isNaN(num) ? fallback : num;
   };
 
+  // Helper: strip markdown formatting for clean text preview
+  const stripMarkdown = (text) => {
+    return text
+      .replace(/!\[.*?\]\(.*?\)/g, '')      // images
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // links
+      .replace(/^#{1,6}\s+/gm, '')           // headers
+      .replace(/\*\*(.+?)\*\*/g, '$1')       // bold
+      .replace(/\*(.+?)\*/g, '$1')           // italic
+      .replace(/__(.+?)__/g, '$1')           // bold underscore
+      .replace(/_(.+?)_/g, '$1')             // italic underscore
+      .replace(/~~(.+?)~~/g, '$1')           // strikethrough
+      .replace(/^>\s+/gm, '')                // blockquotes
+      .replace(/^[-*+]\s+/gm, '')            // list items
+      .replace(/^\d+\.\s+/gm, '')            // numbered list
+      .replace(/`{1,3}[^`]*`{1,3}/g, '')     // code blocks
+      .replace(/\n{2,}/g, ' ')               // multiple newlines
+      .replace(/\n/g, ' ')                   // single newlines
+      .replace(/\s+/g, ' ')                  // collapse whitespace
+      .trim();
+  };
+
   // ==================== RENDER ====================
   return (
     <DashboardLayout title="Classes" subtitle="Manage your classes and grade levels">
