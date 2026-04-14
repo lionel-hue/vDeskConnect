@@ -2133,10 +2133,27 @@ class AcademicController extends Controller
             $aiService = new AiService();
             $lessonNote = $aiService->generateLessonNote($schemeData, $gradeInfo, $subjectInfo, $audienceSize);
 
+            // Check if fallback was used
+            $usedFallback = !empty($lessonNote['_used_fallback']);
+            $fallbackReason = $lessonNote['_fallback_reason'] ?? null;
+            // Clean up internal flags before sending to frontend
+            unset($lessonNote['_used_fallback'], $lessonNote['_fallback_reason']);
+
+            if ($usedFallback) {
+                return response()->json([
+                    'message' => 'AI unavailable — used smart template instead',
+                    'lesson_note' => $lessonNote,
+                    'source' => 'smart_template',
+                    'ai_unavailable' => true,
+                    'ai_reason' => $fallbackReason ?? 'AI API error',
+                ], 207);
+            }
+
             return response()->json([
-                'message' => 'Lesson note generated successfully',
+                'message' => 'Lesson note generated successfully with AI',
                 'lesson_note' => $lessonNote,
-                'source' => $aiService->apiKey ? 'ai_api' : 'smart_template',
+                'source' => 'ai_api',
+                'ai_unavailable' => false,
             ]);
         } catch (\Exception $e) {
             Log::error('AI lesson note generation failed: ' . $e->getMessage());
