@@ -30,7 +30,7 @@ export function ToastProvider({ children }) {
   };
 
   return (
-    <ToastContext.Provider value={{ toasts, addToast, removeToast, success, error, info }}>
+    <ToastContext.Provider value={{ toasts, addToast, removeToast, success, error, info, warning }}>
       {children}
       <div className="fixed top-4 right-4 z-50 flex flex-col gap-2">
         {toasts.map((t) => (

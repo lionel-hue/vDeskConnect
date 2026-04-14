@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   School, Users, BookOpen, UserRound, Plus, Trash2, X, Edit2,
-  GraduationCap, Layers, Tag, ChevronLeft, CheckCircle, Sparkles
+  GraduationCap, Layers, Tag, ChevronLeft, CheckCircle, Sparkles,
 } from 'lucide-react';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import MarkdownEditor from '@/components/MarkdownEditor';
@@ -29,6 +29,12 @@ export default function ClassesPage() {
   const [subjects, setSubjects] = useState([]);
   const [sections, setSections] = useState([]);
   const [assignLoading, setAssignLoading] = useState(false);
+
+  // Student assignment state
+  const [showStudentAssignModal, setShowStudentAssignModal] = useState(false);
+  const [students, setStudents] = useState([]);
+  const [selectedStudentIds, setSelectedStudentIds] = useState([]);
+  const [studentAssignLoading, setStudentAssignLoading] = useState(false);
 
   // Scheme of Work state
   const [schemes, setSchemes] = useState([]);
@@ -58,15 +64,17 @@ export default function ClassesPage() {
   const fetchGradeDetail = useCallback(async (id) => {
     setDetailLoading(true);
     try {
-      const [detailRes, teachersRes, subjectsRes] = await Promise.all([
+      const [detailRes, teachersRes, subjectsRes, studentsRes] = await Promise.all([
         academicApi.gradeLevelDetail(id),
         academicApi.teachers.getAll().catch(() => ({ teachers: [] })),
         api.get('/academic/subjects').catch(() => ({ subjects: [] })),
+        api.get('/students').catch(() => ({ data: [] })),
       ]);
       setGradeDetail(detailRes);
       setTeachers(teachersRes.teachers || []);
       setSubjects(subjectsRes.subjects || []);
       setSections(detailRes.sections || []);
+      setStudents(studentsRes.data || []);
       setSelectedGrade(id);
       setActiveDetailTab('overview');
     } catch (err) {
