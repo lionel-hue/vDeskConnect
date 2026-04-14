@@ -23,6 +23,7 @@ export default function TeachersPage() {
   const [lastPage, setLastPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
   const [editingTeacher, setEditingTeacher] = useState(null);
+  const [viewingTeacher, setViewingTeacher] = useState(null);
   const [actionModal, setActionModal] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -207,6 +208,9 @@ export default function TeachersPage() {
                       </td>
                       <td className="px-5 py-4">
                         <div className="flex items-center justify-end gap-1">
+                          <button onClick={() => setViewingTeacher(t)} className="p-2 rounded-lg hover:bg-info/10 text-text-muted hover:text-info transition-all" title="View">
+                            <Eye size={16} />
+                          </button>
                           <button onClick={() => openEditModal(t)} className="p-2 rounded-lg hover:bg-primary/10 text-text-muted hover:text-primary transition-all" title="Edit">
                             <Edit2 size={16} />
                           </button>
