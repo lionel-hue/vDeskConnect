@@ -28,6 +28,7 @@ export default function StaffPage() {
   const [lastPage, setLastPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
   const [editingStaff, setEditingStaff] = useState(null);
+  const [viewingStaff, setViewingStaff] = useState(null);
   const [actionModal, setActionModal] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
