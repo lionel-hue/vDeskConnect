@@ -419,6 +419,51 @@ export default function StaffPage() {
         </div>
       )}
 
+      {/* View Staff Modal */}
+      {viewingStaff && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setViewingStaff(null)}>
+          <div className="glass-modal max-w-md w-full animate-scale-in p-6" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-lg font-bold text-text-primary">Staff Details</h3>
+              <button onClick={() => setViewingStaff(null)} className="text-text-muted hover:text-text-primary">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="flex items-center gap-4 mb-5">
+              <div className="w-14 h-14 bg-primary/20 rounded-full flex items-center justify-center text-lg font-bold text-primary">
+                {(viewingStaff.first_name?.[0] || viewingStaff.email?.[0] || 'S').toUpperCase()}
+              </div>
+              <div>
+                <p className="text-base font-bold text-text-primary">{fullName(viewingStaff)}</p>
+                <p className="text-sm text-text-muted">{viewingStaff.email}</p>
+                <span className="inline-flex items-center gap-1 text-xs mt-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium capitalize">
+                  <Shield size={12} /> {viewingStaff.role?.replace('_', ' ')}
+                </span>
+              </div>
+            </div>
+            <div className="space-y-3 text-sm">
+              <DetailRow icon={Hash} label="Employee #" value={viewingStaff.employee_number || '—'} />
+              <DetailRow icon={Phone} label="Phone" value={viewingStaff.phone || '—'} />
+              <DetailRow icon={Mail} label="Email" value={viewingStaff.email || '—'} />
+              <DetailRow icon={Check} label="Status" value={viewingStaff.banned ? 'Banned' : 'Active'} />
+            </div>
+            <div className="flex gap-2 mt-5 pt-4 border-t border-border">
+              <button onClick={() => { setViewingStaff(null); openEditModal(viewingStaff); }} className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-btn bg-primary text-white text-sm hover:bg-primary-dark transition-colors">
+                <Edit2 size={14} /> Edit
+              </button>
+              {!viewingStaff.banned && (
+                <button onClick={() => { setViewingStaff(null); setActionModal({ type: 'ban', staff: viewingStaff }); }} className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-btn bg-warning/10 text-warning text-sm hover:bg-warning/20 transition-colors">
+                  <Ban size={14} /> Ban
+                </button>
+              )}
+              <button onClick={() => { setViewingStaff(null); setActionModal({ type: 'delete', staff: viewingStaff }); }} className="flex items-center justify-center gap-2 px-3 py-2 rounded-btn bg-error/10 text-error text-sm hover:bg-error/20 transition-colors">
+                <Trash2 size={14} />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Ban/Delete Confirmation Modal */}
       {actionModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setActionModal(null)}>

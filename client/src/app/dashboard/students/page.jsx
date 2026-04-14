@@ -23,6 +23,7 @@ export default function StudentsPage() {
   const [lastPage, setLastPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
   const [editingStudent, setEditingStudent] = useState(null);
+  const [viewingStudent, setViewingStudent] = useState(null);
   const [actionModal, setActionModal] = useState(null); // { type: 'ban'|'delete', student }
   const [actionLoading, setActionLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
