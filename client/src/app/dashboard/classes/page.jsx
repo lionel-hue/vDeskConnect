@@ -614,8 +614,8 @@ export default function ClassesPage() {
                                 )}
                                 {scheme.aspects && (
                                   <div className="mt-2 space-y-1 text-xs text-text-secondary">
-                                    {scheme.aspects.objectives && <p><strong>Objectives:</strong> {scheme.aspects.objectives.slice(0, 100)}...</p>}
-                                    {scheme.aspects.activities && <p><strong>Activities:</strong> {scheme.aspects.activities.slice(0, 100)}...</p>}
+                                    {scheme.aspects.objectives && <p><strong>Objectives:</strong> {stripMarkdown(scheme.aspects.objectives).slice(0, 120)}…</p>}
+                                    {scheme.aspects.activities && <p><strong>Activities:</strong> {stripMarkdown(scheme.aspects.activities).slice(0, 120)}…</p>}
                                   </div>
                                 )}
                               </div>
