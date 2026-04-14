@@ -287,7 +287,14 @@ export default function ClassesPage() {
       fetchSchemes(selectedGrade, schemeFilters);
     } catch (err) {
       console.error('AI Scheme generation failed:', err);
-      toast.error(err.data?.message || err.message || 'Failed to generate scheme with AI');
+      const msg = err.data?.message || err.data?.error || err.message || 'Failed to generate scheme with AI';
+      if (msg.includes('rate limit')) {
+        toast.error(msg);
+      } else if (msg.includes('API key')) {
+        toast.error(msg);
+      } else {
+        toast.error(msg);
+      }
     } finally {
       setSchemeAILoading(false);
     }

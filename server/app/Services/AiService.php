@@ -25,6 +25,7 @@ class AiService
 
     /**
      * Generate a lesson note using AI based on scheme of work data.
+     * Returns array with 'aspects' and '_used_fallback' flag.
      */
     public function generateLessonNote(array $schemeData, array $gradeInfo, array $subjectInfo, int $audienceSize = 30): array
     {
@@ -38,8 +39,10 @@ class AiService
         }
 
         Log::warning('AI API key not configured, using smart fallback');
-        // Fallback: Generate contextual lesson note using intelligent templating
-        return $this->generateSmartFallback($schemeData, $gradeInfo, $subjectInfo, $audienceSize);
+        $result = $this->generateSmartFallback($schemeData, $gradeInfo, $subjectInfo, $audienceSize);
+        $result['_used_fallback'] = true;
+        $result['_fallback_reason'] = 'AI API key not configured';
+        return $result;
     }
 
     /**
@@ -66,7 +69,10 @@ class AiService
         } catch (\Exception $e) {
             Log::error('AI service error: ' . $e->getMessage());
             Log::error('AI service stack trace: ' . $e->getTraceAsString());
-            return $this->generateSmartFallback($schemeData, $gradeInfo, $subjectInfo, $audienceSize);
+            $result = $this->generateSmartFallback($schemeData, $gradeInfo, $subjectInfo, $audienceSize);
+            $result['_used_fallback'] = true;
+            $result['_fallback_reason'] = 'AI API error: ' . $e->getMessage();
+            return $result;
         }
     }
 
@@ -76,6 +82,8 @@ class AiService
     protected function callGeminiAPI(string $prompt, array $schemeData): array
     {
         $url = "{$this->baseUrl}/models/{$this->model}:generateContent?key={$this->apiKey}";
+
+        Log::info('Calling Gemini API', ['model' => $this->model, 'url' => $url]);
 
         // Use higher temperature for more creative/varied results
         $response = Http::withHeaders([
@@ -108,8 +116,19 @@ class AiService
             return $this->parseAIResponse($content, $schemeData);
         }
 
-        Log::error('Gemini API error: ' . $response->body());
-        throw new \Exception('Gemini API request failed: ' . $response->status());
+        $status = $response->status();
+        $body = $response->body();
+        Log::error('Gemini API error: ' . $status . ' - ' . $body);
+
+        if ($status === 429) {
+            throw new \Exception('AI API rate limit exceeded (429). Please wait a minute and try again. Free tier: 15 requests/min.');
+        } elseif ($status === 403) {
+            throw new \Exception('AI API key is invalid or expired. Please check your API key.');
+        } elseif ($status === 404) {
+            throw new \Exception("AI model '{$this->model}' not found. Please check AI_MODEL in .env");
+        }
+
+        throw new \Exception('Gemini API request failed: HTTP ' . $status);
     }
 
     /**
