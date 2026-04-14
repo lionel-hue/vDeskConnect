@@ -8,7 +8,13 @@ export default function ThemeToggle({ className = '' }) {
   const { themeMode, changeTheme, themes, isDark } = useTheme();
   const [mounted, setMounted] = useState(false);
 
-  useEffect(() => { setMounted(true); }, []);
+  // Only track whether we've mounted (for dark/light visual styling)
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Safe dark/light value: false during SSR to prevent hydration mismatch
+  const resolvedDark = mounted ? isDark : false;
 
   const options = [
     { value: themes.LIGHT, icon: Sun },
@@ -16,8 +22,10 @@ export default function ThemeToggle({ className = '' }) {
     { value: themes.DARK, icon: Moon },
   ];
 
-  // Prevent hydration mismatch by rendering neutral styles until mounted
-  const resolvedDark = mounted ? isDark : false;
+  // Use themeMode directly for active indicator — it's always correct after hydration
+  // During SSR, isActive will be false for all (themeMode starts as 'system' on server)
+  // which matches the server-rendered output
+  const isActive = (option) => mounted && themeMode === option.value;
 
   return (
     <div className={`relative ${className}`}>
@@ -36,7 +44,7 @@ export default function ThemeToggle({ className = '' }) {
       >
         {options.map((option) => {
           const Icon = option.icon;
-          const isActive = themeMode === option.value;
+          const active = isActive(option);
 
           return (
             <button
@@ -47,7 +55,7 @@ export default function ThemeToggle({ className = '' }) {
                 w-6 h-6 sm:w-8 sm:h-8 rounded-full
                 transition-all duration-250 ease-out
                 hover:scale-110 active:scale-95
-                ${isActive
+                ${active
                   ? resolvedDark
                     ? 'bg-white/15 text-white shadow-sm'
                     : 'bg-white/80 text-text-primary shadow-sm'
@@ -57,19 +65,21 @@ export default function ThemeToggle({ className = '' }) {
                 }
               `}
               role="radio"
-              aria-checked={isActive}
+              aria-checked={active}
               aria-label={`${option.value} theme`}
             >
               <Icon size={12} className="sm:w-3.5 sm:h-3.5" />
-              {isActive && (
-                <span
-                  className={`
-                    absolute -bottom-0.5 left-1/2 -translate-x-1/2
-                    w-1 h-1 rounded-full
-                    ${resolvedDark ? 'bg-primary-light' : 'bg-primary'}
-                  `}
-                />
-              )}
+              <span
+                className={`
+                  absolute -bottom-0.5 left-1/2 -translate-x-1/2
+                  w-1 h-1 rounded-full
+                  transition-opacity duration-200
+                  ${active
+                    ? (resolvedDark ? 'bg-primary-light opacity-100' : 'bg-primary opacity-100')
+                    : 'opacity-0'
+                  }
+                `}
+              />
             </button>
           );
         })}

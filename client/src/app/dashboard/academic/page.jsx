@@ -28,6 +28,13 @@ export default function AcademicPage() {
   const [activeTab, setActiveTab] = useState(TABS.SESSIONS);
   const [loading, setLoading] = useState(true);
 
+  // Helper: safely parse number input, returns fallback on empty/NaN
+  const safeInt = (value, fallback = 1) => {
+    if (value === '' || value == null) return fallback;
+    const num = parseInt(value, 10);
+    return isNaN(num) ? fallback : num;
+  };
+
   // Sessions state
   const [sessions, setSessions] = useState([]);
   const [editingSessionId, setEditingSessionId] = useState(null);
@@ -926,7 +933,7 @@ export default function AcademicPage() {
                           min="1"
                           max="20"
                           value={caWeekForm.weeks_count}
-                          onChange={e => setCaWeekForm({ ...caWeekForm, weeks_count: parseInt(e.target.value), exam_week: parseInt(e.target.value) })}
+                          onChange={e => setCaWeekForm({ ...caWeekForm, weeks_count: safeInt(e.target.value, 12), exam_week: safeInt(e.target.value, 12) })}
                           className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm md:text-base text-text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
                           required
                         />
@@ -1385,7 +1392,7 @@ export default function AcademicPage() {
                   <label className="block text-xs md:text-sm font-medium text-text-secondary mb-1">Number of Terms *</label>
                   <select
                     value={bulkTermForm.terms_count}
-                    onChange={e => setBulkTermForm({ ...bulkTermForm, terms_count: parseInt(e.target.value) })}
+                    onChange={e => setBulkTermForm({ ...bulkTermForm, terms_count: safeInt(e.target.value, 3) })}
                     className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm md:text-base text-text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
                     required
                   >
@@ -1402,7 +1409,7 @@ export default function AcademicPage() {
                     min="1"
                     max="20"
                     value={bulkTermForm.weeks_per_term}
-                    onChange={e => setBulkTermForm({ ...bulkTermForm, weeks_per_term: parseInt(e.target.value) })}
+                    onChange={e => setBulkTermForm({ ...bulkTermForm, weeks_per_term: safeInt(e.target.value, 12) })}
                     className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm md:text-base text-text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
                     required
                   />
@@ -1500,7 +1507,7 @@ export default function AcademicPage() {
                       type="number"
                       min="1"
                       value={termForm.order}
-                      onChange={e => setTermForm({ ...termForm, order: parseInt(e.target.value) })}
+                      onChange={e => setTermForm({ ...termForm, order: safeInt(e.target.value, 1) })}
                       className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm md:text-base text-text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
                       required
                     />
@@ -1512,7 +1519,7 @@ export default function AcademicPage() {
                       min="1"
                       max="20"
                       value={termForm.weeks_count}
-                      onChange={e => setTermForm({ ...termForm, weeks_count: parseInt(e.target.value) })}
+                      onChange={e => setTermForm({ ...termForm, weeks_count: safeInt(e.target.value, 12) })}
                       className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm md:text-base text-text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
                       required
                     />
@@ -1595,7 +1602,7 @@ export default function AcademicPage() {
                           type="number"
                           placeholder="Min"
                           value={range.min}
-                          onChange={e => updateGradeRow(letter, 'min', parseInt(e.target.value))}
+                          onChange={e => updateGradeRow(letter, 'min', safeInt(e.target.value, 0))}
                           className="w-16 md:w-20 px-2 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm md:text-base text-text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
                         />
                         <span className="text-text-muted">-</span>
@@ -1603,7 +1610,7 @@ export default function AcademicPage() {
                           type="number"
                           placeholder="Max"
                           value={range.max}
-                          onChange={e => updateGradeRow(letter, 'max', parseInt(e.target.value))}
+                          onChange={e => updateGradeRow(letter, 'max', safeInt(e.target.value, 100))}
                           className="w-16 md:w-20 px-2 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm md:text-base text-text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
                         />
                         <input
@@ -1682,11 +1689,11 @@ export default function AcademicPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
                   <div>
                     <label className="block text-xs md:text-sm font-medium text-text-secondary mb-1">Start Order *</label>
-                    <input type="number" min="1" value={bulkGradeForm.start_order} onChange={e => setBulkGradeForm({ ...bulkGradeForm, start_order: parseInt(e.target.value) })} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm md:text-base text-text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50" required />
+                    <input type="number" min="1" value={bulkGradeForm.start_order} onChange={e => setBulkGradeForm({ ...bulkGradeForm, start_order: safeInt(e.target.value, 1) })} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm md:text-base text-text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50" required />
                   </div>
                   <div>
                     <label className="block text-xs md:text-sm font-medium text-text-secondary mb-1">Count *</label>
-                    <input type="number" min="1" max="20" value={bulkGradeForm.count} onChange={e => setBulkGradeForm({ ...bulkGradeForm, count: parseInt(e.target.value) })} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm md:text-base text-text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50" required />
+                    <input type="number" min="1" max="20" value={bulkGradeForm.count} onChange={e => setBulkGradeForm({ ...bulkGradeForm, count: safeInt(e.target.value, 3) })} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm md:text-base text-text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50" required />
                   </div>
                 </div>
                 <div>
