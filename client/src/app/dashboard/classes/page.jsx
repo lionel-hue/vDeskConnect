@@ -225,7 +225,8 @@ export default function ClassesPage() {
         toast.success('Scheme aspects regenerated with AI!');
       }
     } catch (err) {
-      const msg = err.data?.message || err.data?.error || err.message || 'Failed to regenerate';
+      console.error('AI regeneration failed:', err);
+      const msg = err.data?.message || err.data?.error || err.message || 'Failed to regenerate with AI';
       toast.error(msg);
     } finally {
       setSchemeLoading(false);
