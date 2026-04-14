@@ -515,8 +515,8 @@ export default function LessonNotesPage() {
                     <label className="block text-xs md:text-sm font-medium text-text-secondary mb-1">Duration (minutes)</label>
                     <input
                       type="number"
-                      value={noteForm.contact_number}
-                      onChange={e => setNoteForm({ ...noteForm, contact_number: e.target.value })}
+                      value={noteForm.contact_number || 40}
+                      onChange={e => setNoteForm({ ...noteForm, contact_number: e.target.value === '' ? 40 : parseInt(e.target.value, 10) || 40 })}
                       className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm text-text-primary"
                       min="1"
                       max="180"
@@ -667,8 +667,8 @@ export default function LessonNotesPage() {
                   <label className="block text-xs md:text-sm font-medium text-text-secondary mb-1">Target Audience Size</label>
                   <input
                     type="number"
-                    value={aiForm.target_audience_size}
-                    onChange={e => setAiForm({ ...aiForm, target_audience_size: e.target.value })}
+                    value={aiForm.target_audience_size || 30}
+                    onChange={e => setAiForm({ ...aiForm, target_audience_size: e.target.value === '' ? 30 : parseInt(e.target.value, 10) || 30 })}
                     className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg text-sm text-text-primary"
                     min="1"
                     max="200"
