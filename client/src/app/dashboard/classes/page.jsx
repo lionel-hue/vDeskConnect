@@ -204,25 +204,29 @@ export default function ClassesPage() {
         topics: [schemeForm.topic || editingScheme.topic],
       });
 
-      if (aiRes.schemes && aiRes.schemes.length > 0) {
-        const aiAspects = aiRes.schemes[0].aspects || {};
-        setSchemeForm({
-          ...schemeForm,
-          aspects: {
-            objectives: aiAspects.objectives || schemeForm.aspects.objectives,
-            activities: aiAspects.activities || schemeForm.aspects.activities,
-            resources: aiAspects.resources || schemeForm.aspects.resources,
-            evaluation: aiAspects.evaluation || schemeForm.aspects.evaluation,
-          },
-        });
-        toast.success('Scheme aspects regenerated with AI!');
-      } else if (aiRes.message) {
-        toast.success(aiRes.message);
+      // Always update the form aspects with whatever was returned
+      const aiAspects = aiRes.schemes?.[0]?.aspects || {};
+      setSchemeForm({
+        ...schemeForm,
+        aspects: {
+          objectives: aiAspects.objectives || schemeForm.aspects.objectives,
+          activities: aiAspects.activities || schemeForm.aspects.activities,
+          resources: aiAspects.resources || schemeForm.aspects.resources,
+          evaluation: aiAspects.evaluation || schemeForm.aspects.evaluation,
+        },
+      });
+
+      // Check if AI was actually used or if it fell back to templates
+      if (aiRes.ai_unavailable) {
+        toast.warning(
+          `AI unavailable — used template instead. ${aiRes.ai_reason || ''}`.trim(),
+        );
       } else {
-        toast.warning('AI returned unexpected format.');
+        toast.success('Scheme aspects regenerated with AI!');
       }
     } catch (err) {
-      toast.error(err.data?.message || 'Failed to regenerate');
+      const msg = err.data?.message || err.data?.error || err.message || 'Failed to regenerate';
+      toast.error(msg);
     } finally {
       setSchemeLoading(false);
     }
@@ -274,12 +278,17 @@ export default function ClassesPage() {
             evaluation: aiAspects.evaluation || '',
           },
         });
-        toast.success('Scheme generated with AI!');
-      } else if (aiRes.message) {
-        // API returned a message but no scheme data
-        toast.success(aiRes.message);
+      }
+
+      // Check if AI was actually used or if it fell back to templates
+      if (aiRes.ai_unavailable) {
+        toast.warning(
+          `AI unavailable — scheme created with template. ${aiRes.ai_reason || ''}`.trim(),
+        );
+      } else if (aiRes.message && aiRes.source === 'smart_template') {
+        toast.warning(aiRes.message);
       } else {
-        toast.warning('Scheme created but AI generation returned unexpected format. Please edit manually.');
+        toast.success('Scheme generated with AI!');
       }
 
       setShowSchemeAIModal(false);

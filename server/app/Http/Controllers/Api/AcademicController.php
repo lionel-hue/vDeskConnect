@@ -1841,6 +1841,8 @@ class AcademicController extends Controller
 
             $aiService = new AiService();
             $generatedSchemes = [];
+            $usedFallback = false;
+            $fallbackReason = null;
 
             foreach ($request->weeks as $index => $weekNumber) {
                 $topic = $request->topics[$index] ?? "Week {$weekNumber} Topic";
@@ -1871,6 +1873,12 @@ class AcademicController extends Controller
                 // Use the lesson note AI to generate scheme aspects
                 $result = $aiService->generateLessonNote($schemeData, $gradeInfo, $subjectInfo, 30);
 
+                // Track if fallback was used
+                if (!empty($result['_used_fallback'])) {
+                    $usedFallback = true;
+                    $fallbackReason = $result['_fallback_reason'] ?? 'Unknown';
+                }
+
                 // Map lesson note aspects to scheme aspects
                 $generatedSchemes[] = [
                     'week_number' => $weekNumber,
@@ -1884,10 +1892,22 @@ class AcademicController extends Controller
                 ];
             }
 
+            // Determine source and message based on fallback status
+            if ($usedFallback) {
+                return response()->json([
+                    'message' => 'AI unavailable — used smart template instead',
+                    'schemes' => $generatedSchemes,
+                    'source' => 'smart_template',
+                    'ai_unavailable' => true,
+                    'ai_reason' => $fallbackReason ?? 'AI API error',
+                ], 207); // 207 Multi-Status: partial success
+            }
+
             return response()->json([
-                'message' => 'Scheme generated successfully',
+                'message' => 'Scheme generated successfully with AI',
                 'schemes' => $generatedSchemes,
-                'source' => $aiService->apiKey ? 'ai_api' : 'smart_template',
+                'source' => 'ai_api',
+                'ai_unavailable' => false,
             ]);
         } catch (\Exception $e) {
             Log::error('AI scheme generation failed: ' . $e->getMessage());
