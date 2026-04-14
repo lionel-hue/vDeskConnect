@@ -139,8 +139,8 @@
   /* Glass Card - Primary UI element */
   .glass-card {
     @apply backdrop-blur-xl border rounded-card shadow-glass transition-all duration-300;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
-    border-color: rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.5);
+    border-color: rgba(124, 107, 196, 0.15);
   }
 
   .dark .glass-card {
@@ -151,8 +151,8 @@
   /* Glass Panel - Larger containers */
   .glass-panel {
     @apply backdrop-blur-xl border rounded-panel shadow-glass-elevated transition-all duration-300;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.06));
-    border-color: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.6);
+    border-color: rgba(124, 107, 196, 0.18);
   }
 
   .dark .glass-panel {
@@ -163,8 +163,8 @@
   /* Glass Input */
   .glass-input {
     @apply backdrop-blur-lg border rounded-btn px-4 py-3 text-sm transition-all duration-250 outline-none;
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(124, 107, 196, 0.2);
+    background: rgba(124, 107, 196, 0.05);
+    border-color: rgba(124, 107, 196, 0.25);
     color: var(--text-primary);
   }
 
@@ -175,7 +175,7 @@
   .glass-input:focus {
     border-color: rgba(124, 107, 196, 0.5);
     box-shadow: 0 0 0 3px rgba(124, 107, 196, 0.1);
-    background: rgba(255, 255, 255, 0.12);
+    background: rgba(124, 107, 196, 0.08);
   }
 
   .dark .glass-input {
@@ -186,21 +186,33 @@
   /* Glass Button */
   .glass-button {
     @apply backdrop-blur-lg border rounded-btn font-medium transition-all duration-250 hover:scale-105 active:scale-95;
-    background: rgba(124, 107, 196, 0.2);
+    background: rgba(124, 107, 196, 0.15);
     border-color: rgba(124, 107, 196, 0.3);
-    color: white;
+    color: var(--text-primary);
   }
 
   .glass-button:hover {
-    background: rgba(124, 107, 196, 0.3);
+    background: rgba(124, 107, 196, 0.25);
     border-color: rgba(124, 107, 196, 0.5);
-    box-shadow: 0 4px 16px rgba(124, 107, 196, 0.2);
+    box-shadow: 0 4px 16px rgba(124, 107, 196, 0.15);
+  }
+
+  .dark .glass-button {
+    background: rgba(124, 107, 196, 0.3);
+    border-color: rgba(124, 107, 196, 0.4);
+    color: white;
+  }
+
+  .dark .glass-button:hover {
+    background: rgba(124, 107, 196, 0.4);
+    border-color: rgba(124, 107, 196, 0.6);
+    box-shadow: 0 4px 16px rgba(124, 107, 196, 0.25);
   }
 
   /* Glass Header (for top bars) */
   .glass-header {
     @apply backdrop-blur-xl border-b sticky top-0 z-30;
-    background: linear-gradient(to right, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.05));
+    background: rgba(255, 255, 255, 0.6);
     border-color: rgba(124, 107, 196, 0.15);
   }
 
@@ -212,15 +224,15 @@
   /* Glass Sidebar */
   .glass-sidebar {
     @apply backdrop-blur-xl border;
-    background: linear-gradient(180deg, rgba(26, 26, 46, 0.85), rgba(26, 26, 46, 0.95));
+    background: rgba(26, 26, 46, 0.95);
     border-color: rgba(124, 107, 196, 0.2);
   }
 
   /* Glass Modal */
   .glass-modal {
     @apply backdrop-blur-2xl border rounded-card shadow-glass-elevated;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.85), rgba(240, 238, 247, 0.75));
-    border-color: rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.85);
+    border-color: rgba(124, 107, 196, 0.2);
   }
 
   .dark .glass-modal {
@@ -234,7 +246,7 @@
   }
 
   .glass-row:hover {
-    background: rgba(124, 107, 196, 0.05);
+    background: rgba(124, 107, 196, 0.08);
   }
 
   .dark .glass-row:hover {
@@ -244,8 +256,8 @@
   /* Glass Stat Card */
   .glass-stat {
     @apply backdrop-blur-lg border rounded-card shadow-glass p-5 transition-all duration-300 hover:shadow-glass-elevated hover:scale-[1.02];
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
-    border-color: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.4);
+    border-color: rgba(124, 107, 196, 0.15);
   }
 
   .dark .glass-stat {
@@ -372,7 +384,13 @@
 
 @layer utilities {
   .glass {
-    @apply bg-white/60 backdrop-blur-xl border border-white/20;
+    @apply backdrop-blur-xl border;
+    background: rgba(255, 255, 255, 0.6);
+    border-color: rgba(124, 107, 196, 0.2);
+  }
+
+  .dark .glass {
+    @apply bg-white/10 border-white/20;
   }
 
   /* Welcome page animations */

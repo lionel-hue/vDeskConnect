@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { ArrowRight, School, Users, BookOpen, TrendingUp, Shield, Zap } from 'lucide-react';
 import IllustrationDisplay from '@/components/ui/IllustrationDisplay';
 import ThemeToggle from '@/components/ui/ThemeToggle';
-import { useTheme } from '@/contexts/ThemeProvider';
 
 const FEATURES = [
   {
@@ -42,10 +41,11 @@ const FEATURES = [
 
 export default function WelcomePage() {
   const [isVisible, setIsVisible] = useState(false);
-  const { isDark } = useTheme();
+  const [resolvedDark, setResolvedDark] = useState(false);
 
   useEffect(() => {
     setIsVisible(true);
+    setResolvedDark(document.documentElement.classList.contains('dark'));
   }, []);
 
   return (
@@ -158,15 +158,15 @@ export default function WelcomePage() {
 
                 {/* Main illustration with glassmorphic panel */}
                 <div className={`
-                  relative 
-                  backdrop-blur-xl 
-                  bg-white/10 
-                  border border-white/20 
-                  rounded-hero 
-                  shadow-elevated 
-                  p-8 
+                  relative
+                  backdrop-blur-xl
+                  bg-white/10
+                  border border-white/20
+                  rounded-hero
+                  shadow-elevated
+                  p-8
                   animate-bounce-subtle
-                  ${isDark ? 'bg-gray-900/40 border-white/10' : 'bg-white/30 border-white/40'}
+                  ${resolvedDark ? 'bg-gray-900/40 border-white/10' : 'bg-white/30 border-white/40'}
                 `}>
                   <IllustrationDisplay
                     name="welcome_hero"
@@ -174,8 +174,8 @@ export default function WelcomePage() {
                     className="w-full"
                     fallback={
                       <div className={`aspect-[4/3] rounded-panel flex items-center justify-center ${
-                        isDark 
-                          ? 'bg-gradient-to-br from-primary/20 to-primary-light/10' 
+                        resolvedDark
+                          ? 'bg-gradient-to-br from-primary/20 to-primary-light/10'
                           : 'bg-gradient-to-br from-primary/5 to-primary-light/10'
                       }`}>
                         <div className="text-center space-y-4">
@@ -191,7 +191,7 @@ export default function WelcomePage() {
 
                 {/* Floating stats cards - Glassmorphic */}
                 <div className={`absolute -left-12 top-1/4 backdrop-blur-lg rounded-card shadow-soft p-4 animate-float card-hover-lift border ${
-                  isDark ? 'bg-gray-900/50 border-white/10' : 'bg-white/60 border-white/30'
+                  resolvedDark ? 'bg-gray-900/50 border-white/10' : 'bg-white/60 border-white/30'
                 }`}>
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-success/20 rounded-lg flex items-center justify-center">
@@ -205,7 +205,7 @@ export default function WelcomePage() {
                 </div>
 
                 <div className={`absolute -right-8 bottom-1/4 backdrop-blur-lg rounded-card shadow-soft p-4 animate-float-delayed card-hover-lift border ${
-                  isDark ? 'bg-gray-900/50 border-white/10' : 'bg-white/60 border-white/30'
+                  resolvedDark ? 'bg-gray-900/50 border-white/10' : 'bg-white/60 border-white/30'
                 }`}>
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-primary/20 rounded-lg flex items-center justify-center">
@@ -244,7 +244,7 @@ export default function WelcomePage() {
                 style={{ transitionDelay: `${800 + index * 100}ms` }}
               >
                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-colors duration-300 ${
-                  isDark ? 'bg-primary/20 group-hover:bg-primary/30' : 'bg-primary/10 group-hover:bg-primary/20'
+                  resolvedDark ? 'bg-primary/20 group-hover:bg-primary/30' : 'bg-primary/10 group-hover:bg-primary/20'
                 }`}>
                   <feature.icon size={24} className="text-primary" />
                 </div>

@@ -200,7 +200,7 @@ export default function ClassesPage() {
         grade_level_id: selectedGrade,
         subject_id: schemeForm.subject_id || editingScheme.subject_id,
         term_id: schemeForm.term_id || editingScheme.term_id,
-        weeks: [parseInt(schemeForm.week_number || editingScheme.week_number)],
+        weeks: [safeInt(schemeForm.week_number || editingScheme.week_number, 1)],
         topics: [schemeForm.topic || editingScheme.topic],
       });
 
@@ -216,6 +216,10 @@ export default function ClassesPage() {
           },
         });
         toast.success('Scheme aspects regenerated with AI!');
+      } else if (aiRes.message) {
+        toast.success(aiRes.message);
+      } else {
+        toast.warning('AI returned unexpected format.');
       }
     } catch (err) {
       toast.error(err.data?.message || 'Failed to regenerate');
@@ -231,7 +235,7 @@ export default function ClassesPage() {
     try {
       // First create a temporary scheme to get an ID for AI generation
       const schemeData = {
-        week_number: parseInt(schemeAIForm.week_number),
+        week_number: safeInt(schemeAIForm.week_number, 1),
         topic: schemeAIForm.topic,
         grade_level_id: selectedGrade,
         subject_id: schemeAIForm.subject_id,
@@ -242,7 +246,11 @@ export default function ClassesPage() {
 
       // Create scheme first
       const created = await academicApi.schemes.create(schemeData);
-      const schemeId = created.scheme.id;
+      const schemeId = created.scheme?.id || created.id;
+
+      if (!schemeId) {
+        throw new Error('Failed to create scheme - no ID returned');
+      }
 
       // Now call AI to generate aspects
       const aiRes = await academicApi.aiScheme.generate({
@@ -250,13 +258,14 @@ export default function ClassesPage() {
         grade_level_id: selectedGrade,
         subject_id: schemeAIForm.subject_id,
         term_id: schemeAIForm.term_id,
-        weeks: [parseInt(schemeAIForm.week_number)],
+        weeks: [safeInt(schemeAIForm.week_number, 1)],
         topics: [schemeAIForm.topic],
       });
 
       // Update the scheme with AI-generated aspects
-      if (aiRes.schemes && aiRes.schemes.length > 0) {
-        const aiAspects = aiRes.schemes[0].aspects || {};
+      const schemeData_item = aiRes.schemes?.[0] || aiRes.scheme || aiRes.data;
+      if (schemeData_item && schemeData_item.aspects) {
+        const aiAspects = schemeData_item.aspects;
         await academicApi.schemes.update(schemeId, {
           aspects: {
             objectives: aiAspects.objectives || '',
@@ -265,17 +274,30 @@ export default function ClassesPage() {
             evaluation: aiAspects.evaluation || '',
           },
         });
+        toast.success('Scheme generated with AI!');
+      } else if (aiRes.message) {
+        // API returned a message but no scheme data
+        toast.success(aiRes.message);
+      } else {
+        toast.warning('Scheme created but AI generation returned unexpected format. Please edit manually.');
       }
 
-      toast.success('Scheme generated with AI!');
       setShowSchemeAIModal(false);
       setSchemeAIForm({ week_number: '', subject_id: '', term_id: '', topic: '' });
       fetchSchemes(selectedGrade, schemeFilters);
     } catch (err) {
-      toast.error(err.data?.message || 'Failed to generate scheme');
+      console.error('AI Scheme generation failed:', err);
+      toast.error(err.data?.message || err.message || 'Failed to generate scheme with AI');
     } finally {
       setSchemeAILoading(false);
     }
+  };
+
+  // Helper: safely parse number input
+  const safeInt = (value, fallback = 1) => {
+    if (value === '' || value == null) return fallback;
+    const num = parseInt(value, 10);
+    return isNaN(num) ? fallback : num;
   };
 
   // ==================== RENDER ====================
