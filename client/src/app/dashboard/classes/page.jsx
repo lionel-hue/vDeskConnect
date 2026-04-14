@@ -298,13 +298,7 @@ export default function ClassesPage() {
     } catch (err) {
       console.error('AI Scheme generation failed:', err);
       const msg = err.data?.message || err.data?.error || err.message || 'Failed to generate scheme with AI';
-      if (msg.includes('rate limit')) {
-        toast.error(msg);
-      } else if (msg.includes('API key')) {
-        toast.error(msg);
-      } else {
-        toast.error(msg);
-      }
+      toast.error(msg);
     } finally {
       setSchemeAILoading(false);
     }
