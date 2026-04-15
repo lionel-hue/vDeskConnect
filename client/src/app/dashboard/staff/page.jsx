@@ -98,7 +98,14 @@ export default function StaffPage() {
     try {
       const url = editingStaff ? `/staff/${editingStaff.id}` : '/staff';
       const method = editingStaff ? 'put' : 'post';
-      await api[method](url, form);
+      const payload = { ...form };
+      if (editingStaff) {
+        Object.keys(payload).forEach(key => {
+          if (payload[key] === '' || payload[key] === null) delete payload[key];
+        });
+        if (payload.password === '') delete payload.password;
+      }
+      await api[method](url, payload);
       toast.success(editingStaff ? 'Staff updated' : 'Staff created');
       setShowModal(false);
       resetForm();

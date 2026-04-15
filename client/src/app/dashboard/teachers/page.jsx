@@ -86,7 +86,14 @@ export default function TeachersPage() {
     try {
       const url = editingTeacher ? `/teachers/${editingTeacher.id}` : '/teachers';
       const method = editingTeacher ? 'put' : 'post';
-      await api[method](url, form);
+      const payload = { ...form };
+      if (editingTeacher) {
+        Object.keys(payload).forEach(key => {
+          if (payload[key] === '' || payload[key] === null) delete payload[key];
+        });
+        if (payload.password === '') delete payload.password;
+      }
+      await api[method](url, payload);
       toast.success(editingTeacher ? 'Teacher updated' : 'Teacher created');
       setShowModal(false);
       resetForm();

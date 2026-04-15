@@ -92,7 +92,14 @@ export default function StudentsPage() {
     try {
       const url = editingStudent ? `/students/${editingStudent.id}` : '/students';
       const method = editingStudent ? 'put' : 'post';
-      await api[method](url, form);
+      const payload = { ...form };
+      if (editingStudent) {
+        Object.keys(payload).forEach(key => {
+          if (payload[key] === '' || payload[key] === null) delete payload[key];
+        });
+        if (payload.password === '') delete payload.password;
+      }
+      await api[method](url, payload);
       toast.success(editingStudent ? 'Student updated' : 'Student created');
       setShowModal(false);
       resetForm();
