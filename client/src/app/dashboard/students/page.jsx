@@ -126,46 +126,14 @@ export default function StudentsPage() {
   const fullName = (s) => `${s.first_name || ''} ${s.last_name || ''}`.trim() || s.email;
 
   const DetailRow = ({ icon: Icon, label, value }) => (
-    <div className="flex items-start gap-3">
-      <Icon size={16} className="text-text-muted mt-0.5 flex-shrink-0" />
-      <div>
+    <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-bg-main/50">
+      <Icon size={16} className="text-text-muted flex-shrink-0" />
+      <div className="min-w-0 flex-1">
         <p className="text-xs text-text-muted">{label}</p>
-        <p className="text-sm text-text-primary">{value || '—'}</p>
+        <p className="text-sm text-text-primary truncate">{value || '—'}</p>
       </div>
     </div>
   );
-
-  const renderStudentDetails = () => {
-    const s = viewingStudent;
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center text-xl font-bold text-primary">
-            {(s.first_name?.[0] || s.email?.[0] || 'S').toUpperCase()}
-          </div>
-          <div>
-            <p className="text-lg font-bold text-text-primary">{fullName(s)}</p>
-            <p className="text-sm text-text-muted">{s.email}</p>
-            <span className={`inline-flex items-center gap-1 text-xs mt-1 px-2 py-0.5 rounded-full ${s.banned ? 'bg-error/20 text-error' : 'bg-success/20 text-success'}`}>
-              {s.banned ? <Ban size={10} /> : <Check size={10} />}
-              {s.banned ? 'Banned' : 'Active'}
-            </span>
-          </div>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <DetailRow icon={Hash} label="Admission Number" value={s.admission_number} />
-          <DetailRow icon={Users} label="Gender" value={s.gender} />
-          <DetailRow icon={Calendar} label="Date of Birth" value={s.date_of_birth} />
-          <DetailRow icon={Phone} label="Phone" value={s.phone} />
-          <DetailRow icon={MapPin} label="Address" value={s.address} />
-          <DetailRow icon={GraduationCap} label="Grade Level" value={s.grade_level?.name || s.grade_level_name} />
-          <DetailRow icon={Users} label="Guardian Name" value={s.guardian_name} />
-          <DetailRow icon={Phone} label="Guardian Phone" value={s.guardian_phone} />
-          <DetailRow icon={Mail} label="Guardian Email" value={s.guardian_email} />
-        </div>
-      </div>
-    );
-  };
 
   const generateAdmissionNumber = () => {
     const year = new Date().getFullYear();
@@ -425,15 +393,53 @@ export default function StudentsPage() {
       {/* View Student Modal */}
       {viewingStudent && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setViewingStudent(null)}>
-          <div className="glass-modal max-w-lg w-full animate-scale-in" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between p-5 border-b border-border">
-              <h3 className="text-base font-semibold text-text-primary">Student Details</h3>
-              <button onClick={() => setViewingStudent(null)} className="p-1.5 rounded-lg hover:bg-bg-main text-text-muted hover:text-text-primary transition-all">
-                <X size={18} />
+          <div className="glass-modal max-w-md w-full animate-scale-in p-6" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-lg font-bold text-text-primary">Student Details</h3>
+              <button onClick={() => setViewingStudent(null)} className="text-text-muted hover:text-text-primary">
+                <X size={20} />
               </button>
             </div>
-            <div className="p-5">
-              {renderStudentDetails()}
+            <div className="flex items-center gap-4 mb-5">
+              <div className="w-14 h-14 bg-primary/20 rounded-full flex items-center justify-center text-lg font-bold text-primary">
+                {(viewingStudent.first_name?.[0] || viewingStudent.email?.[0] || 'S').toUpperCase()}
+              </div>
+              <div>
+                <p className="text-base font-bold text-text-primary">{fullName(viewingStudent)}</p>
+                <p className="text-sm text-text-muted">{viewingStudent.email}</p>
+                <span className={`inline-flex items-center gap-1 text-xs mt-1 ${viewingStudent.banned ? 'text-error' : 'text-success'}`}>
+                  {viewingStudent.banned ? <Ban size={12} /> : <Check size={12} />} {viewingStudent.banned ? 'Banned' : 'Active'}
+                </span>
+              </div>
+            </div>
+            <div className="space-y-3 text-sm">
+              <DetailRow icon={Hash} label="Admission Number" value={viewingStudent.admission_number || '—'} />
+              <DetailRow icon={Users} label="Gender" value={viewingStudent.gender ? viewingStudent.gender.charAt(0).toUpperCase() + viewingStudent.gender.slice(1) : '—'} />
+              <DetailRow icon={Calendar} label="Date of Birth" value={viewingStudent.date_of_birth || '—'} />
+              <DetailRow icon={GraduationCap} label="Grade Level" value={viewingStudent.grade_level?.name || viewingStudent.grade_level_name || '—'} />
+              <DetailRow icon={Phone} label="Phone" value={viewingStudent.phone || '—'} />
+              <DetailRow icon={MapPin} label="Address" value={viewingStudent.address || '—'} />
+            </div>
+            <div className="border-t border-border pt-4 mt-4">
+              <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-3">Guardian Information</p>
+              <div className="space-y-3 text-sm">
+                <DetailRow icon={Users} label="Guardian Name" value={viewingStudent.guardian_name || '—'} />
+                <DetailRow icon={Phone} label="Guardian Phone" value={viewingStudent.guardian_phone || '—'} />
+                <DetailRow icon={Mail} label="Guardian Email" value={viewingStudent.guardian_email || '—'} />
+              </div>
+            </div>
+            <div className="flex gap-2 mt-5 pt-4 border-t border-border">
+              <button onClick={() => { setViewingStudent(null); openEditModal(viewingStudent); }} className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-btn bg-primary text-white text-sm hover:bg-primary-dark transition-colors">
+                <Edit2 size={14} /> Edit
+              </button>
+              {!viewingStudent.banned && (
+                <button onClick={() => { setViewingStudent(null); setActionModal({ type: 'ban', student: viewingStudent }); }} className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-btn bg-warning/10 text-warning text-sm hover:bg-warning/20 transition-colors">
+                  <Ban size={14} /> Ban
+                </button>
+              )}
+              <button onClick={() => { setViewingStudent(null); setActionModal({ type: 'delete', student: viewingStudent }); }} className="flex items-center justify-center gap-2 px-3 py-2 rounded-btn bg-error/10 text-error text-sm hover:bg-error/20 transition-colors">
+                <Trash2 size={14} />
+              </button>
             </div>
           </div>
         </div>
