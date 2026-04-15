@@ -397,6 +397,7 @@ export default function TeachersPage() {
             <div className="space-y-3 text-sm">
               <DetailRow icon={Hash} label="Employee #" value={viewingTeacher.employee_number || '—'} />
               <DetailRow icon={Award} label="Qualification" value={viewingTeacher.qualification || '—'} />
+              <DetailRow icon={Users} label="Gender" value={viewingTeacher.gender ? viewingTeacher.gender.charAt(0).toUpperCase() + viewingTeacher.gender.slice(1) : '—'} />
               <DetailRow icon={Phone} label="Phone" value={viewingTeacher.phone || '—'} />
               <DetailRow icon={MapPin} label="Address" value={viewingTeacher.address || '—'} />
               <DetailRow icon={Calendar} label="Date Joined" value={viewingTeacher.date_joined || '—'} />

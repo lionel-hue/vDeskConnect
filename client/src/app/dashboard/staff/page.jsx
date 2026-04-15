@@ -444,6 +444,7 @@ export default function StaffPage() {
             <div className="space-y-3 text-sm">
               <DetailRow icon={Hash} label="Employee #" value={viewingStaff.employee_number || '—'} />
               <DetailRow icon={Users} label="Designation" value={viewingStaff.designation || '—'} />
+              <DetailRow icon={Users} label="Gender" value={viewingStaff.gender ? viewingStaff.gender.charAt(0).toUpperCase() + viewingStaff.gender.slice(1) : '—'} />
               <DetailRow icon={Phone} label="Phone" value={viewingStaff.phone || '—'} />
               <DetailRow icon={Mail} label="Email" value={viewingStaff.email || '—'} />
               <DetailRow icon={Check} label="Status" value={viewingStaff.banned ? 'Banned' : 'Active'} />
