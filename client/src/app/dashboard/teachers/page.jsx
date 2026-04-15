@@ -380,37 +380,36 @@ export default function TeachersPage() {
       {/* View Teacher Modal */}
       {viewingTeacher && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setViewingTeacher(null)}>
-          <div className="glass-modal max-w-md w-full animate-scale-in p-6" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-5">
+          <div className="glass-modal max-w-md w-full max-h-[85vh] flex flex-col animate-scale-in" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-5 border-b border-border flex-shrink-0">
               <h3 className="text-lg font-bold text-text-primary">Teacher Details</h3>
               <button onClick={() => setViewingTeacher(null)} className="text-text-muted hover:text-text-primary">
                 <X size={20} />
               </button>
             </div>
-            {/* Avatar */}
-            <div className="flex items-center gap-4 mb-5">
-              <div className="w-14 h-14 bg-primary/20 rounded-full flex items-center justify-center text-lg font-bold text-primary">
-                {(viewingTeacher.first_name?.[0] || viewingTeacher.email?.[0] || 'T').toUpperCase()}
+            <div className="overflow-y-auto flex-1 p-5">
+              <div className="flex items-center gap-4 mb-5">
+                <div className="w-14 h-14 bg-primary/20 rounded-full flex items-center justify-center text-lg font-bold text-primary flex-shrink-0">
+                  {(viewingTeacher.first_name?.[0] || viewingTeacher.email?.[0] || 'T').toUpperCase()}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-base font-bold text-text-primary truncate">{fullName(viewingTeacher)}</p>
+                  <p className="text-sm text-text-muted truncate">{viewingTeacher.email}</p>
+                  <span className={`inline-flex items-center gap-1 text-xs mt-1 ${viewingTeacher.banned ? 'text-error' : 'text-success'}`}>
+                    {viewingTeacher.banned ? <Ban size={12} /> : <Check size={12} />} {viewingTeacher.banned ? 'Banned' : 'Active'}
+                  </span>
+                </div>
               </div>
-              <div>
-                <p className="text-base font-bold text-text-primary">{fullName(viewingTeacher)}</p>
-                <p className="text-sm text-text-muted">{viewingTeacher.email}</p>
-                <span className={`inline-flex items-center gap-1 text-xs mt-1 ${viewingTeacher.banned ? 'text-error' : 'text-success'}`}>
-                  {viewingTeacher.banned ? <Ban size={12} /> : <Check size={12} />} {viewingTeacher.banned ? 'Banned' : 'Active'}
-                </span>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <DetailRow icon={Hash} label="Employee #" value={viewingTeacher.employee_number || '—'} />
+                <DetailRow icon={Award} label="Qualification" value={viewingTeacher.qualification || '—'} />
+                <DetailRow icon={Users} label="Gender" value={viewingTeacher.gender ? viewingTeacher.gender.charAt(0).toUpperCase() + viewingTeacher.gender.slice(1) : '—'} />
+                <DetailRow icon={Calendar} label="Date Joined" value={viewingTeacher.date_joined || '—'} />
+                <DetailRow icon={Phone} label="Phone" value={viewingTeacher.phone || '—'} />
+                <DetailRow icon={MapPin} label="Address" value={viewingTeacher.address || '—'} />
               </div>
             </div>
-            {/* Details Grid */}
-            <div className="space-y-3 text-sm">
-              <DetailRow icon={Hash} label="Employee #" value={viewingTeacher.employee_number || '—'} />
-              <DetailRow icon={Award} label="Qualification" value={viewingTeacher.qualification || '—'} />
-              <DetailRow icon={Users} label="Gender" value={viewingTeacher.gender ? viewingTeacher.gender.charAt(0).toUpperCase() + viewingTeacher.gender.slice(1) : '—'} />
-              <DetailRow icon={Phone} label="Phone" value={viewingTeacher.phone || '—'} />
-              <DetailRow icon={MapPin} label="Address" value={viewingTeacher.address || '—'} />
-              <DetailRow icon={Calendar} label="Date Joined" value={viewingTeacher.date_joined || '—'} />
-            </div>
-            {/* Actions */}
-            <div className="flex gap-2 mt-5 pt-4 border-t border-border">
+            <div className="flex gap-2 p-5 border-t border-border flex-shrink-0">
               <button onClick={() => { setViewingTeacher(null); openEditModal(viewingTeacher); }} className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-btn bg-primary text-white text-sm hover:bg-primary-dark transition-colors">
                 <Edit2 size={14} /> Edit
               </button>

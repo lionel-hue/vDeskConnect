@@ -205,6 +205,21 @@ class StaffController extends Controller
             }
             $staff->profile->data = $data;
             $staff->profile->save();
+        } else {
+            $profileData = [
+                'first_name' => $request->first_name,
+                'last_name' => $request->last_name,
+                'employee_number' => $request->employee_number,
+                'designation' => $request->designation,
+                'gender' => $request->gender,
+                'phone' => $request->phone,
+                'address' => $request->address,
+            ];
+            Profile::create([
+                'user_id' => $staff->id,
+                'type' => 'staff',
+                'data' => $profileData,
+            ]);
         }
 
         return response()->json([

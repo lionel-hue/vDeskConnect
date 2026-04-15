@@ -400,42 +400,44 @@ export default function StudentsPage() {
       {/* View Student Modal */}
       {viewingStudent && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setViewingStudent(null)}>
-          <div className="glass-modal max-w-md w-full animate-scale-in p-6" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-5">
+          <div className="glass-modal max-w-md w-full max-h-[85vh] flex flex-col animate-scale-in" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-5 border-b border-border flex-shrink-0">
               <h3 className="text-lg font-bold text-text-primary">Student Details</h3>
               <button onClick={() => setViewingStudent(null)} className="text-text-muted hover:text-text-primary">
                 <X size={20} />
               </button>
             </div>
-            <div className="flex items-center gap-4 mb-5">
-              <div className="w-14 h-14 bg-primary/20 rounded-full flex items-center justify-center text-lg font-bold text-primary">
-                {(viewingStudent.first_name?.[0] || viewingStudent.email?.[0] || 'S').toUpperCase()}
+            <div className="overflow-y-auto flex-1 p-5">
+              <div className="flex items-center gap-4 mb-5">
+                <div className="w-14 h-14 bg-primary/20 rounded-full flex items-center justify-center text-lg font-bold text-primary flex-shrink-0">
+                  {(viewingStudent.first_name?.[0] || viewingStudent.email?.[0] || 'S').toUpperCase()}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-base font-bold text-text-primary truncate">{fullName(viewingStudent)}</p>
+                  <p className="text-sm text-text-muted truncate">{viewingStudent.email}</p>
+                  <span className={`inline-flex items-center gap-1 text-xs mt-1 ${viewingStudent.banned ? 'text-error' : 'text-success'}`}>
+                    {viewingStudent.banned ? <Ban size={12} /> : <Check size={12} />} {viewingStudent.banned ? 'Banned' : 'Active'}
+                  </span>
+                </div>
               </div>
-              <div>
-                <p className="text-base font-bold text-text-primary">{fullName(viewingStudent)}</p>
-                <p className="text-sm text-text-muted">{viewingStudent.email}</p>
-                <span className={`inline-flex items-center gap-1 text-xs mt-1 ${viewingStudent.banned ? 'text-error' : 'text-success'}`}>
-                  {viewingStudent.banned ? <Ban size={12} /> : <Check size={12} />} {viewingStudent.banned ? 'Banned' : 'Active'}
-                </span>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <DetailRow icon={Hash} label="Admission #" value={viewingStudent.admission_number || '—'} />
+                <DetailRow icon={Users} label="Gender" value={viewingStudent.gender ? viewingStudent.gender.charAt(0).toUpperCase() + viewingStudent.gender.slice(1) : '—'} />
+                <DetailRow icon={Calendar} label="DOB" value={viewingStudent.date_of_birth || '—'} />
+                <DetailRow icon={GraduationCap} label="Grade" value={viewingStudent.grade_level?.name || viewingStudent.grade_level_name || '—'} />
+                <DetailRow icon={Phone} label="Phone" value={viewingStudent.phone || '—'} />
+                <DetailRow icon={MapPin} label="Address" value={viewingStudent.address || '—'} />
+              </div>
+              <div className="border-t border-border pt-4 mt-4">
+                <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-3">Guardian Information</p>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <DetailRow icon={Users} label="Name" value={viewingStudent.guardian_name || '—'} />
+                  <DetailRow icon={Phone} label="Phone" value={viewingStudent.guardian_phone || '—'} />
+                  <DetailRow icon={Mail} label="Email" value={viewingStudent.guardian_email || '—'} className="col-span-2" />
+                </div>
               </div>
             </div>
-            <div className="space-y-3 text-sm">
-              <DetailRow icon={Hash} label="Admission Number" value={viewingStudent.admission_number || '—'} />
-              <DetailRow icon={Users} label="Gender" value={viewingStudent.gender ? viewingStudent.gender.charAt(0).toUpperCase() + viewingStudent.gender.slice(1) : '—'} />
-              <DetailRow icon={Calendar} label="Date of Birth" value={viewingStudent.date_of_birth || '—'} />
-              <DetailRow icon={GraduationCap} label="Grade Level" value={viewingStudent.grade_level?.name || viewingStudent.grade_level_name || '—'} />
-              <DetailRow icon={Phone} label="Phone" value={viewingStudent.phone || '—'} />
-              <DetailRow icon={MapPin} label="Address" value={viewingStudent.address || '—'} />
-            </div>
-            <div className="border-t border-border pt-4 mt-4">
-              <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-3">Guardian Information</p>
-              <div className="space-y-3 text-sm">
-                <DetailRow icon={Users} label="Guardian Name" value={viewingStudent.guardian_name || '—'} />
-                <DetailRow icon={Phone} label="Guardian Phone" value={viewingStudent.guardian_phone || '—'} />
-                <DetailRow icon={Mail} label="Guardian Email" value={viewingStudent.guardian_email || '—'} />
-              </div>
-            </div>
-            <div className="flex gap-2 mt-5 pt-4 border-t border-border">
+            <div className="flex gap-2 p-5 border-t border-border flex-shrink-0">
               <button onClick={() => { setViewingStudent(null); openEditModal(viewingStudent); }} className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-btn bg-primary text-white text-sm hover:bg-primary-dark transition-colors">
                 <Edit2 size={14} /> Edit
               </button>

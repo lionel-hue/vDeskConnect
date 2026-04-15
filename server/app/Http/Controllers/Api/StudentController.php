@@ -205,6 +205,27 @@ class StudentController extends Controller
             }
             $student->profile->data = $data;
             $student->profile->save();
+        } else {
+            $profileData = [
+                'first_name' => $request->first_name,
+                'last_name' => $request->last_name,
+                'admission_number' => $request->admission_number,
+                'gender' => $request->gender,
+                'date_of_birth' => $request->date_of_birth,
+                'phone' => $request->phone,
+                'address' => $request->address,
+                'guardian_name' => $request->guardian_name,
+                'guardian_phone' => $request->guardian_phone,
+                'guardian_email' => $request->guardian_email,
+                'grade_level_id' => $request->grade_level_id,
+                'section_id' => $request->section_id,
+                'department_id' => $request->department_id,
+            ];
+            Profile::create([
+                'user_id' => $student->id,
+                'type' => 'student',
+                'data' => $profileData,
+            ]);
         }
 
         return response()->json([

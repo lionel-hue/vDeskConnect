@@ -191,6 +191,23 @@ class TeacherController extends Controller
             }
             $teacher->profile->data = $data;
             $teacher->profile->save();
+        } else {
+            $profileData = [
+                'first_name' => $request->first_name,
+                'last_name' => $request->last_name,
+                'employee_number' => $request->employee_number,
+                'gender' => $request->gender,
+                'phone' => $request->phone,
+                'address' => $request->address,
+                'subject_ids' => $request->subject_ids ?? [],
+                'qualification' => $request->qualification,
+                'date_joined' => $request->date_joined,
+            ];
+            Profile::create([
+                'user_id' => $teacher->id,
+                'type' => 'teacher',
+                'data' => $profileData,
+            ]);
         }
 
         return response()->json([
