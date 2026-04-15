@@ -60,10 +60,12 @@ export default function StudentsPage() {
   }, [fetchStudents, router]);
 
   const resetForm = () => {
-    setForm({ first_name: '', last_name: '', email: '', admission_number: '',
+    setForm({
+      first_name: '', last_name: '', email: '', admission_number: '',
       gender: '', date_of_birth: '', phone: '', address: '',
       guardian_name: '', guardian_phone: '', guardian_email: '',
-      password: DEFAULT_PASSWORD });
+      password: DEFAULT_PASSWORD
+    });
     setFormErrors({});
     setEditingStudent(null);
   };
@@ -122,6 +124,48 @@ export default function StudentsPage() {
   };
 
   const fullName = (s) => `${s.first_name || ''} ${s.last_name || ''}`.trim() || s.email;
+
+  const DetailRow = ({ icon: Icon, label, value }) => (
+    <div className="flex items-start gap-3">
+      <Icon size={16} className="text-text-muted mt-0.5 flex-shrink-0" />
+      <div>
+        <p className="text-xs text-text-muted">{label}</p>
+        <p className="text-sm text-text-primary">{value || '—'}</p>
+      </div>
+    </div>
+  );
+
+  const renderStudentDetails = () => {
+    const s = viewingStudent;
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center text-xl font-bold text-primary">
+            {(s.first_name?.[0] || s.email?.[0] || 'S').toUpperCase()}
+          </div>
+          <div>
+            <p className="text-lg font-bold text-text-primary">{fullName(s)}</p>
+            <p className="text-sm text-text-muted">{s.email}</p>
+            <span className={`inline-flex items-center gap-1 text-xs mt-1 px-2 py-0.5 rounded-full ${s.banned ? 'bg-error/20 text-error' : 'bg-success/20 text-success'}`}>
+              {s.banned ? <Ban size={10} /> : <Check size={10} />}
+              {s.banned ? 'Banned' : 'Active'}
+            </span>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <DetailRow icon={Hash} label="Admission Number" value={s.admission_number} />
+          <DetailRow icon={Users} label="Gender" value={s.gender} />
+          <DetailRow icon={Calendar} label="Date of Birth" value={s.date_of_birth} />
+          <DetailRow icon={Phone} label="Phone" value={s.phone} />
+          <DetailRow icon={MapPin} label="Address" value={s.address} />
+          <DetailRow icon={GraduationCap} label="Grade Level" value={s.grade_level?.name || s.grade_level_name} />
+          <DetailRow icon={Users} label="Guardian Name" value={s.guardian_name} />
+          <DetailRow icon={Phone} label="Guardian Phone" value={s.guardian_phone} />
+          <DetailRow icon={Mail} label="Guardian Email" value={s.guardian_email} />
+        </div>
+      </div>
+    );
+  };
 
   const generateAdmissionNumber = () => {
     const year = new Date().getFullYear();
@@ -235,23 +279,23 @@ export default function StudentsPage() {
         </div>
 
         {/* Pagination */}
-          {lastPage > 1 && (
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-text-secondary">
-                Page {page} of {lastPage}
-              </p>
-              <div className="flex items-center gap-2">
-                <button disabled={page <= 1} onClick={() => setPage(p => p - 1)}
-                  className="glass-button px-3 py-2 disabled:opacity-40" title="Previous">
-                  <ChevronLeft size={16} />
-                </button>
-                <button disabled={page >= lastPage} onClick={() => setPage(p => p + 1)}
-                  className="glass-button px-3 py-2 disabled:opacity-40" title="Next">
-                  <ChevronRight size={16} />
-                </button>
-              </div>
+        {lastPage > 1 && (
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-text-secondary">
+              Page {page} of {lastPage}
+            </p>
+            <div className="flex items-center gap-2">
+              <button disabled={page <= 1} onClick={() => setPage(p => p - 1)}
+                className="glass-button px-3 py-2 disabled:opacity-40" title="Previous">
+                <ChevronLeft size={16} />
+              </button>
+              <button disabled={page >= lastPage} onClick={() => setPage(p => p + 1)}
+                className="glass-button px-3 py-2 disabled:opacity-40" title="Next">
+                <ChevronRight size={16} />
+              </button>
             </div>
-          )}
+          </div>
+        )}
       </div>
 
       {/* Add/Edit Modal */}
@@ -270,29 +314,29 @@ export default function StudentsPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="form-label">First Name *</label>
-                  <input type="text" value={form.first_name} onChange={e => setForm({...form, first_name: e.target.value})}
+                  <input type="text" value={form.first_name} onChange={e => setForm({ ...form, first_name: e.target.value })}
                     className={`form-input ${formErrors.first_name ? 'border-error' : ''}`} placeholder="John" required />
                   {formErrors.first_name && <p className="text-error text-xs mt-1">{formErrors.first_name[0]}</p>}
                 </div>
                 <div>
                   <label className="form-label">Last Name *</label>
-                  <input type="text" value={form.last_name} onChange={e => setForm({...form, last_name: e.target.value})}
+                  <input type="text" value={form.last_name} onChange={e => setForm({ ...form, last_name: e.target.value })}
                     className={`form-input ${formErrors.last_name ? 'border-error' : ''}`} placeholder="Doe" required />
                   {formErrors.last_name && <p className="text-error text-xs mt-1">{formErrors.last_name[0]}</p>}
                 </div>
               </div>
               <div>
                 <label className="form-label">Email *</label>
-                <input type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})}
+                <input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })}
                   className={`form-input ${formErrors.email ? 'border-error' : ''}`} placeholder="john@school.edu" required />
                 {formErrors.email && <p className="text-error text-xs mt-1">{formErrors.email[0]}</p>}
               </div>
               <div>
                 <label className="form-label">Admission Number *</label>
                 <div className="flex gap-2">
-                  <input type="text" value={form.admission_number} onChange={e => setForm({...form, admission_number: e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, '')})}
+                  <input type="text" value={form.admission_number} onChange={e => setForm({ ...form, admission_number: e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, '') })}
                     className={`form-input flex-1 ${formErrors.admission_number ? 'border-error' : ''}`} placeholder="STU-2026-001" required />
-                  <button type="button" onClick={() => setForm({...form, admission_number: generateAdmissionNumber()})}
+                  <button type="button" onClick={() => setForm({ ...form, admission_number: generateAdmissionNumber() })}
                     className="px-3 py-2.5 rounded-btn bg-primary/10 text-primary hover:bg-primary/20 transition-colors text-xs font-medium whitespace-nowrap flex items-center gap-1.5 flex-shrink-0"
                     title="Auto-generate admission number">
                     <Hash size={14} /> Auto
@@ -306,7 +350,7 @@ export default function StudentsPage() {
                   <input
                     type={showPassword ? 'text' : 'password'}
                     value={form.password}
-                    onChange={e => setForm({...form, password: e.target.value})}
+                    onChange={e => setForm({ ...form, password: e.target.value })}
                     className={`form-input pr-10 ${formErrors.password ? 'border-error' : ''}`}
                     placeholder={editingStudent ? 'Leave blank to keep current' : DEFAULT_PASSWORD}
                   />
@@ -324,7 +368,7 @@ export default function StudentsPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="form-label">Gender</label>
-                  <select value={form.gender} onChange={e => setForm({...form, gender: e.target.value})} className="form-input">
+                  <select value={form.gender} onChange={e => setForm({ ...form, gender: e.target.value })} className="form-input">
                     <option value="">Select</option>
                     <option value="male">Male</option>
                     <option value="female">Female</option>
@@ -333,17 +377,17 @@ export default function StudentsPage() {
                 </div>
                 <div>
                   <label className="form-label">Date of Birth</label>
-                  <input type="date" value={form.date_of_birth} onChange={e => setForm({...form, date_of_birth: e.target.value})} className="form-input" />
+                  <input type="date" value={form.date_of_birth} onChange={e => setForm({ ...form, date_of_birth: e.target.value })} className="form-input" />
                 </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="form-label">Phone</label>
-                  <input type="text" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} className="form-input" placeholder="+234..." />
+                  <input type="text" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} className="form-input" placeholder="+234..." />
                 </div>
                 <div>
                   <label className="form-label">Address</label>
-                  <input type="text" value={form.address} onChange={e => setForm({...form, address: e.target.value})} className="form-input" />
+                  <input type="text" value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} className="form-input" />
                 </div>
               </div>
               <div className="border-t border-border pt-4">
@@ -351,16 +395,16 @@ export default function StudentsPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="form-label">Guardian Name</label>
-                    <input type="text" value={form.guardian_name} onChange={e => setForm({...form, guardian_name: e.target.value})} className="form-input" />
+                    <input type="text" value={form.guardian_name} onChange={e => setForm({ ...form, guardian_name: e.target.value })} className="form-input" />
                   </div>
                   <div>
                     <label className="form-label">Guardian Phone</label>
-                    <input type="text" value={form.guardian_phone} onChange={e => setForm({...form, guardian_phone: e.target.value})} className="form-input" />
+                    <input type="text" value={form.guardian_phone} onChange={e => setForm({ ...form, guardian_phone: e.target.value })} className="form-input" />
                   </div>
                 </div>
                 <div className="mt-3">
                   <label className="form-label">Guardian Email</label>
-                  <input type="email" value={form.guardian_email} onChange={e => setForm({...form, guardian_email: e.target.value})} className="form-input" />
+                  <input type="email" value={form.guardian_email} onChange={e => setForm({ ...form, guardian_email: e.target.value })} className="form-input" />
                 </div>
               </div>
             </form>
@@ -373,6 +417,23 @@ export default function StudentsPage() {
                 className="flex-1 px-4 py-2.5 rounded-btn glass-button disabled:opacity-50">
                 {submitting ? <span className="flex items-center justify-center gap-2"><RefreshCw size={14} className="animate-spin" /> Saving...</span> : editingStudent ? 'Update Student' : 'Create Student'}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* View Student Modal */}
+      {viewingStudent && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setViewingStudent(null)}>
+          <div className="glass-modal max-w-lg w-full animate-scale-in" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-5 border-b border-border">
+              <h3 className="text-base font-semibold text-text-primary">Student Details</h3>
+              <button onClick={() => setViewingStudent(null)} className="p-1.5 rounded-lg hover:bg-bg-main text-text-muted hover:text-text-primary transition-all">
+                <X size={18} />
+              </button>
+            </div>
+            <div className="p-5">
+              {renderStudentDetails()}
             </div>
           </div>
         </div>
@@ -403,9 +464,8 @@ export default function StudentsPage() {
                 Cancel
               </button>
               <button onClick={handleAction} disabled={actionLoading}
-                className={`flex-1 px-4 py-2.5 rounded-btn text-sm font-medium text-white transition-all ${
-                  actionModal.type === 'delete' ? 'bg-error hover:bg-error/80' : 'bg-warning hover:bg-warning/80'
-                } disabled:opacity-50`}>
+                className={`flex-1 px-4 py-2.5 rounded-btn text-sm font-medium text-white transition-all ${actionModal.type === 'delete' ? 'bg-error hover:bg-error/80' : 'bg-warning hover:bg-warning/80'
+                  } disabled:opacity-50`}>
                 {actionLoading ? <span className="flex items-center justify-center gap-2"><RefreshCw size={14} className="animate-spin" /> Processing...</span> : `Confirm ${actionModal.type === 'delete' ? 'Delete' : 'Ban'}`}
               </button>
             </div>
