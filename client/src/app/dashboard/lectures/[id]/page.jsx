@@ -476,14 +476,12 @@ export default function LecturePlayerPage() {
                               <Save className="w-3 h-3" />
                             </span>
                           )}
-                          <a 
-                            href={resource.url} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
+                          <button 
+                            onClick={() => setPreviewResource(resource)}
                             className="flex items-center gap-1 px-3 py-1.5 bg-primary/10 text-primary rounded-lg hover:bg-primary/20"
                           >
                             <Eye className="w-4 h-4" /> View
-                          </a>
+                          </button>
                         </div>
                       </div>
                     ))}
