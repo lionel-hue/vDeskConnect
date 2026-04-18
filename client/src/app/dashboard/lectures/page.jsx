@@ -644,6 +644,266 @@ export default function LecturesPage() {
             </div>
           </div>
         )}
+
+        {/* View/Detail Modal */}
+        {viewingLecture && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setViewingLecture(null)}>
+            <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+              <div className="flex items-center justify-between p-4 border-b border-border">
+                <h2 className="text-lg font-semibold text-text-primary">{viewingLecture.title}</h2>
+                <button onClick={() => setViewingLecture(null)} className="text-text-muted hover:text-text-primary">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Tabs */}
+              <div className="flex border-b border-border">
+                {['overview', 'content', 'resources', 'attendance'].map(tab => (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    className={`px-4 py-2 text-sm capitalize ${
+                      activeTab === tab
+                        ? 'border-b-2 border-primary text-primary'
+                        : 'text-text-muted hover:text-text-primary'
+                    }`}
+                  >
+                    {tab}
+                  </button>
+                ))}
+              </div>
+
+              <div className="p-4">
+                {viewLoading ? (
+                  <div className="text-center py-8 text-text-secondary">Loading...</div>
+                ) : (
+                  <>
+                    {/* Overview Tab */}
+                    {activeTab === 'overview' && (
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-2">
+                          <span className={`px-2 py-0.5 rounded-full text-xs ${TYPE_COLORS[viewingLecture.type]}`}>
+                            {TYPE_LABELS[viewingLecture.type]}
+                          </span>
+                          <span className={`px-2 py-0.5 rounded-full text-xs ${STATUS_COLORS[viewingLecture.status]}`}>
+                            {STATUS_LABELS[viewingLecture.status]}
+                          </span>
+                          {viewingLecture.is_published && (
+                            <span className="px-2 py-0.5 rounded-full text-xs bg-success/10 text-success">Published</span>
+                          )}
+                        </div>
+
+                        <div>
+                          <p className="text-sm text-text-muted">Teacher</p>
+                          <p className="text-text-primary">{viewingLecture.teacher_name || viewingLecture.teacher_id}</p>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <p className="text-sm text-text-muted">Subject</p>
+                            <p className="text-text-primary">{viewingLecture.subject_name || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-text-muted">Grade Level</p>
+                            <p className="text-text-primary">{viewingLecture.grade_level_name || 'N/A'}</p>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <p className="text-sm text-text-muted">Scheduled</p>
+                            <p className="text-text-primary">{formatDate(viewingLecture.scheduled_at)}</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-text-muted">Duration</p>
+                            <p className="text-text-primary">{viewingLecture.duration_minutes} minutes</p>
+                          </div>
+                        </div>
+
+                        {viewingLecture.description && (
+                          <div>
+                            <p className="text-sm text-text-muted mb-1">Description</p>
+                            <p className="text-text-primary text-sm">{viewingLecture.description}</p>
+                          </div>
+                        )}
+
+                        {viewingLecture.meeting_link && (
+                          <div>
+                            <p className="text-sm text-text-muted mb-1">Meeting Link</p>
+                            <a href={viewingLecture.meeting_link} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-1">
+                              <LinkIcon className="w-4 h-4" /> Join Meeting
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Content Tab */}
+                    {activeTab === 'content' && (
+                      <div>
+                        {(viewingLecture.type === 'async' || viewingLecture.type === 'hybrid') ? (
+                          viewingLecture.content ? (
+                            <div className="prose dark:prose-invert max-w-none text-sm whitespace-pre-wrap">
+                              {viewingLecture.content}
+                            </div>
+                          ) : (
+                            <p className="text-text-muted text-center py-8">No content added yet. Edit to add content.</p>
+                          )
+                        ) : (
+                          <p className="text-text-muted text-center py-8">Content only available for async lectures.</p>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Resources Tab */}
+                    {activeTab === 'resources' && (
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-medium text-text-primary">Resources</h3>
+                          <button
+                            onClick={() => setShowResourceModal(true)}
+                            className="flex items-center gap-1 px-3 py-1.5 text-sm bg-primary text-white rounded-lg hover:bg-primary-dark"
+                          >
+                            <Plus className="w-3.5 h-3.5" /> Add Resource
+                          </button>
+                        </div>
+
+                        {lectureResources.length === 0 ? (
+                          <p className="text-text-muted text-center py-8">No resources added yet.</p>
+                        ) : (
+                          <div className="space-y-2">
+                            {lectureResources.map(resource => (
+                              <div key={resource.id} className="flex items-center justify-between p-3 border border-border rounded-lg">
+                                <div className="flex items-center gap-2">
+                                  {resource.type === 'pdf' && <FileText className="w-4 h-4 text-error" />}
+                                  {resource.type === 'video' && <Video className="w-4 h-4 text-purple-600" />}
+                                  {resource.type === 'image' && <Image className="w-4 h-4 text-green-600" />}
+                                  {resource.type === 'link' && <Globe className="w-4 h-4 text-blue-600" />}
+                                  <div>
+                                    <p className="text-sm font-medium text-text-primary">{resource.title}</p>
+                                    <p className="text-xs text-text-muted">{resource.type}</p>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  {resource.is_downloadable && (
+                                    <span className="p-1 text-text-muted" title="Downloadable"><Download className="w-4 h-4" /></span>
+                                  )}
+                                  {resource.is_savable && (
+                                    <span className="p-1 text-text-muted" title="Savable"><Save className="w-4 h-4" /></span>
+                                  )}
+                                  <a href={resource.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-sm">View</a>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Attendance Tab */}
+                    {activeTab === 'attendance' && (
+                      <div>
+                        <p className="text-text-muted text-center py-8">Attendance tracking will be available in the student dashboard.</p>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Add Resource Modal */}
+        {showResourceModal && viewingLecture && (
+          <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4" onClick={() => setShowResourceModal(false)}>
+            <div className="bg-white dark:bg-gray-800 rounded-lg max-w-md w-full" onClick={e => e.stopPropagation()}>
+              <div className="flex items-center justify-between p-4 border-b border-border">
+                <h3 className="font-semibold text-text-primary">Add Resource</h3>
+                <button onClick={() => setShowResourceModal(false)} className="text-text-muted hover:text-text-primary">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <form onSubmit={async (e) => {
+                e.preventDefault();
+                try {
+                  await academicApi.lectureResources.add(viewingLecture.id, resourceForm);
+                  toast.success('Resource added');
+                  setShowResourceModal(false);
+                  const res = await academicApi.lectureResources.getAll(viewingLecture.id);
+                  setLectureResources(res.resources || []);
+                  setResourceForm({ title: '', type: 'pdf', url: '', description: '', is_downloadable: false, is_savable: false, available_from: '', order_index: 0 });
+                } catch (err) {
+                  toast.error(err.data?.message || 'Failed to add resource');
+                }
+              }} className="p-4 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-1">Title *</label>
+                  <input
+                    type="text"
+                    required
+                    value={resourceForm.title}
+                    onChange={e => setResourceForm({ ...resourceForm, title: e.target.value })}
+                    className="w-full px-3 py-2 border border-border rounded-lg bg-white dark:bg-gray-700 text-text-primary"
+                    placeholder="Resource title"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-1">Type *</label>
+                  <select
+                    required
+                    value={resourceForm.type}
+                    onChange={e => setResourceForm({ ...resourceForm, type: e.target.value })}
+                    className="w-full px-3 py-2 border border-border rounded-lg bg-white dark:bg-gray-700 text-text-primary"
+                  >
+                    <option value="pdf">PDF Document</option>
+                    <option value="video">Video</option>
+                    <option value="image">Image</option>
+                    <option value="link">External Link</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-1">URL *</label>
+                  <input
+                    type="url"
+                    required
+                    value={resourceForm.url}
+                    onChange={e => setResourceForm({ ...resourceForm, url: e.target.value })}
+                    className="w-full px-3 py-2 border border-border rounded-lg bg-white dark:bg-gray-700 text-text-primary"
+                    placeholder="https://..."
+                  />
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={resourceForm.is_downloadable}
+                      onChange={e => setResourceForm({ ...resourceForm, is_downloadable: e.target.checked })}
+                      className="w-4 h-4"
+                    />
+                    <span className="text-sm text-text-primary">Downloadable</span>
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={resourceForm.is_savable}
+                      onChange={e => setResourceForm({ ...resourceForm, is_savable: e.target.checked })}
+                      className="w-4 h-4"
+                    />
+                    <span className="text-sm text-text-primary">Savable</span>
+                  </label>
+                </div>
+
+                <div className="flex gap-3">
+                  <button type="button" onClick={() => setShowResourceModal(false)} className="flex-1 px-4 py-2 border border-border rounded-lg">Cancel</button>
+                  <button type="submit" className="flex-1 px-4 py-2 bg-primary text-white rounded-lg">Add</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     </DashboardLayout>
   );
