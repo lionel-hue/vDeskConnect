@@ -266,17 +266,41 @@ export default function LecturesPage() {
             <h1 className="text-xl md:text-2xl font-bold text-text-primary">Lectures</h1>
             <p className="text-sm text-text-secondary">Manage teaching sessions</p>
           </div>
-          <button
-            onClick={() => { setEditingLecture(null); setShowModal(true); }}
-            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark"
-          >
-            <Plus className="w-4 h-4" /> Create Lecture
-          </button>
-          <button
-            onClick={() => { setEditingLecture(null); setShowAIModal(true); }}
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600"
-          >
-            <Sparkles className="w-4 h-4" /> AI Builder
+          <div className="flex gap-2">
+            <button
+              onClick={() => { setEditingLecture(null); setShowModal(true); }}
+              className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark"
+            >
+              <Plus className="w-4 h-4" /> Create Lecture
+            </button>
+            <button
+              onClick={() => { 
+                setBuilderForm({
+                  title: '',
+                  description: '',
+                  teacher_id: '',
+                  grade_level_id: '',
+                  subject_id: '',
+                  section_id: '',
+                  scheduled_at: '',
+                  duration_minutes: 40,
+                  type: 'async',
+                  is_online: false,
+                  meeting_link: '',
+                  is_published: false,
+                  sections: [{ title: '', content: '', resources: [] }],
+                });
+                setShowBuilderModal(true); 
+              }}
+              className="flex items-center gap-2 px-4 py-2 border border-border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+            >
+              <FormInput className="w-4 h-4" /> Lecture Builder
+            </button>
+            <button
+              onClick={() => { setEditingLecture(null); setShowAIModal(true); }}
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600"
+            >
+              <Sparkles className="w-4 h-4" /> AI Builder
           </button>
         </div>
 
