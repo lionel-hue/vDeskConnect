@@ -366,14 +366,14 @@ class LectureController extends Controller
             'file' => 'file|max:102400',
             'title' => 'string|max:255',
             'type' => 'in:pdf,video,image',
-            'content_id' => 'nullable|integer|min:0',
+            'content_id' => 'nullable',
             'order_index' => 'nullable|integer|min:0',
             'is_downloadable' => 'nullable|in:on,off,true,false,1,0,yes,no',
             'is_savable' => 'nullable|in:on,off,true,false,1,0,yes,no',
         ]);
 
         // Normalize content_id - if empty string, treat as null (entire lecture)
-        $contentId = $request->content_id;
+        $contentId = $request->input('content_id');
         if ($contentId === '' || $contentId === null || $contentId === 'all') {
             $contentId = null;
         }
@@ -430,7 +430,7 @@ class LectureController extends Controller
         $isSavable = $request->is_savable ? 
             in_array(strtolower($request->is_savable), ['on', 'true', '1', 'yes']) : false;
 
-        $contentId = $request->content_id;
+        $contentId = $request->input('content_id');
         if ($contentId === '' || $contentId === null || $contentId === 'all') {
             $contentId = null;
         }
