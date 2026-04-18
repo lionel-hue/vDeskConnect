@@ -329,13 +329,17 @@ class LectureController extends Controller
         $lecture = Lecture::where('school_id', $user->school_id)->findOrFail($id);
 
         // Debug: log what's received
-        Log::info('Upload request data:', $request->all());
-        Log::info('Has file:', $request->hasFile('file'));
+        Log::info('Upload request received', [
+            'lecture_id' => $id,
+            'has_file' => $request->hasFile('file'),
+            'all_keys' => array_keys($request->all()),
+        ]);
         if ($request->hasFile('file')) {
+            $file = $request->file('file');
             Log::info('File info:', [
-                'name' => $request->file('file')->getClientOriginalName(),
-                'size' => $request->file('file')->getSize(),
-                'error' => $request->file('file')->getError(),
+                'name' => $file->getClientOriginalName(),
+                'size' => $file->getSize(),
+                'error' => $file->getError(),
             ]);
         }
 
