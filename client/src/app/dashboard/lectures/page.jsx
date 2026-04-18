@@ -1178,6 +1178,208 @@ export default function LecturesPage() {
             </div>
           </div>
         )}
+
+        {/* Lecture Builder Modal - Create complete lecture with sections */}
+        {showBuilderModal && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowBuilderModal(false)}>
+            <div className="bg-white dark:bg-gray-800 rounded-lg max-w-4xl w-full max-h-[95vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
+              <div className="flex items-center justify-between p-4 border-b border-border shrink-0">
+                <div className="flex items-center gap-2">
+                  <Layers className="w-5 h-5 text-primary" />
+                  <h2 className="text-lg font-semibold text-text-primary">Lecture Builder</h2>
+                </div>
+                <button onClick={() => setShowBuilderModal(false)} className="text-text-muted hover:text-text-primary">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <form onSubmit={async (e) => {
+                e.preventDefault();
+                setBuilderLoading(true);
+                try {
+                  // Build content from sections
+                  const content = builderForm.sections
+                    .map(s => `## ${s.title}\n\n${s.content}`)
+                    .join('\n\n\n');
+                  
+                  await academicApi.lectures.create({
+                    ...builderForm,
+                    content,
+                  });
+                  toast.success('Lecture created with sections!');
+                  setShowBuilderModal(false);
+                  fetchLectures();
+                } catch (err) {
+                  toast.error(err.data?.message || 'Failed to create lecture');
+                } finally {
+                  setBuilderLoading(false);
+                }
+              }} className="flex-1 overflow-y-auto p-4 space-y-6">
+                {/* Basic Info Section */}
+                <div className="space-y-4">
+                  <h3 className="font-medium text-text-primary border-b pb-2">Basic Information</h3>
+                  <div>
+                    <label className="block text-sm font-medium text-text-secondary mb-1">Title *</label>
+                    <input
+                      type="text"
+                      required
+                      value={builderForm.title}
+                      onChange={e => setBuilderForm({ ...builderForm, title: e.target.value })}
+                      className="w-full px-3 py-2 border border-border rounded-lg bg-white dark:bg-gray-700 text-text-primary"
+                      placeholder="e.g., Introduction to Algebra"
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-text-secondary mb-1">Teacher *</label>
+                      <select
+                        required
+                        value={builderForm.teacher_id}
+                        onChange={e => setBuilderForm({ ...builderForm, teacher_id: e.target.value })}
+                        className="w-full px-3 py-2 border border-border rounded-lg bg-white dark:bg-gray-700 text-text-primary"
+                      >
+                        <option value="">Select Teacher</option>
+                        {teachers.map(t => (
+                          <option key={t.id} value={t.id}>{t.first_name} {t.last_name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-text-secondary mb-1">Grade Level *</label>
+                      <select
+                        required
+                        value={builderForm.grade_level_id}
+                        onChange={e => setBuilderForm({ ...builderForm, grade_level_id: e.target.value, subject_id: '' })}
+                        className="w-full px-3 py-2 border border-border rounded-lg bg-white dark:bg-gray-700 text-text-primary"
+                      >
+                        <option value="">Select Grade</option>
+                        {gradeLevels.map(g => (
+                          <option key={g.id} value={g.id}>{g.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-text-secondary mb-1">Subject *</label>
+                      <select
+                        required
+                        value={builderForm.subject_id}
+                        onChange={e => setBuilderForm({ ...builderForm, subject_id: e.target.value })}
+                        className="w-full px-3 py-2 border border-border rounded-lg bg-white dark:bg-gray-700 text-text-primary"
+                      >
+                        <option value="">Select Subject</option>
+                        {subjects.filter(s => !builderForm.grade_level_id || s.grade_level_id == builderForm.grade_level_id).map(s => (
+                          <option key={s.id} value={s.id}>{s.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-text-secondary mb-1">Scheduled Date *</label>
+                      <input
+                        type="datetime-local"
+                        required
+                        value={builderForm.scheduled_at}
+                        onChange={e => setBuilderForm({ ...builderForm, scheduled_at: e.target.value })}
+                        className="w-full px-3 py-2 border border-border rounded-lg bg-white dark:bg-gray-700 text-text-primary"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-text-secondary mb-1">Description</label>
+                    <textarea
+                      rows={2}
+                      value={builderForm.description}
+                      onChange={e => setBuilderForm({ ...builderForm, description: e.target.value })}
+                      className="w-full px-3 py-2 border border-border rounded-lg bg-white dark:bg-gray-700 text-text-primary"
+                      placeholder="Brief description of this lecture..."
+                    />
+                  </div>
+                </div>
+
+                {/* Sections Builder */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between border-b pb-2">
+                    <h3 className="font-medium text-text-primary">Lecture Sections</h3>
+                    <button
+                      type="button"
+                      onClick={() => setBuilderForm({ 
+                        ...builderForm, 
+                        sections: [...builderForm.sections, { title: '', content: '', resources: [] }] 
+                      })}
+                      className="text-sm text-primary hover:underline"
+                    >
+                      + Add Section
+                    </button>
+                  </div>
+                  
+                  {builderForm.sections.map((section, index) => (
+                    <div key={index} className="border border-border rounded-lg p-4 bg-gray-50 dark:bg-gray-700/50">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <GripVertical className="w-4 h-4 text-text-muted cursor-move" />
+                          <span className="text-sm font-medium text-text-primary">Section {index + 1}</span>
+                        </div>
+                        {builderForm.sections.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newSections = builderForm.sections.filter((_, i) => i !== index);
+                              setBuilderForm({ ...builderForm, sections: newSections });
+                            }}
+                            className="text-red-500 hover:text-red-700"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                      <input
+                        type="text"
+                        value={section.title}
+                        onChange={e => {
+                          const newSections = [...builderForm.sections];
+                          newSections[index].title = e.target.value;
+                          setBuilderForm({ ...builderForm, sections: newSections });
+                        }}
+                        className="w-full px-3 py-2 border border-border rounded-lg bg-white dark:bg-gray-700 text-text-primary mb-2"
+                        placeholder="Section title (e.g., Introduction to Variables)"
+                      />
+                      <textarea
+                        rows={6}
+                        value={section.content}
+                        onChange={e => {
+                          const newSections = [...builderForm.sections];
+                          newSections[index].content = e.target.value;
+                          setBuilderForm({ ...builderForm, sections: newSections });
+                        }}
+                        className="w-full px-3 py-2 border border-border rounded-lg bg-white dark:bg-gray-700 text-text-primary font-mono text-sm"
+                        placeholder="Write section content in Markdown..."
+                      />
+                      <p className="text-xs text-text-muted mt-1">Supports Markdown: **bold**, *italic*, ## headings, - lists, etc.</p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex justify-end gap-3 pt-4 border-t shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setShowBuilderModal(false)}
+                    className="px-4 py-2 border border-border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={builderLoading}
+                    className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark disabled:opacity-50"
+                  >
+                    {builderLoading ? 'Creating...' : 'Create Lecture'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     </DashboardLayout>
   );
