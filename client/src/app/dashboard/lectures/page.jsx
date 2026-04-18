@@ -301,11 +301,14 @@ export default function LecturesPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <h3 className="font-semibold text-text-primary">{lecture.title}</h3>
+                      <span className={`px-2 py-0.5 rounded-full text-xs ${TYPE_COLORS[lecture.type] || TYPE_COLORS.async}`}>
+                        {TYPE_LABELS[lecture.type] || 'Recorded (Async)'}
+                      </span>
                       <span className={`px-2 py-0.5 rounded-full text-xs ${STATUS_COLORS[lecture.status] || STATUS_COLORS.scheduled}`}>
                         {STATUS_LABELS[lecture.status] || 'Scheduled'}
                       </span>
-                      {lecture.is_online && (
-                        <span className="px-2 py-0.5 rounded-full text-xs bg-purple-10 text-purple-600">Online</span>
+                      {lecture.is_published && (
+                        <span className="px-2 py-0.5 rounded-full text-xs bg-success/10 text-success">Published</span>
                       )}
                     </div>
                     <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-sm text-text-secondary">
