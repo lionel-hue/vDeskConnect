@@ -268,6 +268,15 @@ class StudentController extends Controller
         $student->banned = true;
         $student->save();
 
+        // Clear grade_level_id assignment
+        if ($student->profile) {
+            $data = $student->profile->data ?? [];
+            $data['grade_level_id'] = null;
+            $data['section_id'] = null;
+            $student->profile->data = $data;
+            $student->profile->save();
+        }
+
         // Log ban in user_bans table
         DB::table('user_bans')->insert([
             'user_id' => $student->id,
@@ -300,6 +309,15 @@ class StudentController extends Controller
 
         if (!$user->canManage($student) && !$user->isSchoolAdmin()) {
             return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        // Clear grade_level_id assignment
+        if ($student->profile) {
+            $data = $student->profile->data ?? [];
+            $data['grade_level_id'] = null;
+            $data['section_id'] = null;
+            $student->profile->data = $data;
+            $student->profile->save();
         }
 
         // Log deletion

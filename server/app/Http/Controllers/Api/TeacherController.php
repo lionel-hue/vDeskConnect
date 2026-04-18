@@ -245,6 +245,11 @@ class TeacherController extends Controller
         $teacher->banned = true;
         $teacher->save();
 
+        // Clear teacher grade/subject assignments
+        DB::table('teacher_subjects')
+            ->where('teacher_id', $teacher->id)
+            ->delete();
+
         DB::table('user_bans')->insert([
             'user_id' => $teacher->id,
             'banned_by' => $user->id,
@@ -277,6 +282,11 @@ class TeacherController extends Controller
         if (!$user->canManage($teacher) && !$user->isSchoolAdmin()) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
+
+        // Clear teacher grade/subject assignments
+        DB::table('teacher_subjects')
+            ->where('teacher_id', $teacher->id)
+            ->delete();
 
         DB::table('user_bans')->insert([
             'user_id' => $teacher->id,

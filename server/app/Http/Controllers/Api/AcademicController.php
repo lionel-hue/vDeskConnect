@@ -838,6 +838,7 @@ class AcademicController extends Controller
             ->join('users', 'profiles.user_id', '=', 'users.id')
             ->where('users.school_id', $user->school_id)
             ->where('users.role', 'student')
+            ->where('users.deleted_at', null)
             ->where('profiles.data->grade_level_id', $id)
             ->select('users.id', 'users.email', 'profiles.data as profile_data')
             ->get()
@@ -881,6 +882,7 @@ class AcademicController extends Controller
             ->leftJoin('subjects', 'teacher_subjects.subject_id', '=', 'subjects.id')
             ->where('teacher_subjects.school_id', $user->school_id)
             ->where('teacher_subjects.grade_level_id', $id)
+            ->where('users.deleted_at', null)
             ->select(
                 'users.id as teacher_id',
                 'users.email',
@@ -892,15 +894,16 @@ class AcademicController extends Controller
             ->groupBy('teacher_id')
             ->map(function ($assignments, $teacherId) {
                 $first = $assignments->first();
+                if (!$first) return null;
                 $data = is_string($first->profile_data) ? json_decode($first->profile_data, true) : (array) $first->profile_data;
                 return [
                     'teacher_id' => $teacherId,
-                    'email' => $first->email,
+                    'email' => $first->email ?? '',
                     'name' => ($data['first_name'] ?? '') . ' ' . ($data['last_name'] ?? ''),
                     'subjects' => $assignments->pluck('subject_name')->filter()->unique()->toArray(),
                     'section_id' => $first->section_id,
                 ];
-            })->values();
+            })->filter()->values();
 
         // Terms for this school (get terms from active session, or all terms)
         $activeSession = AcademicSession::where('school_id', $user->school_id)
