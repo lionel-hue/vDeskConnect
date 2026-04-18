@@ -6,6 +6,10 @@ use Symfony\Component\Console\Input\ArgvInput;
 
 define('LARAVEL_START', microtime(true));
 
+// Increase upload limits
+ini_set('upload_max_filesize', '200M');
+ini_set('post_max_size', '200M');
+
 // Register the Composer autoloader...
 require __DIR__.'/vendor/autoload.php';
 
