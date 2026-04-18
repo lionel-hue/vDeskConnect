@@ -73,6 +73,13 @@ export default function LecturesPage() {
     is_downloadable: false, is_savable: false, available_from: '', order_index: 0,
   });
 
+  // Full page player state
+  const [playingLecture, setPlayingLecture] = useState(null);
+  const [playerLoading, setPlayerLoading] = useState(false);
+  const [lectureSections, setLectureSections] = useState([]);
+  const [currentSection, setCurrentSection] = useState(0);
+  const [sectionProgress, setSectionProgress] = useState({});
+
   const fetchLectures = useCallback(async () => {
     setLoading(true);
     try {
@@ -388,6 +395,17 @@ export default function LecturesPage() {
                     >
                       <Eye className="w-4 h-4" />
                     </button>
+                    {(lecture.type === 'async' || lecture.type === 'hybrid') && lecture.is_published && (
+                      <button
+                        onClick={() => {
+                          router.push(`/dashboard/lectures/${lecture.id}`);
+                        }}
+                        className="flex items-center gap-1 px-3 py-1.5 text-sm bg-primary text-white rounded-lg hover:bg-primary-dark"
+                        title="Play Lecture"
+                      >
+                        <PlayCircle className="w-3.5 h-3.5" /> Play
+                      </button>
+                    )}
                     {(lecture.type === 'async' || lecture.type === 'hybrid') && !lecture.is_published && (
                       <button
                         onClick={async () => {
