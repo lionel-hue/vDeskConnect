@@ -19,17 +19,23 @@ class Lecture extends Model
         'section_id',
         'title',
         'description',
+        'content',
         'scheduled_at',
         'duration_minutes',
         'status',
+        'type',
         'is_online',
         'meeting_link',
+        'async_available_after',
+        'is_published',
         'created_by',
     ];
 
     protected $casts = [
         'scheduled_at' => 'datetime',
+        'async_available_after' => 'datetime',
         'is_online' => 'boolean',
+        'is_published' => 'boolean',
     ];
 
     public function school(): BelongsTo

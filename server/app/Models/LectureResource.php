@@ -15,7 +15,18 @@ class LectureResource extends Model
         'type',
         'url',
         'title',
+        'description',
         'uploaded_by',
+        'is_downloadable',
+        'is_savable',
+        'available_from',
+        'order_index',
+    ];
+
+    protected $casts = [
+        'available_from' => 'datetime',
+        'is_downloadable' => 'boolean',
+        'is_savable' => 'boolean',
     ];
 
     public function lecture(): BelongsTo

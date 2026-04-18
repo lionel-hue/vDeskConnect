@@ -87,14 +87,20 @@ class LectureController extends Controller
         $validator = Validator::make($request->all(), [
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'content' => 'nullable|string',
             'teacher_id' => 'required|exists:users,id',
             'grade_level_id' => 'required|exists:grade_levels,id',
             'subject_id' => 'required|exists:subjects,id',
             'section_id' => 'nullable|exists:sections,id',
             'scheduled_at' => 'required|date',
             'duration_minutes' => 'nullable|integer|min:5|max:180',
+            'type' => 'nullable|in:sync,async,hybrid',
             'is_online' => 'nullable|boolean',
             'meeting_link' => 'nullable|url',
+            'async_available_after' => 'nullable|date',
+            'is_published' => 'nullable|boolean',
         ]);
 
         if ($validator->fails()) {
@@ -113,14 +119,18 @@ class LectureController extends Controller
             'school_id' => $user->school_id,
             'title' => $request->title,
             'description' => $request->description,
+            'content' => $request->content,
             'teacher_id' => $request->teacher_id,
             'grade_level_id' => $request->grade_level_id,
             'subject_id' => $request->subject_id,
             'section_id' => $request->section_id,
             'scheduled_at' => $request->scheduled_at,
             'duration_minutes' => $request->duration_minutes ?? 40,
+            'type' => $request->type ?? 'async',
             'is_online' => $request->is_online ?? false,
             'meeting_link' => $request->meeting_link,
+            'async_available_after' => $request->async_available_after,
+            'is_published' => $request->is_published ?? false,
             'created_by' => $user->id,
         ]);
 
@@ -148,8 +158,12 @@ class LectureController extends Controller
             'scheduled_at' => 'sometimes|date',
             'duration_minutes' => 'nullable|integer|min:5|max:180',
             'status' => 'nullable|in:scheduled,in_progress,completed,cancelled',
+            'type' => 'nullable|in:sync,async,hybrid',
             'is_online' => 'nullable|boolean',
             'meeting_link' => 'nullable|url',
+            'async_available_after' => 'nullable|date',
+            'is_published' => 'nullable|boolean',
+            'content' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
@@ -165,8 +179,9 @@ class LectureController extends Controller
         }
 
         $lecture->update($request->only([
-            'title', 'description', 'teacher_id', 'grade_level_id', 'subject_id',
-            'section_id', 'scheduled_at', 'duration_minutes', 'status', 'is_online', 'meeting_link'
+            'title', 'description', 'content', 'teacher_id', 'grade_level_id', 'subject_id',
+            'section_id', 'scheduled_at', 'duration_minutes', 'status', 'type', 'is_online', 
+            'meeting_link', 'async_available_after', 'is_published'
         ]));
 
         return response()->json([
@@ -241,6 +256,23 @@ class LectureController extends Controller
         $lecture->update(['status' => 'cancelled']);
 
         return response()->json(['message' => 'Lecture cancelled', 'lecture' => $this->formatLecture($lecture)]);
+    }
+
+    /**
+     * Publish async lecture.
+     */
+    public function publish(Request $request, int $id): JsonResponse
+    {
+        $user = $request->user();
+        $lecture = Lecture::where('school_id', $user->school_id)->findOrFail($id);
+
+        if ($user->id !== $lecture->teacher_id && !$user->isSchoolAdmin()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $lecture->update(['is_published' => true]);
+
+        return response()->json(['message' => 'Lecture published', 'lecture' => $this->formatLecture($lecture)]);
     }
 
     // ==================== RESOURCES ====================
@@ -366,8 +398,12 @@ class LectureController extends Controller
             'scheduled_at' => $lecture->scheduled_at,
             'duration_minutes' => $lecture->duration_minutes,
             'status' => $lecture->status,
+            'type' => $lecture->type,
             'is_online' => $lecture->is_online,
             'meeting_link' => $lecture->meeting_link,
+            'async_available_after' => $lecture->async_available_after,
+            'is_published' => $lecture->is_published,
+            'content' => $lecture->content,
             'created_at' => $lecture->created_at,
         ];
     }

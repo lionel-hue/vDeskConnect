@@ -182,6 +182,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/{id}/start', [LectureController::class, 'start']);
         Route::put('/{id}/complete', [LectureController::class, 'complete']);
         Route::put('/{id}/cancel', [LectureController::class, 'cancel']);
+        Route::put('/{id}/publish', [LectureController::class, 'publish']);
         Route::get('/{id}/resources', [LectureController::class, 'resources']);
         Route::post('/{id}/resources', [LectureController::class, 'addResource']);
         Route::delete('/resources/{id}', [LectureController::class, 'deleteResource']);

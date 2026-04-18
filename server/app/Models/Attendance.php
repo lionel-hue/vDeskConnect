@@ -16,10 +16,12 @@ class Attendance extends Model
         'student_id',
         'status',
         'checked_at',
+        'completed_at',
     ];
 
     protected $casts = [
         'checked_at' => 'datetime',
+        'completed_at' => 'datetime',
     ];
 
     public function lecture(): BelongsTo
