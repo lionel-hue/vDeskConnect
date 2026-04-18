@@ -339,6 +339,9 @@ class LectureController extends Controller
             'all_keys' => $request->keys(),
             'content_type' => $request->header('Content-Type'),
             'file' => $request->file('file'),
+            'php_upload_max_filesize' => ini_get('upload_max_filesize'),
+            'php_post_max_size' => ini_get('post_max_size'),
+            'php_memory_limit' => ini_get('memory_limit'),
         ]);
 
         $validator = Validator::make($request->all(), [
