@@ -372,6 +372,12 @@ class LectureController extends Controller
             'is_savable' => 'nullable|in:on,off,true,false,1,0,yes,no',
         ]);
 
+        // Normalize content_id - if empty string, treat as null (entire lecture)
+        $contentId = $request->content_id;
+        if ($contentId === '' || $contentId === null || $contentId === 'all') {
+            $contentId = null;
+        }
+
         if ($validator->fails()) {
             Log::warning('Upload validation failed', [
                 'errors' => $validator->errors()->toArray(),
