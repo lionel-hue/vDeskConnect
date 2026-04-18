@@ -24,6 +24,9 @@ return new class extends Migration
             if (!Schema::hasColumn('lecture_resources', 'order_index')) {
                 $table->integer('order_index')->default(0)->after('available_from');
             }
+            if (!Schema::hasColumn('lecture_resources', 'content_id')) {
+                $table->integer('content_id')->nullable()->after('order_index')->index();
+            }
         });
 
         Schema::table('lectures', function (Blueprint $table) {
