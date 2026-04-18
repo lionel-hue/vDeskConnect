@@ -204,9 +204,12 @@ export default function LecturePlayerPage() {
   }, [fetchLecture]);
 
   // Calculate progress
-  const progress = sectionContents.length > 0 
-    ? Math.round((completedSections.length / sectionContents.length) * 100) 
-    : 0;
+  // For director: show current section, for students: show completion percentage
+  const progress = isDirector 
+    ? ((currentSectionIndex + 1) / sectionContents.length) * 100
+    : (sectionContents.length > 0 
+        ? Math.round((completedSections.length / sectionContents.length) * 100) 
+        : 0);
 
   // Build full content from sections
   const buildFullContent = (sections) => {
@@ -634,7 +637,7 @@ export default function LecturePlayerPage() {
             </div>
           </div>
 
-          {/* Floating Progress */}
+          {/* Floating Progress - always visible for everyone */}
           <div className="fixed bottom-6 right-6 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-xl border border-border">
             <div className="flex items-center gap-3">
               <div className="relative w-12 h-12">
@@ -653,7 +656,11 @@ export default function LecturePlayerPage() {
               </div>
               <div>
                 <p className="text-sm font-medium text-text-primary">Progress</p>
-                <p className="text-xs text-text-muted">{completedSections.length} / {sectionContents.length}</p>
+                <p className="text-xs text-text-muted">
+                  {isDirector 
+                    ? `Section ${currentSectionIndex + 1} of ${sectionContents.length}`
+                    : `${completedSections.length} of ${sectionContents.length} complete`}
+                </p>
               </div>
             </div>
           </div>
