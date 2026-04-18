@@ -136,6 +136,17 @@ export default function ClassesPage() {
     }
   };
 
+  const handleRemoveStudent = async (studentId) => {
+    if (!confirm('Remove this student from this grade?')) return;
+    try {
+      await api.put(`/students/${studentId}`, { grade_level_id: null });
+      toast.success('Student removed from grade');
+      fetchGradeDetail(selectedGrade);
+    } catch (err) {
+      toast.error(err.data?.message || 'Failed to remove student');
+    }
+  };
+
   // ==================== STUDENT ASSIGNMENT HANDLERS ====================
   const handleOpenStudentAssign = () => {
     // Filter out students already in this grade
@@ -547,6 +558,7 @@ export default function ClassesPage() {
                               <th className="text-left py-2 md:py-3 px-2 text-text-secondary font-medium">Name</th>
                               <th className="text-left py-2 md:py-3 px-2 text-text-secondary font-medium hidden md:table-cell">Admission #</th>
                               <th className="text-left py-2 md:py-3 px-2 text-text-secondary font-medium hidden sm:table-cell">Email</th>
+                              <th className="text-left py-2 md:py-3 px-2 text-text-secondary font-medium">Action</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -555,6 +567,15 @@ export default function ClassesPage() {
                                 <td className="py-2 md:py-3 px-2 text-text-primary">{student.first_name} {student.last_name}</td>
                                 <td className="py-2 md:py-3 px-2 text-text-secondary hidden md:table-cell">{student.admission_number}</td>
                                 <td className="py-2 md:py-3 px-2 text-text-secondary hidden sm:table-cell">{student.email}</td>
+                                <td className="py-2 md:py-3 px-2">
+                                  <button
+                                    onClick={() => handleRemoveStudent(student.id)}
+                                    className="text-error hover:text-error/80"
+                                    title="Remove from grade"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </td>
                               </tr>
                             ))}
                           </tbody>
@@ -580,28 +601,41 @@ export default function ClassesPage() {
                     {gradeDetail.teachers.length === 0 ? (
                       <p className="text-text-secondary text-center py-8 text-sm">No teachers assigned yet.</p>
                     ) : (
-                      <div className="space-y-3">
-                        {gradeDetail.teachers.map(teacher => (
-                          <div key={teacher.teacher_id} className="p-3 md:p-4 border border-border dark:border-gray-600 rounded-lg">
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <h3 className="font-semibold text-text-primary text-sm md:text-base">{teacher.name}</h3>
-                                <p className="text-xs text-text-muted">{teacher.email}</p>
-                                <div className="flex flex-wrap gap-1 mt-2">
-                                  {teacher.subjects.map((sub, i) => (
-                                    <span key={i} className="text-xs px-2 py-0.5 bg-primary/10 text-primary rounded-full">{sub}</span>
-                                  ))}
-                                </div>
-                              </div>
-                              <button
-                                onClick={() => handleRemoveTeacher(teacher.teacher_id)}
-                                className="text-error hover:text-error/80 flex-shrink-0"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            </div>
-                          </div>
-                        ))}
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm md:text-base">
+                          <thead>
+                            <tr className="border-b border-border dark:border-gray-600">
+                              <th className="text-left py-2 md:py-3 px-2 text-text-secondary font-medium">Name</th>
+                              <th className="text-left py-2 md:py-3 px-2 text-text-secondary font-medium hidden md:table-cell">Email</th>
+                              <th className="text-left py-2 md:py-3 px-2 text-text-secondary font-medium">Subjects</th>
+                              <th className="text-left py-2 md:py-3 px-2 text-text-secondary font-medium">Action</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {gradeDetail.teachers.map(teacher => (
+                              <tr key={teacher.teacher_id} className="border-b border-border dark:border-gray-600/50">
+                                <td className="py-2 md:py-3 px-2 text-text-primary">{teacher.name}</td>
+                                <td className="py-2 md:py-3 px-2 text-text-secondary hidden md:table-cell">{teacher.email}</td>
+                                <td className="py-2 md:py-3 px-2">
+                                  <div className="flex flex-wrap gap-1">
+                                    {teacher.subjects.map((sub, i) => (
+                                      <span key={i} className="text-xs px-2 py-0.5 bg-primary/10 text-primary rounded-full">{sub}</span>
+                                    ))}
+                                  </div>
+                                </td>
+                                <td className="py-2 md:py-3 px-2">
+                                  <button
+                                    onClick={() => handleRemoveTeacher(teacher.teacher_id)}
+                                    className="text-error hover:text-error/80"
+                                    title="Remove from grade"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
                       </div>
                     )}
                   </div>

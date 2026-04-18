@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Profile;
+use App\Models\GradeLevel;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -23,9 +24,11 @@ class StudentController extends Controller
         $perPage = min((int) $request->get('per_page', 20), 100);
         $search = $request->get('search');
 
+        $gradeLevels = GradeLevel::where('school_id', $user->school_id)->get()->keyBy('id');
+
         $query = User::where('school_id', $user->school_id)
             ->where('role', 'student')
-            ->with(['profile', 'school', 'gradeLevel', 'section', 'department'])
+            ->with(['profile', 'school'])
             ->orderBy('created_at', 'desc');
 
         if ($search) {
@@ -41,8 +44,8 @@ class StudentController extends Controller
 
         $students = $query->paginate($perPage);
 
-        $students->getCollection()->transform(function ($student) {
-            return $this->formatStudentResponse($student);
+        $students->getCollection()->transform(function ($student) use ($gradeLevels) {
+            return $this->formatStudentResponse($student, $gradeLevels);
         });
 
         return response()->json($students);
@@ -143,6 +146,8 @@ class StudentController extends Controller
     public function update(Request $request, int $id): JsonResponse
     {
         $user = $request->user();
+        $gradeLevels = GradeLevel::where('school_id', $user->school_id)->get()->keyBy('id');
+
         $student = User::where('school_id', $user->school_id)
             ->where('role', 'student')
             ->with('profile')
@@ -234,7 +239,7 @@ class StudentController extends Controller
 
         return response()->json([
             'message' => 'Student updated successfully',
-            'student' => $this->formatStudentResponse($student),
+            'student' => $this->formatStudentResponse($student, $gradeLevels),
         ]);
     }
 
@@ -311,9 +316,10 @@ class StudentController extends Controller
         return response()->json(['message' => 'Student deleted successfully']);
     }
 
-    private function formatStudentResponse(User $student): array
+    private function formatStudentResponse(User $student, $gradeLevels = null): array
     {
         $data = $student->profile?->data ?? [];
+        $gradeLevelId = $data['grade_level_id'] ?? null;
         return [
             'id' => $student->id,
             'email' => $student->email,
@@ -331,12 +337,10 @@ class StudentController extends Controller
             'guardian_name' => $data['guardian_name'] ?? null,
             'guardian_phone' => $data['guardian_phone'] ?? null,
             'guardian_email' => $data['guardian_email'] ?? null,
-            'grade_level_id' => $data['grade_level_id'] ?? null,
-            'grade_level_name' => $student->gradeLevel?->name ?? null,
+            'grade_level_id' => $gradeLevelId,
+            'grade_level_name' => $gradeLevelId && $gradeLevels ? ($gradeLevels[$gradeLevelId]->name ?? null) : ($data['grade_level_name'] ?? null),
             'section_id' => $data['section_id'] ?? null,
-            'section_name' => $student->section?->name ?? null,
             'department_id' => $data['department_id'] ?? null,
-            'department_name' => $student->department?->name ?? null,
             'avatar_url' => $student->profile?->avatar_url,
             'created_at' => $student->created_at,
         ];
