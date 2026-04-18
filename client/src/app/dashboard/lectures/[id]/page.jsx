@@ -80,24 +80,30 @@ export default function LecturePlayerPage() {
     if (!selectedFile) return;
     setResourceSaving(true);
     try {
-      const formData = new FormData();
-      formData.append('file', selectedFile);
-      formData.append('title', resourceForm.title || selectedFile.name);
-      formData.append('type', resourceForm.type);
-      formData.append('order_index', resourceForm.order_index);
+      const res = await academicApi.lectureResources.upload(
+        lecture.id,
+        selectedFile,
+        resourceForm.title || selectedFile.name,
+        resourceForm.type,
+        resourceForm.order_index
+      );
       
-      const res = await academicApi.lectureResources.upload(lecture.id, formData);
       if (res.resource) {
         toast.success('File uploaded successfully!');
         setShowAddResource(false);
+        setShowUploadTab(false);
         setSelectedFile(null);
+        setResourceForm({
+          title: '', type: 'pdf', url: '', description: '',
+          is_downloadable: false, is_savable: false, available_from: '', order_index: 0,
+        });
         const resList = await academicApi.lectureResources.getAll(lecture.id);
         setResources(resList.resources || []);
       } else {
         throw new Error(res.message || 'Upload failed');
       }
     } catch (err) {
-      toast.error(err.data?.message || 'Failed to upload');
+      toast.error(err.message || err.data?.message || 'Failed to upload');
     } finally {
       setResourceSaving(false);
     }
