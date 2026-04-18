@@ -43,6 +43,7 @@ export default function LecturePlayerPage() {
   const [showAddResource, setShowAddResource] = useState(false);
   const [showUploadTab, setShowUploadTab] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [previewResource, setPreviewResource] = useState(null);
   const [resourceForm, setResourceForm] = useState({
     title: '', type: 'pdf', url: '', description: '',
     is_downloadable: false, is_savable: false, available_from: '', order_index: 0,
