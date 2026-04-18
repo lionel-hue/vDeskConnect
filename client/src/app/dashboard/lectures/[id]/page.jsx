@@ -300,21 +300,23 @@ export default function LecturePlayerPage() {
           />
         )}
         
-        {/* Sidebar - always visible on desktop, slide-in on mobile */}
+        {/* Sidebar - desktop: always visible, mobile: slide-in drawer */}
         <aside className={`
-          fixed md:static inset-y-0 left-0 z-40 w-80 max-w-[85vw] md:max-w-none md:w-72
+          fixed md:static md:z-auto inset-y-0 left-0 z-40 
+          w-80 max-w-[85vw] md:max-w-none md:w-72
           bg-white dark:bg-gray-800 border-r border-border
-          flex flex-col transform transition-transform duration-300 ease-in-out
+          flex flex-col
+          transition-transform duration-300 ease-in-out
           md:translate-x-0
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
         `}>
           {/* Header */}
           <div className="p-4 border-b border-border flex items-center justify-between shrink-0">
             <button
-              onClick={() => setSidebarOpen(false)}
+              onClick={() => setSidebarOpen(!sidebarOpen)}
               className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
             >
-              <X className="w-5 h-5" />
+              {sidebarOpen ? <ChevronLeft className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
             </button>
             <button
               onClick={() => router.push('/dashboard/lectures')}
@@ -408,7 +410,7 @@ export default function LecturePlayerPage() {
                 onClick={() => setSidebarOpen(!sidebarOpen)}
                 className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
               >
-                {sidebarOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+                {sidebarOpen ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
               </button>
               <div className="min-w-0">
                 <h1 className="text-base md:text-lg font-bold text-text-primary truncate">{lecture.title}</h1>
