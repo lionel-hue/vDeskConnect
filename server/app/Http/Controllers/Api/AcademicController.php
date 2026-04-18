@@ -794,15 +794,19 @@ class AcademicController extends Controller
                     ->join('users', 'profiles.user_id', '=', 'users.id')
                     ->where('users.school_id', $user->school_id)
                     ->where('users.role', 'student')
+                    ->where('users.deleted_at', null)
                     ->where('profiles.data->grade_level_id', $gl->id)
                     ->count();
 
-                // Count teachers assigned to this grade
+                // Count teachers assigned to this grade (only not banned, not deleted)
                 $teacherCount = \DB::table('teacher_subjects')
-                    ->where('school_id', $user->school_id)
-                    ->where('grade_level_id', $gl->id)
-                    ->distinct('teacher_id')
-                    ->count('teacher_id');
+                    ->join('users', 'teacher_subjects.teacher_id', '=', 'users.id')
+                    ->where('teacher_subjects.school_id', $user->school_id)
+                    ->where('teacher_subjects.grade_level_id', $gl->id)
+                    ->where('users.deleted_at', null)
+                    ->where('users.banned', false)
+                    ->distinct('teacher_subjects.teacher_id')
+                    ->count('teacher_subjects.teacher_id');
 
                 // Count subjects assigned to this grade
                 $subjectCount = GradeLevelSubject::where('school_id', $user->school_id)
