@@ -5,7 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import {
   ArrowLeft, Play, PlayCircle, Pause, CheckCircle, Clock,
   BookOpen, Users, Video, FileText, Image, Globe, Link as LinkIcon,
-  Download, Save, Lock, Unlock, ChevronDown, ChevronUp, X,
+  Download, Save, Lock, Unlock, ChevronDown, ChevronUp, ChevronRight, ChevronLeft, X,
   Maximize2, Minimize2, Eye, File, Loader,
 } from 'lucide-react';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
