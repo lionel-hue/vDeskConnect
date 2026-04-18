@@ -513,27 +513,29 @@ export default function LecturesPage() {
                 <div>
                   <label className="block text-sm font-medium text-text-secondary mb-1">Description</label>
                   <textarea
-                    rows={3}
+                    rows={2}
                     value={lectureForm.description}
                     onChange={e => setLectureForm({ ...lectureForm, description: e.target.value })}
                     className="w-full px-3 py-2 border border-border rounded-lg bg-white dark:bg-gray-700 text-text-primary"
-                    placeholder="Lecture description..."
+                    placeholder="Brief description..."
                   />
                 </div>
 
-                <div className="flex items-center gap-4">
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={lectureForm.is_online}
-                      onChange={e => setLectureForm({ ...lectureForm, is_online: e.target.checked })}
-                      className="w-4 h-4"
-                    />
-                    <span className="text-sm text-text-primary">Online Lecture</span>
-                  </label>
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-1">Lecture Type *</label>
+                  <select
+                    required
+                    value={lectureForm.type}
+                    onChange={e => setLectureForm({ ...lectureForm, type: e.target.value, is_online: e.target.value === 'sync' || e.target.value === 'hybrid' })}
+                    className="w-full px-3 py-2 border border-border rounded-lg bg-white dark:bg-gray-700 text-text-primary"
+                  >
+                    <option value="async">Recorded (Async) - Pre-recorded content</option>
+                    <option value="sync">Live (Sync) - Video conference</option>
+                    <option value="hybrid">Hybrid - Both live & async</option>
+                  </select>
                 </div>
 
-                {lectureForm.is_online && (
+                {(lectureForm.type === 'sync' || lectureForm.type === 'hybrid') && (
                   <div>
                     <label className="block text-sm font-medium text-text-secondary mb-1">Meeting Link</label>
                     <input
@@ -541,9 +543,47 @@ export default function LecturesPage() {
                       value={lectureForm.meeting_link}
                       onChange={e => setLectureForm({ ...lectureForm, meeting_link: e.target.value })}
                       className="w-full px-3 py-2 border border-border rounded-lg bg-white dark:bg-gray-700 text-text-primary"
-                      placeholder="https://zoom.us/j/..."
+                      placeholder="https://zoom.us/j/... or https://meet.google.com/..."
                     />
                   </div>
+                )}
+
+                {(lectureForm.type === 'async' || lectureForm.type === 'hybrid') && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-text-secondary mb-1">Content (Markdown)</label>
+                      <textarea
+                        rows={6}
+                        value={lectureForm.content}
+                        onChange={e => setLectureForm({ ...lectureForm, content: e.target.value })}
+                        className="w-full px-3 py-2 border border-border rounded-lg bg-white dark:bg-gray-700 text-text-primary font-mono text-sm"
+                        placeholder="# Lecture Content&#10;&#10;## Introduction&#10;Write your lesson content here using Markdown...&#10;&#10;## Main Topic&#10;..."
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-text-secondary mb-1">Async Available After (optional)</label>
+                      <input
+                        type="datetime-local"
+                        value={lectureForm.async_available_after}
+                        onChange={e => setLectureForm({ ...lectureForm, async_available_after: e.target.value })}
+                        className="w-full px-3 py-2 border border-border rounded-lg bg-white dark:bg-gray-700 text-text-primary"
+                      />
+                      <p className="text-xs text-text-muted mt-1">Leave empty to make available immediately</p>
+                    </div>
+
+                    <div className="flex items-center gap-4">
+                      <label className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={lectureForm.is_published}
+                          onChange={e => setLectureForm({ ...lectureForm, is_published: e.target.checked })}
+                          className="w-4 h-4"
+                        />
+                        <span className="text-sm text-text-primary">Publish immediately</span>
+                      </label>
+                    </div>
+                  </>
                 )}
 
                 <div className="flex gap-3">
