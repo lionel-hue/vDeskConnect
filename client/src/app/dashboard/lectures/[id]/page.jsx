@@ -573,7 +573,7 @@ export default function LecturePlayerPage() {
                   <p className="text-text-muted text-center py-8">No resources attached.</p>
                 ) : (
                   <div className="grid gap-3">
-                    {resources.map(resource => (
+                    {resources.filter(r => r.content_id == null).map(resource => (
                       <div 
                         key={resource.id} 
                         className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-lg border border-border"
