@@ -5,6 +5,11 @@ use Illuminate\Http\Request;
 
 define('LARAVEL_START', microtime(true));
 
+// Increase upload limits
+ini_set('upload_max_filesize', '200M');
+ini_set('post_max_size', '200M');
+ini_set('memory_limit', '256M');
+
 // Determine if the application is in maintenance mode...
 if (file_exists($maintenance = __DIR__.'/../storage/framework/maintenance.php')) {
     require $maintenance;
