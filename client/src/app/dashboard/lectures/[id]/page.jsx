@@ -402,7 +402,7 @@ export default function LecturePlayerPage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 md:gap-2">
               <span className="text-xs md:text-sm text-text-muted">
                 {currentSectionIndex + 1} / {sectionContents.length}
               </span>
@@ -410,9 +410,9 @@ export default function LecturePlayerPage() {
                 <button
                   onClick={saveContent}
                   disabled={editSaving}
-                  className="flex items-center gap-2 px-3 py-1.5 bg-success text-white rounded-lg"
+                  className="flex items-center gap-1 md:gap-2 px-2 md:px-3 py-1.5 bg-success text-white rounded-lg"
                 >
-                  <Save className="w-4 h-4" /> {editSaving ? 'Saving...' : 'Save'}
+                  <Save className="w-4 h-4" /> <span className="hidden md:inline">{editSaving ? 'Saving...' : 'Save'}</span>
                 </button>
               ) : isDirector && (
                 <>
@@ -421,9 +421,9 @@ export default function LecturePlayerPage() {
                       setEditedContent(buildFullContent(sectionContents));
                       setEditMode(true);
                     }}
-                    className="flex items-center gap-2 px-3 py-1.5 border border-border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                    className="flex items-center gap-1 md:gap-2 px-2 md:px-3 py-1.5 border border-border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
                   >
-                    <Edit2 className="w-4 h-4" /> Edit Content
+                    <Edit2 className="w-4 h-4" /> <span className="hidden md:inline">Edit</span>
                   </button>
                   <button
                     onClick={() => {
@@ -434,9 +434,9 @@ export default function LecturePlayerPage() {
                       });
                       setShowAddResource(true);
                     }}
-                    className="flex items-center gap-2 px-3 py-1.5 bg-primary text-white rounded-lg hover:bg-primary-dark"
+                    className="flex items-center gap-1 md:gap-2 px-2 md:px-3 py-1.5 bg-primary text-white rounded-lg hover:bg-primary-dark"
                   >
-                    <Plus className="w-4 h-4" /> Add Resource
+                    <Plus className="w-4 h-4" /> <span className="hidden md:inline">Add</span>
                   </button>
                 </>
               )}
@@ -647,31 +647,31 @@ export default function LecturePlayerPage() {
             </div>
           </div>
 
-          {/* Floating Progress - always visible for everyone */}
-          <div className="fixed bottom-6 right-6 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-xl border border-border">
-            <div className="flex items-center gap-3">
-              <div className="relative w-12 h-12">
-                <svg className="w-12 h-12 -rotate-90">
-                  <circle cx="24" cy="24" r="20" stroke="currentColor" strokeWidth="4" fill="none" className="text-gray-200 dark:text-gray-700" />
+          {/* Floating Progress - always visible for everyone - Hide on small mobile, show on md+ */}
+          <div className="hidden md:flex fixed bottom-6 right-6 bg-white dark:bg-gray-800 p-3 md:p-4 rounded-lg shadow-xl border border-border z-30">
+            <div className="flex items-center gap-2 md:gap-3">
+              <div className="relative w-10 h-10 md:w-12 md:h-12">
+                <svg className="w-10 h-10 md:w-12 md:h-12 -rotate-90">
+                  <circle cx="20" cy="20" r="16" stroke="currentColor" strokeWidth="3" fill="none" className="text-gray-200 dark:text-gray-700" />
                   <circle 
-                    cx="24" cy="24" r="20" stroke="currentColor" strokeWidth="4" fill="none" 
-                    strokeDasharray={125.6}
-                    strokeDashoffset={125.6 - (125.6 * progress / 100)}
+                    cx="20" cy="20" r="16" stroke="currentColor" strokeWidth="3" fill="none" 
+                    strokeDasharray={100.5}
+                    strokeDashoffset={100.5 - (100.5 * progress / 100)}
                     className="text-primary transition-all duration-500"
                   />
                 </svg>
-                <span className="absolute inset-0 flex items-center justify-center text-sm font-bold text-text-primary">
+                <span className="absolute inset-0 flex items-center justify-center text-xs md:text-sm font-bold text-text-primary">
                   {isDirector 
                     ? `${currentSectionIndex + 1}/${sectionContents.length}`
-                    : `${progress}%`}
+                    : `${Math.round(progress)}%`}
                 </span>
               </div>
-              <div>
+              <div className="hidden md:block">
                 <p className="text-sm font-medium text-text-primary">Progress</p>
                 <p className="text-xs text-text-muted">
                   {isDirector 
                     ? `Section ${currentSectionIndex + 1} of ${sectionContents.length}`
-                    : `${completedSections.length} of ${sectionContents.length} complete`}
+                    : `${completedSections.length} of ${sectionContents.length}`}
                 </p>
               </div>
             </div>
