@@ -39,6 +39,14 @@ export default function LecturePlayerPage() {
   const [editedContent, setEditedContent] = useState('');
   const [editSaving, setEditSaving] = useState(false);
 
+  // Add resource modal
+  const [showAddResource, setShowAddResource] = useState(false);
+  const [resourceForm, setResourceForm] = useState({
+    title: '', type: 'pdf', url: '', description: '',
+    is_downloadable: false, is_savable: false, available_from: '', order_index: 0,
+  });
+  const [resourceSaving, setResourceSaving] = useState(false);
+
   // Parse content into sections (split by ## Heading)
   const parseContentSections = useCallback((content) => {
     if (!content) return [];
