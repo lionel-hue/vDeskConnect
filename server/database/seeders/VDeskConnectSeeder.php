@@ -77,6 +77,11 @@ class VDeskConnectSeeder extends Seeder
 
         $existingSchool = DB::table('schools')->where('name', 'Greenfield Academy')->first();
         if ($existingSchool) {
+            // Delete resources first to avoid FK issues
+            DB::table('lecture_resources')->whereIn('lecture_id', 
+                DB::table('lectures')->where('school_id', $existingSchool->id)->pluck('id')
+            )->delete();
+            DB::table('lectures')->where('school_id', $existingSchool->id)->delete();
             DB::table('subscriptions')->where('school_id', $existingSchool->id)->delete();
             DB::table('users')->where('school_id', $existingSchool->id)->delete();
             DB::table('schools')->where('id', $existingSchool->id)->delete();
