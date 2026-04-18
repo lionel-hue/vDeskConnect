@@ -3,10 +3,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  Video, Plus, Trash2, Edit2, X, Play, CheckCircle, Calendar,
+  Video, Plus, Trash2, Edit2, X, Play, PlayCircle, CheckCircle, Calendar,
   Clock, BookOpen, Users, Link as LinkIcon, FileText, Search,
   Filter, ChevronLeft, ChevronRight, ExternalLink, AlertCircle, Eye,
-  File, Download, Save, Clock3, Image, Globe,
+  File, Download, Save, Clock3, Image, Globe, Lock, Unlock,
 } from 'lucide-react';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import { academicApi } from '@/lib/academic-api';
