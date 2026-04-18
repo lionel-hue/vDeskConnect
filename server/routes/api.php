@@ -171,4 +171,21 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('scheme-of-work', [AcademicController::class, 'generateSchemeAI']);
         Route::post('lesson-note', [AcademicController::class, 'generateLessonNoteAI']);
     });
+
+    // Lectures (Phase 7)
+    Route::prefix('lectures')->group(function () {
+        Route::get('/', [LectureController::class, 'index']);
+        Route::post('/', [LectureController::class, 'store']);
+        Route::get('/{id}', [LectureController::class, 'show']);
+        Route::put('/{id}', [LectureController::class, 'update']);
+        Route::delete('/{id}', [LectureController::class, 'destroy']);
+        Route::put('/{id}/start', [LectureController::class, 'start']);
+        Route::put('/{id}/complete', [LectureController::class, 'complete']);
+        Route::put('/{id}/cancel', [LectureController::class, 'cancel']);
+        Route::get('/{id}/resources', [LectureController::class, 'resources']);
+        Route::post('/{id}/resources', [LectureController::class, 'addResource']);
+        Route::delete('/resources/{id}', [LectureController::class, 'deleteResource']);
+        Route::get('/{id}/attendance', [LectureController::class, 'attendance']);
+        Route::post('/{id}/attendance', [LectureController::class, 'markAttendance']);
+    });
 });
