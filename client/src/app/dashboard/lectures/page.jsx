@@ -252,6 +252,12 @@ export default function LecturesPage() {
           >
             <Plus className="w-4 h-4" /> Create Lecture
           </button>
+          <button
+            onClick={() => { setEditingLecture(null); setShowAIModal(true); }}
+            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600"
+          >
+            <Sparkles className="w-4 h-4" /> AI Builder
+          </button>
         </div>
 
         {/* Filters */}
