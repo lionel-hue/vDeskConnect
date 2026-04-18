@@ -761,6 +761,103 @@ export default function LecturePlayerPage() {
             </div>
           </div>
         )}
+
+        {/* Resource Preview Modal */}
+        {previewResource && (
+          <div className="fixed inset-0 bg-black/80 z-[70] flex items-center justify-center p-4" onClick={() => setPreviewResource(null)}>
+            <div className="bg-white dark:bg-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
+              {/* Header */}
+              <div className="flex items-center justify-between p-4 border-b border-border">
+                <div className="flex items-center gap-2">
+                  {previewResource.type === 'pdf' && <FileText className="w-5 h-5 text-error" />}
+                  {previewResource.type === 'video' && <Video className="w-5 h-5 text-purple-600" />}
+                  {previewResource.type === 'image' && <Image className="w-5 h-5 text-green-600" />}
+                  {previewResource.type === 'link' && <Globe className="w-5 h-5 text-blue-600" />}
+                  <h3 className="font-semibold text-text-primary">{previewResource.title}</h3>
+                </div>
+                <div className="flex items-center gap-2">
+                  <a 
+                    href={previewResource.url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 px-3 py-1.5 text-text-muted hover:text-text-primary"
+                  >
+                    <ExternalLink className="w-4 h-4" /> Open in New Tab
+                  </a>
+                  <button onClick={() => setPreviewResource(null)} className="p-2 text-text-muted hover:text-text-primary">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="flex-1 overflow-auto p-4 bg-gray-900">
+                {previewResource.type === 'image' && (
+                  <img src={previewResource.url} alt={previewResource.title} className="max-w-full mx-auto" />
+                )}
+
+                {previewResource.type === 'video' && (
+                  <div className="relative aspect-video bg-black rounded-lg overflow-hidden">
+                    {previewResource.url.includes('youtube') || previewResource.url.includes('youtu.be') ? (
+                      <iframe
+                        src={previewResource.url.replace('watch?v=', 'embed/').replace('/youtu.be/', '/embed/')}
+                        className="w-full h-full"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      />
+                    ) : (
+                      <video src={previewResource.url} controls className="w-full h-full" />
+                    )}
+                  </div>
+                )}
+
+                {previewResource.type === 'pdf' && (
+                  <iframe
+                    src={previewResource.url}
+                    className="w-full h-[70vh] rounded-lg"
+                  />
+                )}
+
+                {previewResource.type === 'link' && (
+                  <div className="text-center py-12">
+                    <Globe className="w-16 h-16 mx-auto text-text-muted mb-4" />
+                    <p className="text-text-secondary mb-4">External Link</p>
+                    <a 
+                      href={previewResource.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark"
+                    >
+                      <ExternalLink className="w-4 h-4" /> Open Link
+                    </a>
+                  </div>
+                )}
+              </div>
+
+              {/* Footer */}
+              <div className="p-4 border-t border-border flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  {previewResource.is_downloadable && (
+                    <span className="flex items-center gap-1 text-sm text-text-muted">
+                      <Download className="w-4 h-4" /> Can Download
+                    </span>
+                  )}
+                  {previewResource.is_savable && (
+                    <span className="flex items-center gap-1 text-sm text-text-muted">
+                      <Save className="w-4 h-4" /> Can Save
+                    </span>
+                  )}
+                </div>
+                <button 
+                  onClick={() => setPreviewResource(null)}
+                  className="px-4 py-2 border border-border rounded-lg"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </DashboardLayout>
   );
