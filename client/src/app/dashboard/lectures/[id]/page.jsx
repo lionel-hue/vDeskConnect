@@ -5,8 +5,8 @@ import { useRouter, useParams } from 'next/navigation';
 import {
   ArrowLeft, Play, PlayCircle, Pause, CheckCircle, Lock, Unlock,
   ChevronDown, ChevronUp, ChevronRight, ChevronLeft, X,
-  Eye, File, Download, Save, Clock, Loader, Edit2,
-  FileText, Image, Globe, Video, ExternalLink, Plus, Trash2,
+  Eye, File, Download, Save, Clock, Loader, Edit2, Plus,
+  FileText, Image, Globe, Video, ExternalLink, Trash2,
 } from 'lucide-react';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import { academicApi } from '@/lib/academic-api';
