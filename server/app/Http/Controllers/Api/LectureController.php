@@ -305,13 +305,18 @@ class LectureController extends Controller
             'title' => 'required|string|max:255',
             'content_id' => 'nullable|integer|min:0',
             'order_index' => 'nullable|integer|min:0',
-            'is_downloadable' => 'nullable|boolean',
-            'is_savable' => 'nullable|boolean',
+            'is_downloadable' => 'nullable|in:on,off,true,false,1,0,yes,no',
+            'is_savable' => 'nullable|in:on,off,true,false,1,0,yes,no',
         ]);
 
         if ($validator->fails()) {
             return response()->json(['message' => 'Validation failed', 'errors' => $validator->errors()], 422);
         }
+
+        $isDownloadable = $request->is_downloadable ? 
+            in_array(strtolower($request->is_downloadable), ['on', 'true', '1', 'yes']) : false;
+        $isSavable = $request->is_savable ? 
+            in_array(strtolower($request->is_savable), ['on', 'true', '1', 'yes']) : false;
 
         $resource = LectureResource::create([
             'lecture_id' => $lecture->id,
@@ -321,8 +326,8 @@ class LectureController extends Controller
             'uploaded_by' => $user->id,
             'content_id' => $request->content_id,
             'order_index' => $request->order_index ?? 0,
-            'is_downloadable' => $request->is_downloadable ?? false,
-            'is_savable' => $request->is_savable ?? false,
+            'is_downloadable' => $isDownloadable,
+            'is_savable' => $isSavable,
         ]);
 
         return response()->json(['message' => 'Resource added', 'resource' => $resource], 201);
@@ -409,6 +414,11 @@ class LectureController extends Controller
         
         $url = asset('storage/' . $path);
 
+        $isDownloadable = $request->is_downloadable ? 
+            in_array(strtolower($request->is_downloadable), ['on', 'true', '1', 'yes']) : false;
+        $isSavable = $request->is_savable ? 
+            in_array(strtolower($request->is_savable), ['on', 'true', '1', 'yes']) : false;
+
         $resource = LectureResource::create([
             'lecture_id' => $lecture->id,
             'type' => $type,
@@ -417,8 +427,8 @@ class LectureController extends Controller
             'uploaded_by' => $user->id,
             'content_id' => $request->content_id,
             'order_index' => $request->order_index ?? 0,
-            'is_downloadable' => $request->is_downloadable ?? false,
-            'is_savable' => $request->is_savable ?? false,
+            'is_downloadable' => $isDownloadable,
+            'is_savable' => $isSavable,
         ]);
 
         return response()->json(['message' => 'File uploaded', 'resource' => $resource], 201);
