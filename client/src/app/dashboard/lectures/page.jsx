@@ -248,6 +248,16 @@ export default function LecturesPage() {
             <option value="cancelled">Cancelled</option>
           </select>
           <select
+            value={filters.type}
+            onChange={e => handleFilterChange('type', e.target.value)}
+            className="px-3 py-2 border border-border rounded-lg bg-white dark:bg-gray-700 text-text-primary"
+          >
+            <option value="">All Types</option>
+            <option value="sync">Live (Sync)</option>
+            <option value="async">Recorded (Async)</option>
+            <option value="hybrid">Hybrid</option>
+          </select>
+          <select
             value={filters.grade_level_id}
             onChange={e => handleFilterChange('grade_level_id', e.target.value)}
             className="px-3 py-2 border border-border rounded-lg bg-white dark:bg-gray-700 text-text-primary"
