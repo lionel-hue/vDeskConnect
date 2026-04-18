@@ -514,6 +514,14 @@ export default function LecturePlayerPage() {
                           >
                             <Eye className="w-4 h-4" /> View
                           </button>
+                          {isDirector && (
+                            <button 
+                              onClick={() => handleDeleteResource(resource.id)}
+                              className="flex items-center gap-1 px-3 py-1.5 text-red-500 hover:bg-red-50 rounded-lg"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
                         </div>
                       </div>
                     ))}
