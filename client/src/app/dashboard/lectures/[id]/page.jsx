@@ -300,15 +300,13 @@ export default function LecturePlayerPage() {
           />
         )}
         
-        {/* Sidebar - desktop: always visible, mobile: slide-in drawer */}
+        {/* Sidebar - slides on mobile, toggles on desktop */}
         <aside className={`
-          fixed md:static md:z-auto inset-y-0 left-0 z-40 
-          w-80 max-w-[85vw] md:max-w-none md:w-72
           bg-white dark:bg-gray-800 border-r border-border
-          flex flex-col
-          transition-transform duration-300 ease-in-out
-          md:translate-x-0
-          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+          flex flex-col shrink-0
+          transition-all duration-300 ease-in-out
+          w-72 ${sidebarOpen ? '' : 'max-md:-translate-x-full md:max-w-[3rem] md:hover:max-w-[12rem]'}
+          hidden md:flex
         `}>
           {/* Header */}
           <div className="p-4 border-b border-border flex items-center justify-between shrink-0">
