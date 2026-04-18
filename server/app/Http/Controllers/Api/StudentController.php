@@ -25,7 +25,7 @@ class StudentController extends Controller
 
         $query = User::where('school_id', $user->school_id)
             ->where('role', 'student')
-            ->with(['profile', 'school'])
+            ->with(['profile', 'school', 'gradeLevel', 'section', 'department'])
             ->orderBy('created_at', 'desc');
 
         if ($search) {
@@ -332,8 +332,11 @@ class StudentController extends Controller
             'guardian_phone' => $data['guardian_phone'] ?? null,
             'guardian_email' => $data['guardian_email'] ?? null,
             'grade_level_id' => $data['grade_level_id'] ?? null,
+            'grade_level_name' => $student->gradeLevel?->name ?? null,
             'section_id' => $data['section_id'] ?? null,
+            'section_name' => $student->section?->name ?? null,
             'department_id' => $data['department_id'] ?? null,
+            'department_name' => $student->department?->name ?? null,
             'avatar_url' => $student->profile?->avatar_url,
             'created_at' => $student->created_at,
         ];
