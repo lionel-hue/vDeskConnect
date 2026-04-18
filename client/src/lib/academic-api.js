@@ -146,6 +146,11 @@ export const academicApi = {
     generate: (data) => api.post('/ai/lesson-note', data),
   },
 
+  // AI Lecture Generator
+  aiLecture: {
+    generate: (data) => api.post('/ai/lecture', data),
+  },
+
   // ==================== PHASE 7: LECTURES ====================
 
   // Lectures
