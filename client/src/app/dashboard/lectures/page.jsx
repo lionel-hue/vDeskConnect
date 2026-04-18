@@ -122,8 +122,9 @@ export default function LecturesPage() {
       setShowModal(false);
       setEditingLecture(null);
       setLectureForm({
-        title: '', description: '', teacher_id: '', grade_level_id: '', subject_id: '',
-        section_id: '', scheduled_at: '', duration_minutes: 40, is_online: false, meeting_link: '',
+        title: '', description: '', content: '', teacher_id: '', grade_level_id: '', subject_id: '',
+        section_id: '', scheduled_at: '', duration_minutes: 40, type: 'async',
+        is_online: false, meeting_link: '', async_available_after: '', is_published: false,
       });
       fetchLectures();
     } catch (err) {
@@ -138,14 +139,18 @@ export default function LecturesPage() {
     setLectureForm({
       title: lecture.title || '',
       description: lecture.description || '',
+      content: lecture.content || '',
       teacher_id: lecture.teacher_id || '',
       grade_level_id: lecture.grade_level_id || '',
       subject_id: lecture.subject_id || '',
       section_id: lecture.section_id || '',
       scheduled_at: lecture.scheduled_at ? lecture.scheduled_at.slice(0, 16) : '',
       duration_minutes: lecture.duration_minutes || 40,
+      type: lecture.type || 'async',
       is_online: lecture.is_online || false,
       meeting_link: lecture.meeting_link || '',
+      async_available_after: lecture.async_available_after ? lecture.async_available_after.slice(0, 16) : '',
+      is_published: lecture.is_published || false,
     });
     setShowModal(true);
   };
