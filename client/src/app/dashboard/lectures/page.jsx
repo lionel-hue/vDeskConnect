@@ -817,7 +817,7 @@ export default function LecturesPage() {
                     {/* Content Tab */}
                     {activeTab === 'content' && (
                       <div>
-                        {(viewingLecture.type === 'async' || viewingLecture.type === 'hybrid') ? (
+                        {viewingLecture.type === 'async' || viewingLecture.type === 'hybrid' ? (
                           viewingLecture.content ? (
                             <div className="prose dark:prose-invert max-w-none text-sm whitespace-pre-wrap">
                               {viewingLecture.content}
