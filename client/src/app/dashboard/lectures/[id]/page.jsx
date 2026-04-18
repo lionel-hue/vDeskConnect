@@ -722,6 +722,17 @@ export default function LecturePlayerPage() {
                 <div>
                   <label className="block text-sm font-medium text-text-secondary mb-1">Assign to Section</label>
                   <select
+                    value={resourceForm.order_index}
+                    onChange={e => setResourceForm({ ...resourceForm, order_index: parseInt(e.target.value) })}
+                    className="w-full px-3 py-2 border border-border rounded-lg bg-white dark:bg-gray-700 text-text-primary"
+                  >
+                    {sectionContents.map((s, i) => (
+                      <option key={i} value={i}>{s.title}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="flex items-center gap-4">
                   <label className="flex items-center gap-2">
                     <input
                       type="checkbox"
@@ -741,14 +752,7 @@ export default function LecturePlayerPage() {
                     <span className="text-sm text-text-primary">Savable</span>
                   </label>
                 </div>
-
-                <div className="flex gap-3">
-                  <button type="button" onClick={() => setShowAddResource(false)} className="flex-1 px-4 py-2 border border-border rounded-lg">Cancel</button>
-                  <button type="submit" disabled={resourceSaving} className="flex-1 px-4 py-2 bg-primary text-white rounded-lg">
-                    {resourceSaving ? 'Adding...' : 'Add Resource'}
-                  </button>
-                </div>
-              </form>
+              </div>
             </div>
           </div>
         )}
