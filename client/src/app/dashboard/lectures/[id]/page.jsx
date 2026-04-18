@@ -46,7 +46,7 @@ export default function LecturePlayerPage() {
   const [previewResource, setPreviewResource] = useState(null);
   const [resourceForm, setResourceForm] = useState({
     title: '', type: 'pdf', url: '', description: '',
-    is_downloadable: false, is_savable: false, available_from: '', order_index: 0, content_id: null,
+    is_downloadable: false, is_savable: false, available_from: '', order_index: 0, content_id: '',
   });
   const [resourceSaving, setResourceSaving] = useState(false);
 
@@ -588,8 +588,8 @@ export default function LecturePlayerPage() {
                           <div>
                             <p className="font-medium text-text-primary">{resource.title}</p>
                             <p className="text-sm text-text-muted">
-                              {resource.content_id !== null && resource.content_id > 0 
-                                ? `Section ${resource.content_id + 1}` 
+                              {resource.content_id != null && resource.content_id !== '' 
+                                ? `Section ${parseInt(resource.content_id) + 1}` 
                                 : 'Entire Lecture'}
                             </p>
                           </div>
