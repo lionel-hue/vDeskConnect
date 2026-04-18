@@ -145,6 +145,33 @@ export const academicApi = {
   aiLessonNote: {
     generate: (data) => api.post('/ai/lesson-note', data),
   },
+
+  // ==================== PHASE 7: LECTURES ====================
+
+  // Lectures
+  lectures: {
+    getAll: (filters) => api.get('/lectures', filters),
+    getOne: (id) => api.get(`/lectures/${id}`),
+    create: (data) => api.post('/lectures', data),
+    update: (id, data) => api.put(`/lectures/${id}`, data),
+    delete: (id) => api.delete(`/lectures/${id}`),
+    start: (id) => api.put(`/lectures/${id}/start`),
+    complete: (id) => api.put(`/lectures/${id}/complete`),
+    cancel: (id) => api.put(`/lectures/${id}/cancel`),
+  },
+
+  // Lecture Resources
+  lectureResources: {
+    getAll: (lectureId) => api.get(`/lectures/${lectureId}/resources`),
+    add: (lectureId, data) => api.post(`/lectures/${lectureId}/resources`, data),
+    delete: (resourceId) => api.delete(`/lectures/resources/${resourceId}`),
+  },
+
+  // Lecture Attendance
+  lectureAttendance: {
+    getAll: (lectureId) => api.get(`/lectures/${lectureId}/attendance`),
+    mark: (lectureId, data) => api.post(`/lectures/${lectureId}/attendance`, data),
+  },
 };
 
 export default academicApi;
