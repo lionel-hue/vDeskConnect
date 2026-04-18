@@ -6,7 +6,7 @@ import {
   ArrowLeft, Play, PlayCircle, Pause, CheckCircle, Lock, Unlock,
   ChevronDown, ChevronUp, ChevronRight, ChevronLeft, X,
   Eye, File, Download, Save, Clock, Loader, Edit2, Plus, Upload,
-  FileText, Image, Globe, Video, ExternalLink, Trash2,
+  FileText, Image, Globe, Video, ExternalLink, Trash2, Menu,
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -283,11 +283,19 @@ export default function LecturePlayerPage() {
 
   return (
     <DashboardLayout>
-      <div className="flex h-[calc(100vh-64px)] bg-gray-50 dark:bg-gray-900">
-        {/* Sidebar - Timeline */}
-        <div className={`${sidebarOpen ? 'w-72' : 'w-0'} transition-all duration-300 bg-white dark:bg-gray-800 border-r border-border overflow-hidden flex flex-col`}>
+      {/* Mobile backdrop */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-30 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+      
+      <div className="flex flex-col md:flex-row h-[calc(100vh-64px)] bg-gray-50 dark:bg-gray-900">
+        {/* Sidebar - Timeline - Mobile: Full width collapsible, Desktop: Side */}
+        <div className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'} fixed md:relative inset-0 z-40 md:z-auto transition-transform duration-300 md:w-72 w-full bg-white dark:bg-gray-800 border-r border-border overflow-hidden flex flex-col`}>
           {/* Header */}
-          <div className="p-4 border-b border-border flex items-center justify-between">
+          <div className="p-4 border-b border-border flex items-center justify-between shrink-0">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
               className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
@@ -303,7 +311,7 @@ export default function LecturePlayerPage() {
           </div>
 
           {/* Progress */}
-          <div className="p-4 border-b border-border">
+          <div className="p-4 border-b border-border shrink-0">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium text-text-primary">Progress</span>
               <span className="text-sm text-text-muted">{Math.round(progress)}%</span>
@@ -315,7 +323,9 @@ export default function LecturePlayerPage() {
               />
             </div>
             <p className="text-xs text-text-muted mt-2">
-              {completedSections.length} of {sectionContents.length} complete
+              {isDirector 
+                ? `Section ${currentSectionIndex + 1} of ${sectionContents.length}`
+                : `${completedSections.length} of ${sectionContents.length} complete`}
             </p>
           </div>
 
@@ -378,22 +388,22 @@ export default function LecturePlayerPage() {
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Header */}
-          <div className="bg-white dark:bg-gray-800 border-b border-border p-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
+          <div className="bg-white dark:bg-gray-800 border-b border-border p-3 md:p-4 flex items-center justify-between">
+            <div className="flex items-center gap-2 md:gap-3">
               <button
                 onClick={() => setSidebarOpen(!sidebarOpen)}
                 className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
               >
-                {sidebarOpen ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                {sidebarOpen ? <ChevronLeft className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
               </button>
-              <div>
-                <h1 className="text-lg font-bold text-text-primary">{lecture.title}</h1>
-                <p className="text-sm text-text-muted">{TYPE_LABELS[lecture.type]} • {lecture.subject_name}</p>
+              <div className="min-w-0">
+                <h1 className="text-base md:text-lg font-bold text-text-primary truncate">{lecture.title}</h1>
+                <p className="text-xs md:text-sm text-text-muted">{TYPE_LABELS[lecture.type]} • {lecture.subject_name}</p>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-sm text-text-muted">
+              <span className="text-xs md:text-sm text-text-muted">
                 {currentSectionIndex + 1} / {sectionContents.length}
               </span>
               {editMode ? (
