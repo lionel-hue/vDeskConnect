@@ -113,6 +113,20 @@ export default function LecturePlayerPage() {
     }
   };
 
+  // Go to next section
+  const nextSection = () => {
+    if (canGoNext && currentSectionIndex < sectionContents.length - 1) {
+      setCurrentSectionIndex(currentSectionIndex + 1);
+    }
+  };
+
+  // Go to previous section
+  const prevSection = () => {
+    if (currentSectionIndex > 0) {
+      setCurrentSectionIndex(currentSectionIndex - 1);
+    }
+  };
+
   // Can only go to next if current is completed (except for director who can navigate freely)
   const canGoNext = isDirector || completedSections.includes(currentSectionIndex);
   const canGoPrev = true; // Can always go back
