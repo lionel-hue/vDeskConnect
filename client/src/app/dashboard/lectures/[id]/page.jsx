@@ -283,15 +283,30 @@ export default function LecturePlayerPage() {
                   <Save className="w-4 h-4" /> {editSaving ? 'Saving...' : 'Save'}
                 </button>
               ) : isDirector && (
-                <button
-                  onClick={() => {
-                    setEditedContent(buildFullContent(sectionContents));
-                    setEditMode(true);
-                  }}
-                  className="flex items-center gap-2 px-3 py-1.5 border border-border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
-                >
-                  <Edit2 className="w-4 h-4" /> Edit
-                </button>
+                <>
+                  <button
+                    onClick={() => {
+                      setEditedContent(buildFullContent(sectionContents));
+                      setEditMode(true);
+                    }}
+                    className="flex items-center gap-2 px-3 py-1.5 border border-border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                  >
+                    <Edit2 className="w-4 h-4" /> Edit Content
+                  </button>
+                  <button
+                    onClick={() => {
+                      setResourceForm({
+                        title: '', type: 'pdf', url: '', description: '',
+                        is_downloadable: false, is_savable: false, available_from: '',
+                        order_index: currentSectionIndex,
+                      });
+                      setShowAddResource(true);
+                    }}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-primary text-white rounded-lg hover:bg-primary-dark"
+                  >
+                    <Plus className="w-4 h-4" /> Add Resource
+                  </button>
+                </>
               )}
             </div>
           </div>
