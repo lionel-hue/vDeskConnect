@@ -210,8 +210,8 @@ export default function StaffPage() {
                 <thead>
                   <tr className="border-b border-border">
                     <th className="text-left px-5 py-3.5 text-xs font-semibold text-text-secondary uppercase tracking-wider">Staff</th>
-                    <th className="text-left px-5 py-3.5 text-xs font-semibold text-text-secondary uppercase tracking-wider hidden md:table-cell">Role</th>
-                    <th className="text-left px-5 py-3.5 text-xs font-semibold text-text-secondary uppercase tracking-wider hidden lg:table-cell">Designation</th>
+                    <th className="text-left px-5 py-3.5 text-xs font-semibold text-text-secondary uppercase tracking-wider hidden sm:table-cell">Role</th>
+                    <th className="text-left px-5 py-3.5 text-xs font-semibold text-text-secondary uppercase tracking-wider hidden sm:table-cell">Designation</th>
                     <th className="text-center px-5 py-3.5 text-xs font-semibold text-text-secondary uppercase tracking-wider">Status</th>
                     <th className="text-right px-5 py-3.5 text-xs font-semibold text-text-secondary uppercase tracking-wider">Actions</th>
                   </tr>
@@ -230,11 +230,11 @@ export default function StaffPage() {
                           </div>
                         </div>
                       </td>
-                      <td className="px-5 py-4 hidden md:table-cell">
+                      <td className="px-5 py-4 hidden sm:table-cell">
                         {getRoleBadge(s.role)}
                       </td>
-                      <td className="px-5 py-4 hidden lg:table-cell">
-                        <p className="text-sm text-text-secondary truncate max-w-[150px]">{s.designation || '—'}</p>
+                      <td className="px-5 py-4 hidden sm:table-cell">
+                        <p className="text-sm text-text-secondary truncate max-w-[120px]">{s.designation || '—'}</p>
                       </td>
                       <td className="px-5 py-4 text-center">
                         {s.banned ? (

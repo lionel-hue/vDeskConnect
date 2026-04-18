@@ -1,0 +1,3 @@
+if you want to provide any fix or update in my code especially in very jampacked areas like jsx, provide me with the parent element of the code block or the sibling block etc to make it easy for me to know where exactly in the file i need to insert the code.
+
+if it is in the backend in jampacked areas like the controllers and in one method of the controller, there are many updates to make, send the full method.

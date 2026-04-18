@@ -263,7 +263,6 @@ class StudentController extends Controller
         DB::table('user_bans')->insert([
             'user_id' => $student->id,
             'banned_by' => $user->id,
-            'action_type' => 'ban',
             'reason' => $request->reason,
             'created_at' => now(),
             'updated_at' => now(),
@@ -298,7 +297,6 @@ class StudentController extends Controller
         DB::table('user_bans')->insert([
             'user_id' => $student->id,
             'banned_by' => $user->id,
-            'action_type' => 'delete',
             'reason' => $request->reason,
             'created_at' => now(),
             'updated_at' => now(),

@@ -257,7 +257,6 @@ class StaffController extends Controller
         DB::table('user_bans')->insert([
             'user_id' => $staff->id,
             'banned_by' => $authUser->id,
-            'action_type' => 'ban',
             'reason' => $request->reason,
             'created_at' => now(),
             'updated_at' => now(),
@@ -292,7 +291,6 @@ class StaffController extends Controller
         DB::table('user_bans')->insert([
             'user_id' => $staff->id,
             'banned_by' => $authUser->id,
-            'action_type' => 'delete',
             'reason' => $request->reason,
             'created_at' => now(),
             'updated_at' => now(),
