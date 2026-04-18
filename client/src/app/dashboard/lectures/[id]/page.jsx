@@ -562,7 +562,12 @@ export default function LecturePlayerPage() {
                         <div className="flex items-center gap-2">
                           {resource.is_downloadable && <Download className="w-4 h-4 text-text-muted" />}
                           {resource.is_savable && <Save className="w-4 h-4 text-text-muted" />}
-                          <a href={resource.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">View</a>
+                          <button 
+                            onClick={() => setPreviewResource(resource)}
+                            className="text-primary hover:underline"
+                          >
+                            View
+                          </button>
                         </div>
                       </div>
                     ))}
