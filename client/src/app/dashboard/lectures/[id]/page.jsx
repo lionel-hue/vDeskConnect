@@ -5,7 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import {
   ArrowLeft, Play, PlayCircle, Pause, CheckCircle, Lock, Unlock,
   ChevronDown, ChevronUp, ChevronRight, ChevronLeft, X,
-  Eye, File, Download, Save, Clock, Loader, Edit2, Plus,
+  Eye, File, Download, Save, Clock, Loader, Edit2, Plus, Upload,
   FileText, Image, Globe, Video, ExternalLink, Trash2,
 } from 'lucide-react';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
@@ -41,11 +41,88 @@ export default function LecturePlayerPage() {
 
   // Add resource modal
   const [showAddResource, setShowAddResource] = useState(false);
+  const [showUploadTab, setShowUploadTab] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
   const [resourceForm, setResourceForm] = useState({
     title: '', type: 'pdf', url: '', description: '',
     is_downloadable: false, is_savable: false, available_from: '', order_index: 0,
   });
   const [resourceSaving, setResourceSaving] = useState(false);
+
+  // Detect YouTube URL and set type automatically
+  const detectResourceType = (url) => {
+    if (!url) return 'link';
+    if (url.includes('youtube.com') || url.includes('youtu.be')) return 'video';
+    if (url.includes('.pdf')) return 'pdf';
+    if (url.match(/\.(jpg|jpeg|png|gif|webp)/i)) return 'image';
+    if (url.match(/\.(mp4|webm|mov)/i)) return 'video';
+    return 'link';
+  };
+
+  // Handle file selection
+  const handleFileSelect = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+      const title = file.name.replace(/\.[^/.]+$/, '');
+      setResourceForm(prev => ({
+        ...prev,
+        title: prev.title || title,
+        type: file.type.includes('pdf') ? 'pdf' : 
+              file.type.includes('image') ? 'image' : 
+              file.type.includes('video') ? 'video' : 'pdf',
+      }));
+    }
+  };
+
+  // Handle upload with file
+  const handleFileUpload = async () => {
+    if (!selectedFile) return;
+    setResourceSaving(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+      formData.append('title', resourceForm.title || selectedFile.name);
+      formData.append('type', resourceForm.type);
+      formData.append('order_index', resourceForm.order_index);
+      
+      const res = await academicApi.lectureResources.upload(lecture.id, formData);
+      if (res.resource) {
+        toast.success('File uploaded successfully!');
+        setShowAddResource(false);
+        setSelectedFile(null);
+        const resList = await academicApi.lectureResources.getAll(lecture.id);
+        setResources(resList.resources || []);
+      } else {
+        throw new Error(res.message || 'Upload failed');
+      }
+    } catch (err) {
+      toast.error(err.data?.message || 'Failed to upload');
+    } finally {
+      setResourceSaving(false);
+    }
+  };
+
+  // Handle URL add
+  const handleUrlAdd = async () => {
+    setResourceSaving(true);
+    try {
+      const detectedType = detectResourceType(resourceForm.url);
+      await academicApi.lectureResources.add(lecture.id, {
+        ...resourceForm,
+        type: detectedType,
+        order_index: resourceForm.order_index,
+      });
+      toast.success('Resource added!');
+      setShowAddResource(false);
+      const res = await academicApi.lectureResources.getAll(lecture.id);
+      setResources(res.resources || []);
+    } catch (err) {
+      toast.error(err.data?.message || 'Failed to add resource');
+    } finally {
+      setResourceSaving(false);
+    }
+  };
 
   // Parse content into sections (split by ## Heading)
   const parseContentSections = useCallback((content) => {
@@ -517,86 +594,134 @@ export default function LecturePlayerPage() {
 
         {/* Add Resource Modal for Director */}
         {showAddResource && (
-          <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4" onClick={() => setShowAddResource(false)}>
-            <div className="bg-white dark:bg-gray-800 rounded-lg max-w-md w-full" onClick={e => e.stopPropagation()}>
+          <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4" onClick={() => { setShowAddResource(false); setShowUploadTab(false); setSelectedFile(null); }}>
+            <div className="bg-white dark:bg-gray-800 rounded-lg max-w-lg w-full" onClick={e => e.stopPropagation()}>
               <div className="flex items-center justify-between p-4 border-b border-border">
                 <h3 className="font-semibold text-text-primary">Add Resource to Section {resourceForm.order_index + 1}</h3>
-                <button onClick={() => setShowAddResource(false)} className="text-text-muted hover:text-text-primary">
+                <button onClick={() => { setShowAddResource(false); setShowUploadTab(false); setSelectedFile(null); }} className="text-text-muted hover:text-text-primary">
                   <X className="w-5 h-5" />
                 </button>
               </div>
-              <form onSubmit={async (e) => {
-                e.preventDefault();
-                setResourceSaving(true);
-                try {
-                  await academicApi.lectureResources.add(lecture.id, {
-                    ...resourceForm,
-                    order_index: resourceForm.order_index,
-                  });
-                  toast.success('Resource added!');
-                  setShowAddResource(false);
-                  // Refresh resources
-                  const res = await academicApi.lectureResources.getAll(lecture.id);
-                  setResources(res.resources || []);
-                } catch (err) {
-                  toast.error(err.data?.message || 'Failed to add resource');
-                } finally {
-                  setResourceSaving(false);
-                }
-              }} className="p-4 space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-text-secondary mb-1">Title *</label>
-                  <input
-                    type="text"
-                    required
-                    value={resourceForm.title}
-                    onChange={e => setResourceForm({ ...resourceForm, title: e.target.value })}
-                    className="w-full px-3 py-2 border border-border rounded-lg bg-white dark:bg-gray-700 text-text-primary"
-                    placeholder="Resource title"
-                  />
-                </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-text-secondary mb-1">Type *</label>
-                  <select
-                    required
-                    value={resourceForm.type}
-                    onChange={e => setResourceForm({ ...resourceForm, type: e.target.value })}
-                    className="w-full px-3 py-2 border border-border rounded-lg bg-white dark:bg-gray-700 text-text-primary"
-                  >
-                    <option value="pdf">PDF Document</option>
-                    <option value="video">Video</option>
-                    <option value="image">Image</option>
-                    <option value="link">External Link</option>
-                  </select>
-                </div>
+              {/* Tabs */}
+              <div className="flex border-b border-border">
+                <button
+                  type="button"
+                  onClick={() => setShowUploadTab(true)}
+                  className={`flex-1 px-4 py-3 text-sm font-medium ${showUploadTab ? 'border-b-2 border-primary text-primary' : 'text-text-muted'}`}
+                >
+                  📁 Upload File
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowUploadTab(false)}
+                  className={`flex-1 px-4 py-3 text-sm font-medium ${!showUploadTab ? 'border-b-2 border-primary text-primary' : 'text-text-muted'}`}
+                >
+                  🔗 Add Link/URL
+                </button>
+              </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-text-secondary mb-1">URL *</label>
-                  <input
-                    type="url"
-                    required
-                    value={resourceForm.url}
-                    onChange={e => setResourceForm({ ...resourceForm, url: e.target.value })}
-                    className="w-full px-3 py-2 border border-border rounded-lg bg-white dark:bg-gray-700 text-text-primary"
-                    placeholder="https://..."
-                  />
-                </div>
+              <div className="p-4 space-y-4">
+                {showUploadTab ? (
+                  /* Upload Tab */
+                  <div className="space-y-4">
+                    <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
+                      <input
+                        type="file"
+                        id="resourceFile"
+                        onChange={handleFileSelect}
+                        accept=".pdf,.mp4,.webm,.mov,.jpg,.jpeg,.png,.gif,.webp"
+                        className="hidden"
+                      />
+                      <label htmlFor="resourceFile" className="cursor-pointer">
+                        {selectedFile ? (
+                          <div className="space-y-2">
+                            <File className="w-12 h-12 mx-auto text-primary" />
+                            <p className="text-text-primary font-medium">{selectedFile.name}</p>
+                            <p className="text-text-muted text-sm">{(selectedFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                          </div>
+                        ) : (
+                          <div className="space-y-2">
+                            <File className="w-12 h-12 mx-auto text-text-muted" />
+                            <p className="text-text-primary font-medium">Click to select file</p>
+                            <p className="text-text-muted text-sm">PDF, Video, Image (max 100MB)</p>
+                          </div>
+                        )}
+                      </label>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-text-secondary mb-1">Title</label>
+                      <input
+                        type="text"
+                        value={resourceForm.title}
+                        onChange={e => setResourceForm({ ...resourceForm, title: e.target.value })}
+                        className="w-full px-3 py-2 border border-border rounded-lg bg-white dark:bg-gray-700 text-text-primary"
+                        placeholder={selectedFile ? selectedFile.name : 'Resource title'}
+                      />
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handleFileUpload}
+                      disabled={!selectedFile || resourceSaving}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark disabled:opacity-50"
+                    >
+                      {resourceSaving ? (
+                        <Loader className="w-4 h-4 animate-spin" /> 
+                      ) : (
+                        <Upload className="w-4 h-4" />
+                      )} 
+                      {resourceSaving ? 'Uploading...' : 'Upload File'}
+                    </button>
+                  </div>
+                ) : (
+                  /* URL Tab */
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-text-secondary mb-1">Title</label>
+                      <input
+                        type="text"
+                        value={resourceForm.title}
+                        onChange={e => setResourceForm({ ...resourceForm, title: e.target.value })}
+                        className="w-full px-3 py-2 border border-border rounded-lg bg-white dark:bg-gray-700 text-text-primary"
+                        placeholder="Resource title"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-text-secondary mb-1">Resource URL *</label>
+                      <input
+                        type="url"
+                        value={resourceForm.url}
+                        onChange={e => setResourceForm({ ...resourceForm, url: e.target.value })}
+                        className="w-full px-3 py-2 border border-border rounded-lg bg-white dark:bg-gray-700 text-text-primary"
+                        placeholder="https://..."
+                      />
+                      <p className="text-xs text-text-muted mt-1">
+                        Auto-detects: YouTube, PDF, Image, Video links
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handleUrlAdd}
+                      disabled={!resourceForm.url || resourceSaving}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark disabled:opacity-50"
+                    >
+                      {resourceSaving ? (
+                        <Loader className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Plus className="w-4 h-4" />
+                      )}
+                      {resourceSaving ? 'Adding...' : 'Add Resource'}
+                    </button>
+                  </div>
+                )}
 
                 <div>
                   <label className="block text-sm font-medium text-text-secondary mb-1">Assign to Section</label>
                   <select
-                    value={resourceForm.order_index}
-                    onChange={e => setResourceForm({ ...resourceForm, order_index: parseInt(e.target.value) })}
-                    className="w-full px-3 py-2 border border-border rounded-lg bg-white dark:bg-gray-700 text-text-primary"
-                  >
-                    {sectionContents.map((s, i) => (
-                      <option key={i} value={i}>{s.title}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="flex items-center gap-4">
                   <label className="flex items-center gap-2">
                     <input
                       type="checkbox"
