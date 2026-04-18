@@ -93,7 +93,10 @@ export default function LecturePlayerPage() {
         selectedFile,
         resourceForm.title || selectedFile.name,
         resourceForm.type,
-        resourceForm.order_index
+        resourceForm.order_index,
+        resourceForm.content_id,
+        resourceForm.is_downloadable,
+        resourceForm.is_savable
       );
       
       if (res.resource) {
@@ -103,7 +106,7 @@ export default function LecturePlayerPage() {
         setSelectedFile(null);
         setResourceForm({
           title: '', type: 'pdf', url: '', description: '',
-          is_downloadable: false, is_savable: false, available_from: '', order_index: 0,
+          is_downloadable: false, is_savable: false, available_from: '', order_index: 0, content_id: null,
         });
         const resList = await academicApi.lectureResources.getAll(lecture.id);
         setResources(resList.resources || []);
