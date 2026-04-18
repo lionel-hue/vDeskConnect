@@ -170,13 +170,16 @@ export const academicApi = {
   lectureResources: {
     getAll: (lectureId) => api.get(`/lectures/${lectureId}/resources`),
     add: (lectureId, data) => api.post(`/lectures/${lectureId}/resources`, data),
-    upload: async (lectureId, file, title, type, orderIndex) => {
-      console.log('academicApi.lectureResources.upload called with:', { lectureId, file: file?.name, title, type, orderIndex });
+    upload: async (lectureId, file, title, type, orderIndex, contentId = null, isDownloadable = false, isSavable = false) => {
+      console.log('academicApi.lectureResources.upload called with:', { lectureId, file: file?.name, title, type, orderIndex, contentId });
       const formData = new FormData();
       formData.append('file', file);
       formData.append('title', title || file.name);
       formData.append('type', type);
       formData.append('order_index', orderIndex || 0);
+      if (contentId !== null) formData.append('content_id', contentId);
+      formData.append('is_downloadable', isDownloadable);
+      formData.append('is_savable', isSavable);
       
       const url = `/lectures/${lectureId}/resources/upload`;
       console.log('Calling API endpoint:', url);
