@@ -345,12 +345,6 @@ class LectureController extends Controller
         ]);
 
         $validator = Validator::make($request->all(), [
-            'file' => 'required|file|max:102400',
-            'title' => 'required|string|max:255',
-            'type' => 'required|in:pdf,video,image',
-        ]);
-
-$validator = Validator::make($request->all(), [
             'file' => 'file|max:102400',
             'title' => 'string|max:255',
             'type' => 'in:pdf,video,image',
