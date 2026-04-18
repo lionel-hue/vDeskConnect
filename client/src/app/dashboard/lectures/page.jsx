@@ -1203,12 +1203,32 @@ export default function LecturesPage() {
                     .map(s => `## ${s.title}\n\n${s.content}`)
                     .join('\n\n\n');
                   
-                  await academicApi.lectures.create({
+                  const lectureRes = await academicApi.lectures.create({
                     ...builderForm,
                     content,
                   });
+                  
+                  const lectureId = lectureRes.lecture?.id;
+                  if (lectureId) {
+                    // Create resources for each section
+                    for (let idx = 0; idx < builderForm.sections.length; idx++) {
+                      const sectionResources = builderSectionResources[idx] || [];
+                      for (const resource of sectionResources) {
+                        if (resource.title && resource.url) {
+                          await academicApi.lectureResources.add(lectureId, {
+                            title: resource.title,
+                            url: resource.url,
+                            type: resource.type,
+                            content_id: idx + 1,
+                          });
+                        }
+                      }
+                    }
+                  }
+                  
                   toast.success('Lecture created with sections!');
                   setShowBuilderModal(false);
+                  setBuilderSectionResources({});
                   fetchLectures();
                 } catch (err) {
                   toast.error(err.data?.message || 'Failed to create lecture');
