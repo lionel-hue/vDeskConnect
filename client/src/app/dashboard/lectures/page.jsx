@@ -166,9 +166,14 @@ export default function LecturesPage() {
 
   const openViewModal = async (lecture) => {
     setViewLoading(true);
+    setActiveTab('overview');
     try {
-      const res = await academicApi.lectures.getOne(lecture.id);
-      setViewingLecture(res.lecture || lecture);
+      const [lectureRes, resourcesRes] = await Promise.all([
+        academicApi.lectures.getOne(lecture.id),
+        academicApi.lectureResources.getAll(lecture.id).catch(() => ({ resources: [] })),
+      ]);
+      setViewingLecture(lectureRes.lecture || lecture);
+      setLectureResources(resourcesRes.resources || []);
     } catch (err) {
       toast.error('Failed to load lecture details');
       setViewingLecture(lecture);
