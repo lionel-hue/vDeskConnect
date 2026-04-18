@@ -1203,32 +1203,12 @@ export default function LecturesPage() {
                     .map(s => `## ${s.title}\n\n${s.content}`)
                     .join('\n\n\n');
                   
-                  const lectureRes = await academicApi.lectures.create({
+                  await academicApi.lectures.create({
                     ...builderForm,
                     content,
                   });
-                  
-                  const lectureId = lectureRes.lecture?.id;
-                  if (lectureId) {
-                    // Create resources for each section
-                    for (let idx = 0; idx < builderForm.sections.length; idx++) {
-                      const sectionResources = builderSectionResources[idx] || [];
-                      for (const resource of sectionResources) {
-                        if (resource.title && resource.url) {
-                          await academicApi.lectureResources.add(lectureId, {
-                            title: resource.title,
-                            url: resource.url,
-                            type: resource.type,
-                            content_id: idx + 1,
-                          });
-                        }
-                      }
-                    }
-                  }
-                  
                   toast.success('Lecture created with sections!');
                   setShowBuilderModal(false);
-                  setBuilderSectionResources({});
                   fetchLectures();
                 } catch (err) {
                   toast.error(err.data?.message || 'Failed to create lecture');
@@ -1347,9 +1327,6 @@ export default function LecturesPage() {
                             onClick={() => {
                               const newSections = builderForm.sections.filter((_, i) => i !== index);
                               setBuilderForm({ ...builderForm, sections: newSections });
-                              const newResources = { ...builderSectionResources };
-                              delete newResources[index];
-                              setBuilderSectionResources(newResources);
                             }}
                             className="text-red-500 hover:text-red-700"
                           >
@@ -1361,9 +1338,8 @@ export default function LecturesPage() {
                         type="text"
                         value={section.title}
                         onChange={e => {
-                          const newSections = builderForm.sections.map((s, i) => 
-                            i === index ? { ...s, title: e.target.value } : { ...s }
-                          );
+                          const newSections = [...builderForm.sections];
+                          newSections[index].title = e.target.value;
                           setBuilderForm({ ...builderForm, sections: newSections });
                         }}
                         className="w-full px-3 py-2 border border-border rounded-lg bg-white dark:bg-gray-700 text-text-primary mb-2"
@@ -1373,86 +1349,14 @@ export default function LecturesPage() {
                         rows={6}
                         value={section.content}
                         onChange={e => {
-                          const newSections = builderForm.sections.map((s, i) => 
-                            i === index ? { ...s, content: e.target.value } : { ...s }
-                          );
+                          const newSections = [...builderForm.sections];
+                          newSections[index].content = e.target.value;
                           setBuilderForm({ ...builderForm, sections: newSections });
                         }}
                         className="w-full px-3 py-2 border border-border rounded-lg bg-white dark:bg-gray-700 text-text-primary font-mono text-sm"
                         placeholder="Write section content in Markdown..."
                       />
                       <p className="text-xs text-text-muted mt-1">Supports Markdown: **bold**, *italic*, ## headings, - lists, etc.</p>
-                      
-                      {/* Section Resources */}
-                      <div className="mt-3 flex items-center justify-between">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const current = builderSectionResources[index] || [];
-                            const newResources = [...current, { title: '', url: '', type: 'pdf' }];
-                            setBuilderSectionResources({ ...builderSectionResources, [index]: newResources });
-                          }}
-                          className="text-sm text-primary hover:underline flex items-center gap-1"
-                        >
-                          <Plus className="w-3.5 h-3.5" /> Add Resource
-                        </button>
-                        {(builderSectionResources[index]?.length > 0) && (
-                          <span className="text-xs text-text-muted">
-                            {builderSectionResources[index].length} resource(s)
-                          </span>
-                        )}
-                      </div>
-                      
-                      {builderSectionResources[index]?.map((resource, rIdx) => (
-                        <div key={rIdx} className="mt-2 p-2 bg-white dark:bg-gray-600 rounded border border-border flex items-center gap-2">
-                          <select
-                            value={resource.type}
-                            onChange={e => {
-                              const newResources = [...(builderSectionResources[index] || [])];
-                              newResources[rIdx].type = e.target.value;
-                              setBuilderSectionResources({ ...builderSectionResources, [index]: newResources });
-                            }}
-                            className="px-2 py-1 text-xs border border-border rounded"
-                          >
-                            <option value="pdf">PDF</option>
-                            <option value="video">Video</option>
-                            <option value="image">Image</option>
-                            <option value="link">Link</option>
-                          </select>
-                          <input
-                            type="text"
-                            value={resource.title}
-                            onChange={e => {
-                              const newResources = [...(builderSectionResources[index] || [])];
-                              newResources[rIdx].title = e.target.value;
-                              setBuilderSectionResources({ ...builderSectionResources, [index]: newResources });
-                            }}
-                            placeholder="Resource title"
-                            className="flex-1 px-2 py-1 text-xs border border-border rounded"
-                          />
-                          <input
-                            type="url"
-                            value={resource.url}
-                            onChange={e => {
-                              const newResources = [...(builderSectionResources[index] || [])];
-                              newResources[rIdx].url = e.target.value;
-                              setBuilderSectionResources({ ...builderSectionResources, [index]: newResources });
-                            }}
-                            placeholder="https://..."
-                            className="flex-1 px-2 py-1 text-xs border border-border rounded"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const newResources = (builderSectionResources[index] || []).filter((_, i) => i !== rIdx);
-                              setBuilderSectionResources({ ...builderSectionResources, [index]: newResources });
-                            }}
-                            className="text-red-500 hover:text-red-700"
-                          >
-                            <X className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      ))}
                     </div>
                   ))}
                 </div>
