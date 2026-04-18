@@ -252,10 +252,10 @@ export default function LecturePlayerPage() {
   const canGoPrev = true; // Can always go back
 
   // Get resources for current section
-  // If content_id is null, it's for the entire lecture (shows in all sections)
-  // If content_id matches currentSectionIndex, it's for this specific section
+  // If content_id is null, empty string, or undefined, it's for the entire lecture (shows in all sections)
+  // If content_id equals currentSectionIndex, it's for this specific section
   const currentSectionResources = resources.filter(r => 
-    r.content_id === null || r.content_id === currentSectionIndex
+    r.content_id == null || r.content_id === currentSectionIndex
   );
 
   if (loading) {
