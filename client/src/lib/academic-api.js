@@ -170,6 +170,13 @@ export const academicApi = {
   lectureResources: {
     getAll: (lectureId) => api.get(`/lectures/${lectureId}/resources`),
     add: (lectureId, data) => api.post(`/lectures/${lectureId}/resources`, data),
+    upload: (lectureId, formData) => {
+      return fetch(`${api.baseUrl}/lectures/${lectureId}/resources/upload`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${api.getToken()}` },
+        body: formData,
+      }).then(r => r.json());
+    },
     delete: (resourceId) => api.delete(`/lectures/resources/${resourceId}`),
   },
 
