@@ -9,6 +9,7 @@ use App\Models\Attendance;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class LectureController extends Controller
@@ -327,8 +328,19 @@ class LectureController extends Controller
         $user = $request->user();
         $lecture = Lecture::where('school_id', $user->school_id)->findOrFail($id);
 
+        // Debug: log what's received
+        Log::info('Upload request data:', $request->all());
+        Log::info('Has file:', $request->hasFile('file'));
+        if ($request->hasFile('file')) {
+            Log::info('File info:', [
+                'name' => $request->file('file')->getClientOriginalName(),
+                'size' => $request->file('file')->getSize(),
+                'error' => $request->file('file')->getError(),
+            ]);
+        }
+
         $validator = Validator::make($request->all(), [
-            'file' => 'required|file|max:102400', // 100MB max
+            'file' => 'required|file|max:102400',
             'title' => 'required|string|max:255',
             'type' => 'required|in:pdf,video,image',
         ]);
