@@ -1361,8 +1361,9 @@ export default function LecturesPage() {
                         type="text"
                         value={section.title}
                         onChange={e => {
-                          const newSections = [...builderForm.sections];
-                          newSections[index].title = e.target.value;
+                          const newSections = builderForm.sections.map((s, i) => 
+                            i === index ? { ...s, title: e.target.value } : { ...s }
+                          );
                           setBuilderForm({ ...builderForm, sections: newSections });
                         }}
                         className="w-full px-3 py-2 border border-border rounded-lg bg-white dark:bg-gray-700 text-text-primary mb-2"
@@ -1372,8 +1373,9 @@ export default function LecturesPage() {
                         rows={6}
                         value={section.content}
                         onChange={e => {
-                          const newSections = [...builderForm.sections];
-                          newSections[index].content = e.target.value;
+                          const newSections = builderForm.sections.map((s, i) => 
+                            i === index ? { ...s, content: e.target.value } : { ...s }
+                          );
                           setBuilderForm({ ...builderForm, sections: newSections });
                         }}
                         className="w-full px-3 py-2 border border-border rounded-lg bg-white dark:bg-gray-700 text-text-primary font-mono text-sm"
