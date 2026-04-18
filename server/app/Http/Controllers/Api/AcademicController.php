@@ -2170,4 +2170,82 @@ class AcademicController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * AI Lecture Generator.
+     * Generates structured lecture content with multiple sections.
+     */
+    public function generateLectureAI(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'grade_level_id' => 'required|exists:grade_levels,id',
+            'subject_id' => 'required|exists:subjects,id',
+            'sections' => 'nullable|integer|min:2|max:10',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        try {
+            $user = $request->user();
+            $sections = $request->sections ?? 5;
+
+            $gradeLevel = GradeLevel::findOrFail($request->grade_level_id);
+            $subject = Subject::findOrFail($request->subject_id);
+
+            $aiService = new AiService();
+            
+            $lectureData = [
+                'title' => $request->title,
+                'description' => $request->description ?? '',
+            ];
+
+            $gradeInfo = [
+                'name' => $gradeLevel->name,
+                'short_name' => $gradeLevel->short_name,
+                'cycle' => $gradeLevel->cycle ?? 'General',
+            ];
+
+            $subjectInfo = [
+                'name' => $subject->name,
+                'code' => $subject->code ?? $subject->name,
+            ];
+
+            $generatedLecture = $aiService->generateLecture($lectureData, $gradeInfo, $subjectInfo, $sections);
+
+            $usedFallback = !empty($generatedLecture['_used_fallback']);
+            $fallbackReason = $generatedLecture['_fallback_reason'] ?? null;
+
+            unset($generatedLecture['_used_fallback'], $generatedLecture['_fallback_reason']);
+
+            if ($usedFallback) {
+                return response()->json([
+                    'message' => 'AI unavailable — used smart template instead',
+                    'lecture' => $generatedLecture,
+                    'source' => 'smart_template',
+                    'ai_unavailable' => true,
+                    'ai_reason' => $fallbackReason ?? 'AI API error',
+                ], 207);
+            }
+
+            return response()->json([
+                'message' => 'Lecture generated successfully with AI',
+                'lecture' => $generatedLecture,
+                'source' => 'ai_api',
+                'ai_unavailable' => false,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('AI lecture generation failed: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Failed to generate lecture',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
 }
