@@ -382,22 +382,9 @@ class VDeskConnectSeeder extends Seeder
             DB::table('profiles')->insert([
                 'user_id'    => $studentId,
                 'type'       => 'student',
-                'data'       => json_encode(['first_name' => $student['first_name'], 'last_name' => $student['last_name'], 'phone' => '080' . str_pad($index + 1, 8, '0', STR_PAD_LEFT)]),
+                'data'       => json_encode(['first_name' => $student['first_name'], 'last_name' => $student['last_name'], 'phone' => '080' . str_pad($index + 1, 8, '0', STR_PAD_LEFT), 'grade_level_id' => $jss1]),
                 'created_at' => $now,
                 'updated_at' => $now,
-            ]);
-
-            // Student enrollments
-            DB::table('student_enrollments')->insert([
-                'school_id'        => $demoSchool,
-                'student_id'        => $studentId,
-                'grade_level_id'   => $jss1,
-                'section_id'       => $sectionA->id ?? null,
-                'academic_session_id' => $academicSession,
-                'enrollment_date'  => '2025-09-01',
-                'status'           => 'active',
-                'created_at'       => $now,
-                'updated_at'       => $now,
             ]);
         }
 
