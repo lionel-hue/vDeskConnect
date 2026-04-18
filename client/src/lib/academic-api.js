@@ -170,12 +170,22 @@ export const academicApi = {
   lectureResources: {
     getAll: (lectureId) => api.get(`/lectures/${lectureId}/resources`),
     add: (lectureId, data) => api.post(`/lectures/${lectureId}/resources`, data),
-    upload: (lectureId, formData) => {
-      return fetch(`${api.baseUrl}/lectures/${lectureId}/resources/upload`, {
+    upload: async (lectureId, file, title, type, orderIndex) => {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('title', title || file.name);
+      formData.append('type', type);
+      formData.append('order_index', orderIndex || 0);
+      
+      const response = await fetch(`${api.baseUrl}/lectures/${lectureId}/resources/upload`, {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${api.getToken()}` },
+        headers: { 
+          'Authorization': `Bearer ${api.getToken()}` 
+        },
         body: formData,
-      }).then(r => r.json());
+      });
+      
+      return response.json();
     },
     delete: (resourceId) => api.delete(`/lectures/resources/${resourceId}`),
   },
