@@ -375,8 +375,8 @@ class LectureController extends Controller
             'type' => 'in:pdf,video,image',
             'content_id' => 'nullable',
             'order_index' => 'nullable|integer|min:0',
-            'is_downloadable' => 'nullable|in:on,off,true,false,1,0,yes,no',
-            'is_savable' => 'nullable|in:on,off,true,false,1,0,yes,no',
+            'is_downloadable' => 'nullable',
+            'is_savable' => 'nullable',
         ]);
 
         // Normalize content_id - if empty string, treat as null (entire lecture)
