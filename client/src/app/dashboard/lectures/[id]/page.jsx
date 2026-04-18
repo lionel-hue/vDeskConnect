@@ -128,10 +128,15 @@ export default function LecturePlayerPage() {
       await academicApi.lectureResources.add(lecture.id, {
         ...resourceForm,
         type: detectedType,
-        order_index: resourceForm.order_index,
+        content_id: resourceForm.content_id,
+        order_index: resourceForm.content_id !== null ? resourceForm.content_id : 0,
       });
       toast.success('Resource added!');
       setShowAddResource(false);
+      setResourceForm({
+        title: '', type: 'pdf', url: '', description: '',
+        is_downloadable: false, is_savable: false, available_from: '', order_index: 0, content_id: null,
+      });
       const res = await academicApi.lectureResources.getAll(lecture.id);
       setResources(res.resources || []);
     } catch (err) {
@@ -234,9 +239,10 @@ export default function LecturePlayerPage() {
   const canGoPrev = true; // Can always go back
 
   // Get resources for current section
+  // If content_id is null or 0, it's for the entire lecture
   const currentSectionResources = resources.filter(r => 
-    r.order_index === currentSectionIndex || 
-    (r.order_index === null && r.order_index !== 0)
+    r.content_id === currentSectionIndex || 
+    (r.content_id === null || r.content_id === 0)
   );
 
   if (loading) {
@@ -566,7 +572,11 @@ export default function LecturePlayerPage() {
                           {resource.type === 'link' && <Globe className="w-5 h-5 text-blue-600" />}
                           <div>
                             <p className="font-medium text-text-primary">{resource.title}</p>
-                            <p className="text-sm text-text-muted">{resource.type}</p>
+                            <p className="text-sm text-text-muted">
+                              {resource.content_id !== null && resource.content_id > 0 
+                                ? `Section ${resource.content_id + 1}` 
+                                : 'Entire Lecture'}
+                            </p>
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
@@ -578,6 +588,14 @@ export default function LecturePlayerPage() {
                           >
                             View
                           </button>
+                          {isDirector && (
+                            <button 
+                              onClick={() => handleDeleteResource(resource.id)}
+                              className="text-red-500 hover:text-red-700"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
                         </div>
                       </div>
                     ))}
