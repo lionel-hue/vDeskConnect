@@ -424,13 +424,18 @@ class LectureController extends Controller
         $isSavable = $request->is_savable ? 
             in_array(strtolower($request->is_savable), ['on', 'true', '1', 'yes']) : false;
 
+        $contentId = $request->content_id;
+        if ($contentId === '' || $contentId === null) {
+            $contentId = null;
+        }
+
         $resource = LectureResource::create([
             'lecture_id' => $lecture->id,
             'type' => $type,
             'url' => $url,
             'title' => $request->title ?: $originalName,
             'uploaded_by' => $user->id,
-            'content_id' => $request->content_id,
+            'content_id' => $contentId,
             'order_index' => $request->order_index ?? 0,
             'is_downloadable' => $isDownloadable,
             'is_savable' => $isSavable,
