@@ -358,8 +358,8 @@ class LectureController extends Controller
             'type' => 'in:pdf,video,image',
             'content_id' => 'nullable|integer|min:0',
             'order_index' => 'nullable|integer|min:0',
-            'is_downloadable' => 'nullable|boolean',
-            'is_savable' => 'nullable|boolean',
+            'is_downloadable' => 'nullable|in:on,off,true,false,1,0,yes,no',
+            'is_savable' => 'nullable|in:on,off,true,false,1,0,yes,no',
         ]);
 
         if ($validator->fails()) {
