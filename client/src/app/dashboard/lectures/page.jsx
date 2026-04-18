@@ -7,6 +7,7 @@ import {
   Clock, BookOpen, Users, Link as LinkIcon, FileText, Search, Loader,
   Filter, ChevronLeft, ChevronRight, ExternalLink, AlertCircle, Eye,
   File, Download, Save, Clock3, Image, Globe, Lock, Unlock, Sparkles,
+  Layers, GripVertical, ChevronDown, ChevronUp, FormInput,
 } from 'lucide-react';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import { academicApi } from '@/lib/academic-api';
