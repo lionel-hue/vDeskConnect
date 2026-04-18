@@ -292,15 +292,29 @@ export default function LecturePlayerPage() {
       )}
       
       <div className="flex flex-col md:flex-row h-[calc(100vh-64px)] bg-gray-50 dark:bg-gray-900">
-        {/* Sidebar - Timeline - Mobile: Full width collapsible, Desktop: Side */}
-        <div className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'} fixed md:relative inset-0 z-40 md:z-auto transition-transform duration-300 md:w-72 w-full bg-white dark:bg-gray-800 border-r border-border overflow-hidden flex flex-col`}>
+        {/* Mobile sidebar backdrop */}
+        {sidebarOpen && (
+          <div 
+            className="fixed inset-0 bg-black/50 z-30 md:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+        
+        {/* Sidebar - always visible on desktop, slide-in on mobile */}
+        <aside className={`
+          fixed md:static inset-y-0 left-0 z-40 w-80 max-w-[85vw] md:max-w-none md:w-72
+          bg-white dark:bg-gray-800 border-r border-border
+          flex flex-col transform transition-transform duration-300 ease-in-out
+          md:translate-x-0
+          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+        `}>
           {/* Header */}
           <div className="p-4 border-b border-border flex items-center justify-between shrink-0">
             <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
+              onClick={() => setSidebarOpen(false)}
               className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
             >
-              {sidebarOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+              <X className="w-5 h-5" />
             </button>
             <button
               onClick={() => router.push('/dashboard/lectures')}
@@ -383,7 +397,7 @@ export default function LecturePlayerPage() {
               )}
             </div>
           </div>
-        </div>
+        </aside>
 
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col overflow-hidden">
@@ -394,7 +408,7 @@ export default function LecturePlayerPage() {
                 onClick={() => setSidebarOpen(!sidebarOpen)}
                 className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
               >
-                {sidebarOpen ? <ChevronLeft className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+                {sidebarOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
               </button>
               <div className="min-w-0">
                 <h1 className="text-base md:text-lg font-bold text-text-primary truncate">{lecture.title}</h1>
