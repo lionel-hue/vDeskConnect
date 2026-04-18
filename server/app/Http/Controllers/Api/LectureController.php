@@ -333,6 +333,14 @@ class LectureController extends Controller
         $user = $request->user();
         $lecture = Lecture::where('school_id', $user->school_id)->findOrFail($id);
 
+        // Debug: Log incoming request details
+        Log::info('Upload request debug', [
+            'has_file' => $request->hasFile('file'),
+            'all_keys' => $request->keys(),
+            'content_type' => $request->header('Content-Type'),
+            'file' => $request->file('file'),
+        ]);
+
         $validator = Validator::make($request->all(), [
             'file' => 'required|file|max:102400',
             'title' => 'required|string|max:255',
@@ -340,6 +348,7 @@ class LectureController extends Controller
         ]);
 
         if ($validator->fails()) {
+            Log::warning('Upload validation failed', $validator->errors()->toArray());
             return response()->json(['message' => 'Validation failed', 'errors' => $validator->errors()], 422);
         }
 
