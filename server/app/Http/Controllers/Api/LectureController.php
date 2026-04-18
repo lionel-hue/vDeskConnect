@@ -347,8 +347,20 @@ class LectureController extends Controller
             'type' => 'required|in:pdf,video,image',
         ]);
 
+        $validator = Validator::make($request->all(), [
+            'file' => 'required|file|max:102400',
+            'title' => 'required|string|max:255',
+            'type' => 'required|in:pdf,video,image',
+        ]);
+
         if ($validator->fails()) {
-            Log::warning('Upload validation failed', $validator->errors()->toArray());
+            Log::warning('Upload validation failed', [
+                'errors' => $validator->errors()->toArray(),
+                'file_object' => $request->file('file'),
+                'file_is_valid' => $request->file('file') ? $request->file('file')->isValid() : 'no file',
+                'file_error' => $request->file('file') ? $request->file('file')->getError() : 'no file',
+                'file_error_message' => $request->file('file') ? $request->file('file')->getErrorMessage() : 'no file',
+            ]);
             return response()->json(['message' => 'Validation failed', 'errors' => $validator->errors()], 422);
         }
 
