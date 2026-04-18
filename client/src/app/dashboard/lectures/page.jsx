@@ -62,6 +62,15 @@ export default function LecturesPage() {
   // View modal
   const [viewingLecture, setViewingLecture] = useState(null);
   const [viewLoading, setViewLoading] = useState(false);
+  const [lectureResources, setLectureResources] = useState([]);
+  const [activeTab, setActiveTab] = useState('overview');
+
+  // Add resource modal
+  const [showResourceModal, setShowResourceModal] = useState(false);
+  const [resourceForm, setResourceForm] = useState({
+    title: '', type: 'pdf', url: '', description: '',
+    is_downloadable: false, is_savable: false, available_from: '', order_index: 0,
+  });
 
   const fetchLectures = useCallback(async () => {
     setLoading(true);
