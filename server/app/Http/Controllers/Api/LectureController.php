@@ -325,6 +325,10 @@ class LectureController extends Controller
      */
     public function uploadResource(Request $request, int $id): JsonResponse
     {
+        // Attempt to increase limits (works with built-in server, may not work with php-fpm)
+        @ini_set('upload_max_filesize', '100M');
+        @ini_set('post_max_size', '100M');
+        
         $user = $request->user();
         $lecture = Lecture::where('school_id', $user->school_id)->findOrFail($id);
 
