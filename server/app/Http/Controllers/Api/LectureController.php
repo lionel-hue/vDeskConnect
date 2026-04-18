@@ -320,6 +320,57 @@ class LectureController extends Controller
     }
 
     /**
+     * Upload file for lecture resource.
+     */
+    public function uploadResource(Request $request, int $id): JsonResponse
+    {
+        $user = $request->user();
+        $lecture = Lecture::where('school_id', $user->school_id)->findOrFail($id);
+
+        $validator = Validator::make($request->all(), [
+            'file' => 'required|file|max:102400', // 100MB max
+            'title' => 'required|string|max:255',
+            'type' => 'required|in:pdf,video,image',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['message' => 'Validation failed', 'errors' => $validator->errors()], 422);
+        }
+
+        $file = $request->file('file');
+        $originalName = $file->getClientOriginalName();
+        $extension = $file->getClientOriginalExtension();
+        
+        // Determine type from extension if not specified
+        $type = $request->type;
+        if ($extension === 'pdf') {
+            $type = 'pdf';
+        } elseif (in_array($extension, ['mp4', 'webm', 'mov', 'avi'])) {
+            $type = 'video';
+        } elseif (in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
+            $type = 'image';
+        }
+
+        // Generate unique filename
+        $filename = time() . '_' . uniqid() . '.' . $extension;
+        
+        // Store file
+        $path = $file->storeAs('lectures/' . $lecture->id, $filename, 'public');
+        
+        $url = asset('storage/' . $path);
+
+        $resource = LectureResource::create([
+            'lecture_id' => $lecture->id,
+            'type' => $type,
+            'url' => $url,
+            'title' => $request->title ?: $originalName,
+            'uploaded_by' => $user->id,
+        ]);
+
+        return response()->json(['message' => 'File uploaded', 'resource' => $resource], 201);
+    }
+
+    /**
      * Delete resource.
      */
     public function deleteResource(Request $request, int $id): JsonResponse

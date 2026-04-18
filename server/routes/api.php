@@ -185,6 +185,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/{id}/publish', [LectureController::class, 'publish']);
         Route::get('/{id}/resources', [LectureController::class, 'resources']);
         Route::post('/{id}/resources', [LectureController::class, 'addResource']);
+        Route::post('/{id}/resources/upload', [LectureController::class, 'uploadResource']);
         Route::delete('/resources/{id}', [LectureController::class, 'deleteResource']);
         Route::get('/{id}/attendance', [LectureController::class, 'attendance']);
         Route::post('/{id}/attendance', [LectureController::class, 'markAttendance']);
