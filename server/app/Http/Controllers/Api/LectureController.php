@@ -319,7 +319,7 @@ class LectureController extends Controller
             in_array(strtolower($request->is_savable), ['on', 'true', '1', 'yes']) : false;
 
         $contentId = $request->content_id;
-        if ($contentId === '' || $contentId === null) {
+        if ($contentId === '' || $contentId === null || $contentId === 'all') {
             $contentId = null;
         }
 
@@ -425,7 +425,7 @@ class LectureController extends Controller
             in_array(strtolower($request->is_savable), ['on', 'true', '1', 'yes']) : false;
 
         $contentId = $request->content_id;
-        if ($contentId === '' || $contentId === null) {
+        if ($contentId === '' || $contentId === null || $contentId === 'all') {
             $contentId = null;
         }
 
