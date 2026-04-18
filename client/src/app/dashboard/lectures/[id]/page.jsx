@@ -253,11 +253,12 @@ export default function LecturePlayerPage() {
   const canGoPrev = true; // Can always go back
 
   // Get resources for current section
-  // If content_id is null or empty (not set), it's for the entire lecture (shows in all sections)
+  // If content_id is null or not set, it's for the entire lecture (shows in all sections)
   // If content_id equals currentSectionIndex, it's for this specific section
   const currentSectionResources = resources.filter(r => {
-    const contentId = r.content_id;
-    return contentId == null || contentId === '' || contentId === currentSectionIndex;
+    const cid = r.content_id;
+    // Show if: content_id is null/undefined OR content_id equals current section index
+    return cid == null || Number(cid) === currentSectionIndex;
   });
 
   if (loading) {
