@@ -312,8 +312,8 @@ class LectureController extends Controller
             'title' => 'required|string|max:255',
             'content_id' => 'nullable|integer|min:0',
             'order_index' => 'nullable|integer|min:0',
-            'is_downloadable' => 'nullable|in:on,off,true,false,1,0,yes,no',
-            'is_savable' => 'nullable|in:on,off,true,false,1,0,yes,no',
+            'is_downloadable' => 'nullable',
+            'is_savable' => 'nullable',
         ]);
 
         if ($validator->fails()) {
