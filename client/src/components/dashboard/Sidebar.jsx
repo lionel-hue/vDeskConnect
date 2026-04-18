@@ -44,6 +44,7 @@ const SCHOOL_ADMIN_NAV = [
   { label: 'Staff', icon: UserRound, href: '/dashboard/staff' },
   { label: 'Academic', icon: SlidersHorizontal, href: '/dashboard/academic' },
   { label: 'Classes', icon: School, href: '/dashboard/classes' },
+  { label: 'Lectures', icon: Video, href: '/dashboard/lectures' },
   { label: 'Lesson Notes', icon: ClipboardList, href: '/dashboard/lesson-notes' },
   { label: 'Exams', icon: FileText, href: '/dashboard/exams' },
   { label: 'Events', icon: Calendar, href: '/dashboard/events' },
