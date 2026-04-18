@@ -146,6 +146,19 @@ export default function LecturePlayerPage() {
     }
   };
 
+  // Handle delete resource
+  const handleDeleteResource = async (resourceId) => {
+    if (!confirm('Are you sure you want to delete this resource?')) return;
+    try {
+      await academicApi.lectureResources.delete(resourceId);
+      toast.success('Resource deleted');
+      const res = await academicApi.lectureResources.getAll(lecture.id);
+      setResources(res.resources || []);
+    } catch (err) {
+      toast.error(err.data?.message || 'Failed to delete resource');
+    }
+  };
+
   // Parse content into sections (split by ## Heading)
   const parseContentSections = useCallback((content) => {
     if (!content) return [];
