@@ -366,6 +366,22 @@ export default function LecturesPage() {
                         Cancel
                       </button>
                     )}
+                    {(lecture.type === 'async' || lecture.type === 'hybrid') && !lecture.is_published && (
+                      <button
+                        onClick={async () => {
+                          try {
+                            await academicApi.lectures.publish(lecture.id);
+                            toast.success('Lecture published');
+                            fetchLectures();
+                          } catch (err) {
+                            toast.error(err.data?.message || 'Failed to publish');
+                          }
+                        }}
+                        className="flex items-center gap-1 px-3 py-1.5 text-sm bg-success/10 text-success rounded-lg hover:bg-success/20"
+                      >
+                        Publish
+                      </button>
+                    )}
                     <button
                       onClick={() => openEditModal(lecture)}
                       className="p-2 text-text-muted hover:text-text-primary"
