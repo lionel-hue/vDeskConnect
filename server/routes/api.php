@@ -189,4 +189,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{id}/attendance', [LectureController::class, 'attendance']);
         Route::post('/{id}/attendance', [LectureController::class, 'markAttendance']);
     });
+
+    // AI Lecture Generator
+    Route::prefix('ai')->group(function () {
+        Route::post('lecture', [AcademicController::class, 'generateLectureAI']);
+    });
 });
