@@ -356,6 +356,10 @@ class LectureController extends Controller
             'file' => 'file|max:102400',
             'title' => 'string|max:255',
             'type' => 'in:pdf,video,image',
+            'content_id' => 'nullable|integer|min:0',
+            'order_index' => 'nullable|integer|min:0',
+            'is_downloadable' => 'nullable|boolean',
+            'is_savable' => 'nullable|boolean',
         ]);
 
         if ($validator->fails()) {
@@ -411,6 +415,10 @@ class LectureController extends Controller
             'url' => $url,
             'title' => $request->title ?: $originalName,
             'uploaded_by' => $user->id,
+            'content_id' => $request->content_id,
+            'order_index' => $request->order_index ?? 0,
+            'is_downloadable' => $request->is_downloadable ?? false,
+            'is_savable' => $request->is_savable ?? false,
         ]);
 
         return response()->json(['message' => 'File uploaded', 'resource' => $resource], 201);
