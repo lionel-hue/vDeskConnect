@@ -79,6 +79,10 @@ export default function LecturePlayerPage() {
   // Handle upload with file
   const handleFileUpload = async () => {
     if (!selectedFile) return;
+    if (!lecture?.id) {
+      toast.error('Lecture not loaded properly');
+      return;
+    }
     setResourceSaving(true);
     try {
       const res = await academicApi.lectureResources.upload(
