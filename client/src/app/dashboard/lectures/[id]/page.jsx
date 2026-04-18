@@ -305,7 +305,7 @@ export default function LecturePlayerPage() {
           bg-white dark:bg-gray-800 border-r border-border
           flex flex-col shrink-0
           transition-all duration-300 ease-in-out
-          w-72 ${sidebarOpen ? '' : 'max-md:-translate-x-full md:max-w-[3rem] md:hover:max-w-[12rem]'}
+          ${sidebarOpen ? 'w-72' : 'w-0 md:w-0 overflow-hidden'}
           hidden md:flex
         `}>
           {/* Header */}
