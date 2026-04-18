@@ -158,6 +158,7 @@ export const academicApi = {
     start: (id) => api.put(`/lectures/${id}/start`),
     complete: (id) => api.put(`/lectures/${id}/complete`),
     cancel: (id) => api.put(`/lectures/${id}/cancel`),
+    publish: (id) => api.put(`/lectures/${id}/publish`),
   },
 
   // Lecture Resources

@@ -318,64 +318,97 @@ This document outlines the complete implementation roadmap for building the **Ac
 
 ## Phase 7: Lectures (Live & Async Teaching Sessions)
 
-**Why Seventh:** Lectures are the actual teaching sessions, linked to teachers, grades, subjects, and optionally video conferences.
+**Why Seventh:** Lectures are the actual teaching sessions, linked to teachers, grades, subjects, and optionally video conferences. This phase covers both **synchronous** (live video conference) and **asynchronous** (recorded/async) lecture modes, plus hybrid combinations.
 
-### 7.1 Lectures Database & API
-- [ ] **Backend**: Create `lectures` table migration
-  - Columns: `id`, `school_id`, `teacher_id`, `grade_level_id`, `subject_id`, `section_id` (nullable), `scheduled_at` (datetime), `duration_minutes`, `status` (scheduled, in_progress, completed, cancelled), `meeting_link` (nullable, for video conferences), `title`, `description` (text), `is_online`, timestamps
-- [ ] **Backend**: Create `lecture_resources` table migration (or use existing `resources` table)
-  - Columns: `id`, `lecture_id` (FK), `type` (pdf, video, link, image), `url`, `title`, `uploaded_by`, timestamps
-- [ ] **Backend**: API endpoints
-  - `GET /api/lectures` — List lectures (filterable by teacher, grade, subject, date range)
+### 7.1 Lecture Types (Clarified)
+1. **Synchronous (Live Online)** - Live video conference via Zoom/Meet link
+2. **Asynchronous (Async)** - Pre-recorded content with timeline/PDFs/videos
+3. **Hybrid** - Both live + async content available (student can attend live then review async, or vice versa)
+
+### 7.2 Lectures Database & API
+- [x] **Backend**: `lectures` table migration (UPDATED)
+  - Columns: `id`, `school_id`, `teacher_id`, `grade_level_id`, `subject_id`, `section_id` (nullable), `title`, `description` (text), `scheduled_at` (datetime), `duration_minutes`, `status` (scheduled, in_progress, completed, cancelled), `is_online`, `meeting_link`, `created_by`, `type` (sync, async, hybrid), `async_available_after` (datetime), `is_published`, timestamps
+
+- [x] **Backend**: `lecture_resources` table migration (UPDATED)
+  - Columns: `id`, `lecture_id` (FK), `type` (pdf, video, link, image), `url`, `title`, `description`, `uploaded_by`, `is_downloadable`, `is_savable`, `available_from` (datetime), `order_index` (int), timestamps
+
+- [x] **Backend**: Updated `attendances` table
+  - Columns: `id`, `school_id`, `lecture_id`, `student_id`, `status` (present, absent, late, completed), `checked_at`, `completed_at` (for async progress tracking)
+
+- [ ] **Backend**: API endpoints for enhanced lectures
+  - `GET /api/lectures` — List lectures (filterable by teacher, grade, subject, date, type)
   - `POST /api/lectures` — Create lecture
   - `PUT /api/lectures/{id}` — Update lecture
   - `DELETE /api/lectures/{id}` — Delete lecture
-  - `PUT /api/lectures/{id}/start` — Mark as in progress
+  - `PUT /api/lectures/{id}/start` — Start live lecture
   - `PUT /api/lectures/{id}/complete` — Mark as completed
+  - `PUT /api/lectures/{id}/publish` — Publish async lecture
   - `GET /api/lectures/{id}/resources` — Get lecture resources
-  - `POST /api/lectures/{id}/resources` — Upload resource
-- [ ] **Backend**: Attendance tracking
-  - `attendances` table (already in architecture): `id`, `school_id`, `lecture_id`, `student_id`, `status` (present, absent, late), `checked_at`
-  - `POST /api/lectures/{id}/attendance` — Mark attendance
-  - `GET /api/lectures/{id}/attendance` — Get attendance
+  - `POST /api/lectures/{id}/resources` — Add resource
+  - `DELETE /api/lectures/resources/{id}` — Delete resource
+  - `POST /api/lectures/{id}/attendance` — Mark attendance (sync) / Mark completion (async)
+  - `GET /api/lectures/{id}/progress` — Get student progress for async lecture
 
-### 7.2 Lectures UI — Manual Assembly
-- [ ] **Frontend**: Create `/dashboard/lectures` page (Teacher-focused)
-  - List view: All lectures (filterable by term, subject, grade, status)
-  - Each lecture card shows: Title, Subject, Grade, Date/Time, Duration, Status, Meeting Link (if online)
+- [ ] **Backend**: Async lecture content builder
+  - Content sections with `order_index` for sequential viewing
+  - Progress tracking (student must complete section before moving to next)
+  - Completion timestamps
+
+### 7.3 Online (Sync) Lectures
+- [x] **Frontend**: Create/Edit lecture with online toggle
+- [ ] **Frontend**: Meeting link integration (opens external video conference)
+- [ ] **Frontend**: In-app status display (Scheduled → In Progress → Completed)
+
+### 7.4 Async Lectures (Enhanced)
+- [ ] **Frontend**: Async lecture builder with sections/timeline
+  - Opening Video: YouTube URL or file upload (first thing students see)
+  - Content Sections: Ordered list of text content (can include markdown)
+  - Resources: PDFs, Videos, Links, Images attached to sections
+  - Sequential viewing: Lock next section until current is completed
+- [ ] **Frontend**: Async lecture player UI
+  - Video player (YouTube embed or custom player)
+  - Scrollable content timeline with progress
+  - Downloadable/saveable resource controls
+  - Completion tracking
+- [ ] **Frontend**: Resource availability settings
+  - "Downloadable" toggle per resource
+  - "Savable" toggle per resource  
+  - "Available from" datetime picker (resource visibility)
+
+### 7.5 Hybrid Lectures
+- [ ] **Frontend**: Hybrid mode toggle
+  - Live meeting link + async content
+  - Async availability setting: "Available after live session ends"
+  - Student can attend live (sync) OR review recording (async)
+  - Completion counts for either mode
+
+### 7.6 Lecture List UI
+- [x] **Frontend**: `/dashboard/lectures` page (Teacher-focused)
+  - List view with filters (subject, grade, status, type)
+  - Lecture cards show: Title, Type badge, Subject, Grade, Schedule, Status
   - "Create Lecture" button
-- [ ] **Frontend**: Lecture Creator
-  - Fields:
-    - Title (text input)
-    - Subject (dropdown, filtered to teacher's subjects)
-    - Grade Level (dropdown)
-    - Section (dropdown, optional)
-    - Scheduled Date & Time (datetime picker)
-    - Duration (number input, minutes)
-    - Description (textarea)
-    - Is Online? (toggle)
-    - Meeting Link (URL input, shown if online)
-    - Attachments: Upload PDFs, videos, images, or paste external links
-  - Create & Schedule button
+- [ ] **Frontend**: Filter by type (sync/async/hybrid)
 
-### 7.3 Lectures UI — AI Builder
-- [ ] **Frontend**: AI Lecture Builder Modal
-  - Step 1: Select Subject (dropdown)
-  - Step 2: Select Topic (dropdown or text input, linked to scheme of work)
-  - Step 3: Toggle: Generate Walkthrough via AI? (if yes, AI generates lecture content; if no, teacher writes manually)
-  - Step 4: Target Student Count (number input)
-  - Step 5: Attachments (upload PDFs, videos, or paste external video links)
-  - Step 6: Video Conference Toggle (if on, show meeting link input)
-  - Step 7: Generate & Assemble button
-  - Result: Complete lecture draft — teacher reviews, edits, publishes
-
-### 7.4 Lecture Detail View
+### 7.7 Lecture Detail View & Player
 - [ ] **Frontend**: `/dashboard/lectures/{id}` page
-  - Tabs: Overview, Resources, Attendance
-  - Overview: Title, subject, grade, date/time, duration, status, meeting link
-  - Resources: List of uploaded files/links, upload new resource
-  - Attendance: Table of students with present/absent/late toggles
-  - Actions: Start Lecture, Mark Complete, Edit, Delete
+  - Tabs: Overview, Content, Resources, Attendance
+  - **Overview**: Title, description, subject, grade, schedule, meeting link
+  - **Content** (for async): Ordered sections with video/text/PDFs
+  - **Resources**: List with download/save toggles and availability times
+  - **Attendance**: Students with status + async completion %
+  - Actions: Start, Complete, Cancel, Edit, Delete
+
+- [ ] **Frontend**: Student-facing lecture page (`/student/lectures/{id}`)
+  - Video player for opening video
+  - Scrollable content timeline
+  - Resource download/save buttons
+  - Progress bar (async completion tracking)
+  - "Mark as Complete" action
+
+### 7.8 AI Lecture Builder (Future)
+- [ ] **Frontend**: AI generates async lecture outline
+- [ ] **Frontend**: Auto-generate sections from topic
+- [ ] Integration with video upload processing
 
 ---
 

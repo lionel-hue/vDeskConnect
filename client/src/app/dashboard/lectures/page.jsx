@@ -26,6 +26,18 @@ const STATUS_LABELS = {
   cancelled: 'Cancelled',
 };
 
+const TYPE_COLORS = {
+  sync: 'bg-primary/10 text-primary',
+  async: 'bg-purple-10 text-purple-600',
+  hybrid: 'bg-warning/10 text-warning',
+};
+
+const TYPE_LABELS = {
+  sync: 'Live (Sync)',
+  async: 'Recorded (Async)',
+  hybrid: 'Hybrid',
+};
+
 export default function LecturesPage() {
   const router = useRouter();
   const toast = useToast();
@@ -41,8 +53,9 @@ export default function LecturesPage() {
   const [showModal, setShowModal] = useState(false);
   const [editingLecture, setEditingLecture] = useState(null);
   const [lectureForm, setLectureForm] = useState({
-    title: '', description: '', teacher_id: '', grade_level_id: '', subject_id: '',
-    section_id: '', scheduled_at: '', duration_minutes: 40, is_online: false, meeting_link: '',
+    title: '', description: '', content: '', teacher_id: '', grade_level_id: '', subject_id: '',
+    section_id: '', scheduled_at: '', duration_minutes: 40, type: 'async',
+    is_online: false, meeting_link: '', async_available_after: '', is_published: false,
   });
   const [formLoading, setFormLoading] = useState(false);
 
