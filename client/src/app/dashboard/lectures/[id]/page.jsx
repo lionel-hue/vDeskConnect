@@ -835,8 +835,20 @@ export default function LecturePlayerPage() {
                         );
                       })()
                     ) : (
-                      <video src={previewResource.url} controls className="w-full h-full" />
+                      <video 
+                        src={previewResource.url} 
+                        controls 
+                        className="w-full h-full"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          e.target.nextSibling.style.display = 'flex';
+                        }}
+                      />
                     )}
+                    <div className="hidden flex-col items-center justify-center h-full text-white">
+                      <Video className="w-12 h-12 mb-2 opacity-50" />
+                      <p className="text-sm opacity-70">Video unavailable</p>
+                    </div>
                   </div>
                 )}
 
