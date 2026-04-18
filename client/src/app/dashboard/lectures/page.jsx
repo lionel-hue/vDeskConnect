@@ -82,6 +82,25 @@ export default function LecturesPage() {
 
   // AI Builder modal
   const [showAIModal, setShowAIModal] = useState(false);
+
+  // Lecture Builder Modal - Create complete lecture with sections
+  const [showBuilderModal, setShowBuilderModal] = useState(false);
+  const [builderForm, setBuilderForm] = useState({
+    title: '',
+    description: '',
+    teacher_id: '',
+    grade_level_id: '',
+    subject_id: '',
+    section_id: '',
+    scheduled_at: '',
+    duration_minutes: 40,
+    type: 'async',
+    is_online: false,
+    meeting_link: '',
+    is_published: false,
+    sections: [{ title: '', content: '', resources: [] }],
+  });
+  const [builderLoading, setBuilderLoading] = useState(false);
   const [aiForm, setAiForm] = useState({
     title: '', description: '', grade_level_id: '', subject_id: '', sections: 5,
   });
