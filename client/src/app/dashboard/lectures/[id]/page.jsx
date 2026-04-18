@@ -514,6 +514,119 @@ export default function LecturePlayerPage() {
             </div>
           </div>
         </div>
+
+        {/* Add Resource Modal for Director */}
+        {showAddResource && (
+          <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4" onClick={() => setShowAddResource(false)}>
+            <div className="bg-white dark:bg-gray-800 rounded-lg max-w-md w-full" onClick={e => e.stopPropagation()}>
+              <div className="flex items-center justify-between p-4 border-b border-border">
+                <h3 className="font-semibold text-text-primary">Add Resource to Section {resourceForm.order_index + 1}</h3>
+                <button onClick={() => setShowAddResource(false)} className="text-text-muted hover:text-text-primary">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <form onSubmit={async (e) => {
+                e.preventDefault();
+                setResourceSaving(true);
+                try {
+                  await academicApi.lectureResources.add(lecture.id, {
+                    ...resourceForm,
+                    order_index: resourceForm.order_index,
+                  });
+                  toast.success('Resource added!');
+                  setShowAddResource(false);
+                  // Refresh resources
+                  const res = await academicApi.lectureResources.getAll(lecture.id);
+                  setResources(res.resources || []);
+                } catch (err) {
+                  toast.error(err.data?.message || 'Failed to add resource');
+                } finally {
+                  setResourceSaving(false);
+                }
+              }} className="p-4 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-1">Title *</label>
+                  <input
+                    type="text"
+                    required
+                    value={resourceForm.title}
+                    onChange={e => setResourceForm({ ...resourceForm, title: e.target.value })}
+                    className="w-full px-3 py-2 border border-border rounded-lg bg-white dark:bg-gray-700 text-text-primary"
+                    placeholder="Resource title"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-1">Type *</label>
+                  <select
+                    required
+                    value={resourceForm.type}
+                    onChange={e => setResourceForm({ ...resourceForm, type: e.target.value })}
+                    className="w-full px-3 py-2 border border-border rounded-lg bg-white dark:bg-gray-700 text-text-primary"
+                  >
+                    <option value="pdf">PDF Document</option>
+                    <option value="video">Video</option>
+                    <option value="image">Image</option>
+                    <option value="link">External Link</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-1">URL *</label>
+                  <input
+                    type="url"
+                    required
+                    value={resourceForm.url}
+                    onChange={e => setResourceForm({ ...resourceForm, url: e.target.value })}
+                    className="w-full px-3 py-2 border border-border rounded-lg bg-white dark:bg-gray-700 text-text-primary"
+                    placeholder="https://..."
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-1">Assign to Section</label>
+                  <select
+                    value={resourceForm.order_index}
+                    onChange={e => setResourceForm({ ...resourceForm, order_index: parseInt(e.target.value) })}
+                    className="w-full px-3 py-2 border border-border rounded-lg bg-white dark:bg-gray-700 text-text-primary"
+                  >
+                    {sectionContents.map((s, i) => (
+                      <option key={i} value={i}>{s.title}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={resourceForm.is_downloadable}
+                      onChange={e => setResourceForm({ ...resourceForm, is_downloadable: e.target.checked })}
+                      className="w-4 h-4"
+                    />
+                    <span className="text-sm text-text-primary">Downloadable</span>
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={resourceForm.is_savable}
+                      onChange={e => setResourceForm({ ...resourceForm, is_savable: e.target.checked })}
+                      className="w-4 h-4"
+                    />
+                    <span className="text-sm text-text-primary">Savable</span>
+                  </label>
+                </div>
+
+                <div className="flex gap-3">
+                  <button type="button" onClick={() => setShowAddResource(false)} className="flex-1 px-4 py-2 border border-border rounded-lg">Cancel</button>
+                  <button type="submit" disabled={resourceSaving} className="flex-1 px-4 py-2 bg-primary text-white rounded-lg">
+                    {resourceSaving ? 'Adding...' : 'Add Resource'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     </DashboardLayout>
   );
