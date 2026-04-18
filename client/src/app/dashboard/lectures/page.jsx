@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Video, Plus, Trash2, Edit2, X, Play, PlayCircle, CheckCircle, Calendar,
-  Clock, BookOpen, Users, Link as LinkIcon, FileText, Search,
+  Clock, BookOpen, Users, Link as LinkIcon, FileText, Search, Loader,
   Filter, ChevronLeft, ChevronRight, ExternalLink, AlertCircle, Eye,
   File, Download, Save, Clock3, Image, Globe, Lock, Unlock, Sparkles,
 } from 'lucide-react';
@@ -932,6 +932,204 @@ export default function LecturesPage() {
                   <button type="button" onClick={() => setShowResourceModal(false)} className="flex-1 px-4 py-2 border border-border rounded-lg">Cancel</button>
                   <button type="submit" className="flex-1 px-4 py-2 bg-primary text-white rounded-lg">Add</button>
                 </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* AI Lecture Builder Modal */}
+        {showAIModal && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowAIModal(false)}>
+            <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+              <div className="flex items-center justify-between p-4 border-b border-border">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-purple-500" />
+                  <h2 className="text-lg font-semibold text-text-primary">AI Lecture Builder</h2>
+                </div>
+                <button onClick={() => setShowAIModal(false)} className="text-text-muted hover:text-text-primary">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <form onSubmit={async (e) => {
+                e.preventDefault();
+                setAiLoading(true);
+                try {
+                  const res = await academicApi.aiLecture.generate(aiForm);
+                  setAiPreview(res.lecture);
+                  if (res.ai_unavailable) {
+                    toast.warning('AI unavailable - used smart template');
+                  } else {
+                    toast.success('Lecture generated!');
+                  }
+                } catch (err) {
+                  toast.error(err.data?.message || 'Failed to generate lecture');
+                } finally {
+                  setAiLoading(false);
+                }
+              }} className="p-4 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-1">Lecture Title *</label>
+                  <input
+                    type="text"
+                    required
+                    value={aiForm.title}
+                    onChange={e => setAiForm({ ...aiForm, title: e.target.value })}
+                    className="w-full px-3 py-2 border border-border rounded-lg bg-white dark:bg-gray-700 text-text-primary"
+                    placeholder="e.g., Introduction to Algebra"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-text-secondary mb-1">Grade Level *</label>
+                    <select
+                      required
+                      value={aiForm.grade_level_id}
+                      onChange={e => setAiForm({ ...aiForm, grade_level_id: e.target.value, subject_id: '' })}
+                      className="w-full px-3 py-2 border border-border rounded-lg bg-white dark:bg-gray-700 text-text-primary"
+                    >
+                      <option value="">Select Grade</option>
+                      {gradeLevels.map(g => (
+                        <option key={g.id} value={g.id}>{g.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-text-secondary mb-1">Subject *</label>
+                    <select
+                      required
+                      value={aiForm.subject_id}
+                      onChange={e => setAiForm({ ...aiForm, subject_id: e.target.value })}
+                      className="w-full px-3 py-2 border border-border rounded-lg bg-white dark:bg-gray-700 text-text-primary"
+                    >
+                      <option value="">Select Subject</option>
+                      {subjects.map(s => (
+                        <option key={s.id} value={s.id}>{s.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-1">Description</label>
+                  <textarea
+                    rows={2}
+                    value={aiForm.description}
+                    onChange={e => setAiForm({ ...aiForm, description: e.target.value })}
+                    className="w-full px-3 py-2 border border-border rounded-lg bg-white dark:bg-gray-700 text-text-primary"
+                    placeholder="Brief description of what this lecture covers..."
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-1">Number of Sections</label>
+                  <div className="flex items-center gap-4">
+                    <input
+                      type="range"
+                      min="2"
+                      max="10"
+                      value={aiForm.sections}
+                      onChange={e => setAiForm({ ...aiForm, sections: parseInt(e.target.value) })}
+                      className="flex-1"
+                    />
+                    <span className="text-sm font-medium text-text-primary w-12 text-center">{aiForm.sections}</span>
+                  </div>
+                </div>
+
+                {!aiPreview && (
+                  <button
+                    type="submit"
+                    disabled={aiLoading}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 disabled:opacity-50"
+                  >
+                    {aiLoading ? (
+                      <>
+                        <Loader className="w-4 h-4 animate-spin" /> Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-4 h-4" /> Generate with AI
+                      </>
+                    )}
+                  </button>
+                )}
+
+                {/* Preview */}
+                {aiPreview && (
+                  <div className="space-y-4">
+                    <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-purple-700 dark:text-purple-400">
+                          Generated: {aiPreview.total_sections || aiPreview.sections?.length || 0} sections
+                        </span>
+                        {aiPreview.source === 'smart_template' && (
+                          <span className="text-xs px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded">Smart Template</span>
+                        )}
+                      </div>
+                      <p className="text-sm text-text-primary mb-3">
+                        Title: {aiPreview.title}
+                      </p>
+                      <div className="text-xs text-text-muted space-y-1">
+                        {aiPreview.sections?.map((s, i) => (
+                          <p key={i}>• {s.title}</p>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="flex gap-3">
+                      <button
+                        type="button"
+                        onClick={() => { setAiPreview(null); setAiForm({
+                          title: '', description: '', grade_level_id: '', subject_id: '', sections: 5,
+                        }); }}
+                        className="flex-1 px-4 py-2 border border-border rounded-lg"
+                      >
+                        Clear & Start Over
+                      </button>
+                      <button
+                        type="button"
+                        disabled={formLoading}
+                        onClick={async () => {
+                          // Build content from sections
+                          const content = aiPreview.sections?.map(s => 
+                            `## ${s.title}\n\n${s.content}`
+                          ).join('\n\n\n') || '';
+
+                          const newForm = {
+                            ...lectureForm,
+                            title: aiPreview.title || aiForm.title,
+                            description: aiForm.description,
+                            content: content,
+                            grade_level_id: aiForm.grade_level_id,
+                            subject_id: aiForm.subject_id,
+                            type: 'async',
+                            scheduled_at: new Date().toISOString().slice(0, 16),
+                            is_published: false,
+                            teacher_id: teachers[0]?.id || '',
+                          };
+
+                          try {
+                            await academicApi.lectures.create(newForm);
+                            toast.success('Lecture created from AI!');
+                            setShowAIModal(false);
+                            setAiPreview(null);
+                            setAiForm({
+                              title: '', description: '', grade_level_id: '', subject_id: '', sections: 5,
+                            });
+                            fetchLectures();
+                          } catch (err) {
+                            toast.error(err.data?.message || 'Failed to save lecture');
+                          }
+                        }}
+                        className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark"
+                      >
+                        Create Lecture
+                      </button>
+                    </div>
+                  </div>
+                )}
               </form>
             </div>
           </div>
