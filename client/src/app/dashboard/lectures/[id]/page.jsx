@@ -648,25 +648,25 @@ export default function LecturePlayerPage() {
           </div>
 
           {/* Floating Progress - always visible for everyone - Hide on small mobile, show on md+ */}
-          <div className="hidden md:flex fixed bottom-6 right-6 bg-white dark:bg-gray-800 p-3 md:p-4 rounded-lg shadow-xl border border-border z-30">
-            <div className="flex items-center gap-2 md:gap-3">
-              <div className="relative w-10 h-10 md:w-12 md:h-12">
-                <svg className="w-10 h-10 md:w-12 md:h-12 -rotate-90">
-                  <circle cx="20" cy="20" r="16" stroke="currentColor" strokeWidth="3" fill="none" className="text-gray-200 dark:text-gray-700" />
+          <div className="hidden md:flex fixed bottom-6 right-6 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-xl border border-border z-30">
+            <div className="flex items-center gap-3">
+              <div className="relative w-12 h-12">
+                <svg className="w-12 h-12 -rotate-90">
+                  <circle cx="24" cy="24" r="20" stroke="currentColor" strokeWidth="4" fill="none" className="text-gray-200 dark:text-gray-700" />
                   <circle 
-                    cx="20" cy="20" r="16" stroke="currentColor" strokeWidth="3" fill="none" 
-                    strokeDasharray={100.5}
-                    strokeDashoffset={100.5 - (100.5 * progress / 100)}
+                    cx="24" cy="24" r="20" stroke="currentColor" strokeWidth="4" fill="none" 
+                    strokeDasharray={125.6}
+                    strokeDashoffset={125.6 - (125.6 * progress / 100)}
                     className="text-primary transition-all duration-500"
                   />
                 </svg>
-                <span className="absolute inset-0 flex items-center justify-center text-xs md:text-sm font-bold text-text-primary">
+                <span className="absolute inset-0 flex items-center justify-center text-sm font-bold text-text-primary leading-none">
                   {isDirector 
                     ? `${currentSectionIndex + 1}/${sectionContents.length}`
                     : `${Math.round(progress)}%`}
                 </span>
               </div>
-              <div className="hidden md:block">
+              <div>
                 <p className="text-sm font-medium text-text-primary">Progress</p>
                 <p className="text-xs text-text-muted">
                   {isDirector 
