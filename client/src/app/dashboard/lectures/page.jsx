@@ -102,6 +102,7 @@ export default function LecturesPage() {
     sections: [{ title: '', content: '', resources: [] }],
   });
   const [builderLoading, setBuilderLoading] = useState(false);
+  const [builderSectionResources, setBuilderSectionResources] = useState({});
   const [aiForm, setAiForm] = useState({
     title: '', description: '', grade_level_id: '', subject_id: '', sections: 5,
   });
@@ -1326,6 +1327,9 @@ export default function LecturesPage() {
                             onClick={() => {
                               const newSections = builderForm.sections.filter((_, i) => i !== index);
                               setBuilderForm({ ...builderForm, sections: newSections });
+                              const newResources = { ...builderSectionResources };
+                              delete newResources[index];
+                              setBuilderSectionResources(newResources);
                             }}
                             className="text-red-500 hover:text-red-700"
                           >
