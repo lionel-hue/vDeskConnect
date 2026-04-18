@@ -46,7 +46,7 @@ export default function LecturePlayerPage() {
   const [previewResource, setPreviewResource] = useState(null);
   const [resourceForm, setResourceForm] = useState({
     title: '', type: 'pdf', url: '', description: '',
-    is_downloadable: false, is_savable: false, available_from: '', order_index: 0,
+    is_downloadable: false, is_savable: false, available_from: '', order_index: 0, content_id: null,
   });
   const [resourceSaving, setResourceSaving] = useState(false);
 
@@ -737,14 +737,19 @@ export default function LecturePlayerPage() {
                 )}
 
                 <div>
-                  <label className="block text-sm font-medium text-text-secondary mb-1">Assign to Section</label>
+                  <label className="block text-sm font-medium text-text-secondary mb-1">Attach To</label>
                   <select
-                    value={resourceForm.order_index}
-                    onChange={e => setResourceForm({ ...resourceForm, order_index: parseInt(e.target.value) })}
+                    value={resourceForm.content_id !== null ? resourceForm.content_id : 'all'}
+                    onChange={e => setResourceForm({ 
+                      ...resourceForm, 
+                      content_id: e.target.value === 'all' ? null : parseInt(e.target.value),
+                      order_index: e.target.value === 'all' ? 0 : parseInt(e.target.value)
+                    })}
                     className="w-full px-3 py-2 border border-border rounded-lg bg-white dark:bg-gray-700 text-text-primary"
                   >
+                    <option value="all">Entire Lecture (All Sections)</option>
                     {sectionContents.map((s, i) => (
-                      <option key={i} value={i}>{s.title}</option>
+                      <option key={i} value={i}>Section {i + 1}: {s.title}</option>
                     ))}
                   </select>
                 </div>
