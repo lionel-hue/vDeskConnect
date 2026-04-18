@@ -1360,6 +1360,77 @@ export default function LecturesPage() {
                         placeholder="Write section content in Markdown..."
                       />
                       <p className="text-xs text-text-muted mt-1">Supports Markdown: **bold**, *italic*, ## headings, - lists, etc.</p>
+                      
+                      {/* Section Resources */}
+                      <div className="mt-3 flex items-center justify-between">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const current = builderSectionResources[index] || [];
+                            const newResources = [...current, { title: '', url: '', type: 'pdf' }];
+                            setBuilderSectionResources({ ...builderSectionResources, [index]: newResources });
+                          }}
+                          className="text-sm text-primary hover:underline flex items-center gap-1"
+                        >
+                          <Plus className="w-3.5 h-3.5" /> Add Resource
+                        </button>
+                        {(builderSectionResources[index]?.length > 0) && (
+                          <span className="text-xs text-text-muted">
+                            {builderSectionResources[index].length} resource(s)
+                          </span>
+                        )}
+                      </div>
+                      
+                      {builderSectionResources[index]?.map((resource, rIdx) => (
+                        <div key={rIdx} className="mt-2 p-2 bg-white dark:bg-gray-600 rounded border border-border flex items-center gap-2">
+                          <select
+                            value={resource.type}
+                            onChange={e => {
+                              const newResources = [...(builderSectionResources[index] || [])];
+                              newResources[rIdx].type = e.target.value;
+                              setBuilderSectionResources({ ...builderSectionResources, [index]: newResources });
+                            }}
+                            className="px-2 py-1 text-xs border border-border rounded"
+                          >
+                            <option value="pdf">PDF</option>
+                            <option value="video">Video</option>
+                            <option value="image">Image</option>
+                            <option value="link">Link</option>
+                          </select>
+                          <input
+                            type="text"
+                            value={resource.title}
+                            onChange={e => {
+                              const newResources = [...(builderSectionResources[index] || [])];
+                              newResources[rIdx].title = e.target.value;
+                              setBuilderSectionResources({ ...builderSectionResources, [index]: newResources });
+                            }}
+                            placeholder="Resource title"
+                            className="flex-1 px-2 py-1 text-xs border border-border rounded"
+                          />
+                          <input
+                            type="url"
+                            value={resource.url}
+                            onChange={e => {
+                              const newResources = [...(builderSectionResources[index] || [])];
+                              newResources[rIdx].url = e.target.value;
+                              setBuilderSectionResources({ ...builderSectionResources, [index]: newResources });
+                            }}
+                            placeholder="https://..."
+                            className="flex-1 px-2 py-1 text-xs border border-border rounded"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newResources = (builderSectionResources[index] || []).filter((_, i) => i !== rIdx);
+                              setBuilderSectionResources({ ...builderSectionResources, [index]: newResources });
+                            }}
+                            className="text-red-500 hover:text-red-700"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ))}
                     </div>
                   ))}
                 </div>
