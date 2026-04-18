@@ -80,6 +80,14 @@ export default function LecturesPage() {
   const [currentSection, setCurrentSection] = useState(0);
   const [sectionProgress, setSectionProgress] = useState({});
 
+  // AI Builder modal
+  const [showAIModal, setShowAIModal] = useState(false);
+  const [aiForm, setAiForm] = useState({
+    title: '', description: '', grade_level_id: '', subject_id: '', sections: 5,
+  });
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiPreview, setAiPreview] = useState(null);
+
   const fetchLectures = useCallback(async () => {
     setLoading(true);
     try {
