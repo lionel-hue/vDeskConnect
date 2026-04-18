@@ -381,6 +381,13 @@ export default function LecturesPage() {
                         Cancel
                       </button>
                     )}
+                    <button
+                      onClick={() => openViewModal(lecture)}
+                      className="p-2 text-text-muted hover:text-text-primary"
+                      title="View Details"
+                    >
+                      <Eye className="w-4 h-4" />
+                    </button>
                     {(lecture.type === 'async' || lecture.type === 'hybrid') && !lecture.is_published && (
                       <button
                         onClick={async () => {
