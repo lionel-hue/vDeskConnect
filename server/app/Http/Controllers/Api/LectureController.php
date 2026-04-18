@@ -350,10 +350,10 @@ class LectureController extends Controller
             'type' => 'required|in:pdf,video,image',
         ]);
 
-        $validator = Validator::make($request->all(), [
-            'file' => 'required|file|max:102400',
-            'title' => 'required|string|max:255',
-            'type' => 'required|in:pdf,video,image',
+$validator = Validator::make($request->all(), [
+            'file' => 'file|max:102400',
+            'title' => 'string|max:255',
+            'type' => 'in:pdf,video,image',
         ]);
 
         if ($validator->fails()) {
@@ -363,8 +363,22 @@ class LectureController extends Controller
                 'file_is_valid' => $request->file('file') ? $request->file('file')->isValid() : 'no file',
                 'file_error' => $request->file('file') ? $request->file('file')->getError() : 'no file',
                 'file_error_message' => $request->file('file') ? $request->file('file')->getErrorMessage() : 'no file',
+                'php_upload_max_filesize' => ini_get('upload_max_filesize'),
+                'php_post_max_size' => ini_get('post_max_size'),
             ]);
             return response()->json(['message' => 'Validation failed', 'errors' => $validator->errors()], 422);
+        }
+
+        if (!$request->hasFile('file') || !$request->file('file')->isValid()) {
+            $file = $request->file('file');
+            $errorMsg = $file ? $file->getErrorMessage() : 'No file provided';
+            Log::warning('File upload issue', [
+                'has_file' => $request->hasFile('file'),
+                'file' => $file,
+                'error' => $errorMsg,
+                'php_upload_max_filesize' => ini_get('upload_max_filesize'),
+            ]);
+            return response()->json(['message' => 'The file failed to upload: ' . $errorMsg, 'errors' => ['file' => [$errorMsg]]], 422);
         }
 
         $file = $request->file('file');
