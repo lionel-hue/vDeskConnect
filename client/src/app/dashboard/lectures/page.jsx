@@ -43,7 +43,7 @@ export default function LecturesPage() {
   const toast = useToast();
   const [loading, setLoading] = useState(true);
   const [lectures, setLectures] = useState([]);
-  const [filters, setFilters] = useState({ search: '', status: '', grade_level_id: '', subject_id: '', term_id: '' });
+  const [filters, setFilters] = useState({ search: '', status: '', type: '', grade_level_id: '', subject_id: '', term_id: '' });
   const [gradeLevels, setGradeLevels] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [teachers, setTeachers] = useState([]);
