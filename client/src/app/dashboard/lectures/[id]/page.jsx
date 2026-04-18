@@ -306,7 +306,7 @@ export default function LecturePlayerPage() {
           <div className="p-4 border-b border-border">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium text-text-primary">Progress</span>
-              <span className="text-sm text-text-muted">{progress}%</span>
+              <span className="text-sm text-text-muted">{Math.round(progress)}%</span>
             </div>
             <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
               <div 
