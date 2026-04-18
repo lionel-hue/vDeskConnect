@@ -1,0 +1,374 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Models\Lecture;
+use App\Models\LectureResource;
+use App\Models\Attendance;
+use App\Models\User;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+
+class LectureController extends Controller
+{
+    /**
+     * List lectures for the authenticated user's school.
+     */
+    public function index(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $perPage = min((int) $request->get('per_page', 20), 100);
+        $search = $request->get('search');
+
+        $query = Lecture::where('school_id', $user->school_id)
+            ->with(['teacher:id,email', 'gradeLevel', 'subject', 'section'])
+            ->orderBy('scheduled_at', 'desc');
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%");
+                $q->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter by teacher
+        if ($request->has('teacher_id')) {
+            $query->where('teacher_id', $request->teacher_id);
+        }
+
+        // Filter by grade level
+        if ($request->has('grade_level_id')) {
+            $query->where('grade_level_id', $request->grade_level_id);
+        }
+
+        // Filter by subject
+        if ($request->has('subject_id')) {
+            $query->where('subject_id', $request->subject_id);
+        }
+
+        // Filter by status
+        if ($request->has('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Filter by date range
+        if ($request->has('date_from')) {
+            $query->where('scheduled_at', '>=', $request->date_from);
+        }
+        if ($request->has('date_to')) {
+            $query->where('scheduled_at', '<=', $request->date_to);
+        }
+
+        $lectures = $query->paginate($perPage);
+
+        return response()->json($lectures);
+    }
+
+    /**
+     * Get a single lecture with details.
+     */
+    public function show(Request $request, int $id): JsonResponse
+    {
+        $user = $request->user();
+        $lecture = Lecture::where('school_id', $user->school_id)
+            ->with(['teacher.profile', 'gradeLevel', 'subject', 'section', 'creator.profile', 'resources', 'attendances.student.profile'])
+            ->findOrFail($id);
+
+        return response()->json(['lecture' => $lecture]);
+    }
+
+    /**
+     * Create a new lecture.
+     */
+    public function store(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'teacher_id' => 'required|exists:users,id',
+            'grade_level_id' => 'required|exists:grade_levels,id',
+            'subject_id' => 'required|exists:subjects,id',
+            'section_id' => 'nullable|exists:sections,id',
+            'scheduled_at' => 'required|date',
+            'duration_minutes' => 'nullable|integer|min:5|max:180',
+            'is_online' => 'nullable|boolean',
+            'meeting_link' => 'nullable|url',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $user = $request->user();
+        if ($user->isStudent()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $lecture = Lecture::create([
+            'school_id' => $user->school_id,
+            'title' => $request->title,
+            'description' => $request->description,
+            'teacher_id' => $request->teacher_id,
+            'grade_level_id' => $request->grade_level_id,
+            'subject_id' => $request->subject_id,
+            'section_id' => $request->section_id,
+            'scheduled_at' => $request->scheduled_at,
+            'duration_minutes' => $request->duration_minutes ?? 40,
+            'is_online' => $request->is_online ?? false,
+            'meeting_link' => $request->meeting_link,
+            'created_by' => $user->id,
+        ]);
+
+        return response()->json([
+            'message' => 'Lecture created successfully',
+            'lecture' => $this->formatLecture($lecture),
+        ], 201);
+    }
+
+    /**
+     * Update a lecture.
+     */
+    public function update(Request $request, int $id): JsonResponse
+    {
+        $user = $request->user();
+        $lecture = Lecture::where('school_id', $user->school_id)->findOrFail($id);
+
+        $validator = Validator::make($request->all(), [
+            'title' => 'sometimes|string|max:255',
+            'description' => 'nullable|string',
+            'teacher_id' => 'sometimes|exists:users,id',
+            'grade_level_id' => 'sometimes|exists:grade_levels,id',
+            'subject_id' => 'sometimes|exists:subjects,id',
+            'section_id' => 'nullable|exists:sections,id',
+            'scheduled_at' => 'sometimes|date',
+            'duration_minutes' => 'nullable|integer|min:5|max:180',
+            'status' => 'nullable|in:scheduled,in_progress,completed,cancelled',
+            'is_online' => 'nullable|boolean',
+            'meeting_link' => 'nullable|url',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        // Permission check
+        if (!$user->canManage($lecture->teacher) && !$user->isSchoolAdmin() && $user->id !== $lecture->teacher_id) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $lecture->update($request->only([
+            'title', 'description', 'teacher_id', 'grade_level_id', 'subject_id',
+            'section_id', 'scheduled_at', 'duration_minutes', 'status', 'is_online', 'meeting_link'
+        ]));
+
+        return response()->json([
+            'message' => 'Lecture updated successfully',
+            'lecture' => $this->formatLecture($lecture),
+        ]);
+    }
+
+    /**
+     * Delete a lecture.
+     */
+    public function destroy(Request $request, int $id): JsonResponse
+    {
+        $user = $request->user();
+        $lecture = Lecture::where('school_id', $user->school_id)->findOrFail($id);
+
+        if (!$user->canManage($lecture->teacher) && !$user->isSchoolAdmin() && $user->id !== $lecture->teacher_id) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $lecture->delete();
+
+        return response()->json(['message' => 'Lecture deleted successfully']);
+    }
+
+    /**
+     * Mark lecture as in progress.
+     */
+    public function start(Request $request, int $id): JsonResponse
+    {
+        $user = $request->user();
+        $lecture = Lecture::where('school_id', $user->school_id)->findOrFail($id);
+
+        if ($user->id !== $lecture->teacher_id && !$user->isSchoolAdmin()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $lecture->update(['status' => 'in_progress']);
+
+        return response()->json(['message' => 'Lecture started', 'lecture' => $this->formatLecture($lecture)]);
+    }
+
+    /**
+     * Mark lecture as completed.
+     */
+    public function complete(Request $request, int $id): JsonResponse
+    {
+        $user = $request->user();
+        $lecture = Lecture::where('school_id', $user->school_id)->findOrFail($id);
+
+        if ($user->id !== $lecture->teacher_id && !$user->isSchoolAdmin()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $lecture->update(['status' => 'completed']);
+
+        return response()->json(['message' => 'Lecture completed', 'lecture' => $this->formatLecture($lecture)]);
+    }
+
+    /**
+     * Cancel lecture.
+     */
+    public function cancel(Request $request, int $id): JsonResponse
+    {
+        $user = $request->user();
+        $lecture = Lecture::where('school_id', $user->school_id)->findOrFail($id);
+
+        if ($user->id !== $lecture->teacher_id && !$user->isSchoolAdmin()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $lecture->update(['status' => 'cancelled']);
+
+        return response()->json(['message' => 'Lecture cancelled', 'lecture' => $this->formatLecture($lecture)]);
+    }
+
+    // ==================== RESOURCES ====================
+
+    /**
+     * Get lecture resources.
+     */
+    public function resources(Request $request, int $id): JsonResponse
+    {
+        $user = $request->user();
+        $lecture = Lecture::where('school_id', $user->school_id)->findOrFail($id);
+
+        $resources = $lecture->resources()->with('uploader:id,email')->get();
+
+        return response()->json(['resources' => $resources]);
+    }
+
+    /**
+     * Add resource to lecture.
+     */
+    public function addResource(Request $request, int $id): JsonResponse
+    {
+        $user = $request->user();
+        $lecture = Lecture::where('school_id', $user->school_id)->findOrFail($id);
+
+        $validator = Validator::make($request->all(), [
+            'type' => 'required|in:pdf,video,link,image',
+            'url' => 'required|url',
+            'title' => 'required|string|max:255',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['message' => 'Validation failed', 'errors' => $validator->errors()], 422);
+        }
+
+        $resource = LectureResource::create([
+            'lecture_id' => $lecture->id,
+            'type' => $request->type,
+            'url' => $request->url,
+            'title' => $request->title,
+            'uploaded_by' => $user->id,
+        ]);
+
+        return response()->json(['message' => 'Resource added', 'resource' => $resource], 201);
+    }
+
+    /**
+     * Delete resource.
+     */
+    public function deleteResource(Request $request, int $id): JsonResponse
+    {
+        $user = $request->user();
+        $resource = LectureResource::whereHas('lecture', function ($q) use ($user) {
+            $q->where('school_id', $user->school_id);
+        })->findOrFail($id);
+
+        $resource->delete();
+
+        return response()->json(['message' => 'Resource deleted']);
+    }
+
+    // ==================== ATTENDANCE ====================
+
+    /**
+     * Get attendance for a lecture.
+     */
+    public function attendance(Request $request, int $id): JsonResponse
+    {
+        $user = $request->user();
+        $lecture = Lecture::where('school_id', $user->school_id)->findOrFail($id);
+
+        $attendance = $lecture->attendances()->with('student:id,email')->get();
+
+        return response()->json(['attendance' => $attendance]);
+    }
+
+    /**
+     * Mark attendance for students.
+     */
+    public function markAttendance(Request $request, int $id): JsonResponse
+    {
+        $user = $request->user();
+        $lecture = Lecture::where('school_id', $user->school_id)->findOrFail($id);
+
+        if ($user->id !== $lecture->teacher_id && !$user->isSchoolAdmin()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'attendance' => 'required|array',
+            'attendance.*.student_id' => 'required|exists:users,id',
+            'attendance.*.status' => 'required|in:present,absent,late,excused',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['message' => 'Validation failed', 'errors' => $validator->errors()], 422);
+        }
+
+        foreach ($request->attendance as $entry) {
+            Attendance::updateOrCreate(
+                ['lecture_id' => $lecture->id, 'student_id' => $entry['student_id']],
+                ['status' => $entry['status'], 'checked_at' => now()]
+            );
+        }
+
+        return response()->json(['message' => 'Attendance marked']);
+    }
+
+    private function formatLecture(Lecture $lecture): array
+    {
+        return [
+            'id' => $lecture->id,
+            'title' => $lecture->title,
+            'description' => $lecture->description,
+            'teacher_id' => $lecture->teacher_id,
+            'teacher_name' => $lecture->teacher ? ($lecture->teacher->profile?->data['first_name'] . ' ' . $lecture->teacher->profile?->data['last_name']) : null,
+            'grade_level_id' => $lecture->grade_level_id,
+            'grade_level_name' => $lecture->gradeLevel?->name,
+            'subject_id' => $lecture->subject_id,
+            'subject_name' => $lecture->subject?->name,
+            'section_id' => $lecture->section_id,
+            'section_name' => $lecture->section?->name,
+            'scheduled_at' => $lecture->scheduled_at,
+            'duration_minutes' => $lecture->duration_minutes,
+            'status' => $lecture->status,
+            'is_online' => $lecture->is_online,
+            'meeting_link' => $lecture->meeting_link,
+            'created_at' => $lecture->created_at,
+        ];
+    }
+}
