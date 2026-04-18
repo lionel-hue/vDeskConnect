@@ -24,6 +24,7 @@ import {
   UserRound,
   SlidersHorizontal,
   ClipboardList,
+  Video,
 } from 'lucide-react';
 
 // Super Admin navigation items
