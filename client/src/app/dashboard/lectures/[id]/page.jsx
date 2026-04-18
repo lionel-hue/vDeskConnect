@@ -252,11 +252,12 @@ export default function LecturePlayerPage() {
   const canGoPrev = true; // Can always go back
 
   // Get resources for current section
-  // If content_id is null, empty string, or undefined, it's for the entire lecture (shows in all sections)
+  // If content_id is null or empty (not set), it's for the entire lecture (shows in all sections)
   // If content_id equals currentSectionIndex, it's for this specific section
-  const currentSectionResources = resources.filter(r => 
-    r.content_id == null || r.content_id === currentSectionIndex
-  );
+  const currentSectionResources = resources.filter(r => {
+    const contentId = r.content_id;
+    return contentId == null || contentId === '' || contentId === currentSectionIndex;
+  });
 
   if (loading) {
     return (
@@ -573,7 +574,7 @@ export default function LecturePlayerPage() {
                   <p className="text-text-muted text-center py-8">No resources attached.</p>
                 ) : (
                   <div className="grid gap-3">
-                    {resources.filter(r => r.content_id == null).map(resource => (
+                    {resources.filter(r => r.content_id == null || r.content_id === '').map(resource => (
                       <div 
                         key={resource.id} 
                         className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-lg border border-border"
@@ -773,11 +774,10 @@ export default function LecturePlayerPage() {
                 <div>
                   <label className="block text-sm font-medium text-text-secondary mb-1">Attach To</label>
                   <select
-                    value={resourceForm.content_id !== null ? resourceForm.content_id : 'all'}
+                    value={resourceForm.content_id !== null && resourceForm.content_id !== '' ? resourceForm.content_id : 'all'}
                     onChange={e => setResourceForm({ 
                       ...resourceForm, 
-                      content_id: e.target.value === 'all' ? null : parseInt(e.target.value),
-                      order_index: e.target.value === 'all' ? 0 : parseInt(e.target.value)
+                      content_id: e.target.value === 'all' ? '' : parseInt(e.target.value),
                     })}
                     className="w-full px-3 py-2 border border-border rounded-lg bg-white dark:bg-gray-700 text-text-primary"
                   >
