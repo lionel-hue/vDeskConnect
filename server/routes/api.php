@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\StudentController;
 use App\Http\Controllers\Api\TeacherController;
 use App\Http\Controllers\Api\StaffController;
 use App\Http\Controllers\Api\AcademicController;
+use App\Http\Controllers\Api\LectureController;
 
 /*
 |--------------------------------------------------------------------------
