@@ -8,6 +8,8 @@ import {
   Eye, File, Download, Save, Clock, Loader, Edit2, Plus, Upload,
   FileText, Image, Globe, Video, ExternalLink, Trash2,
 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import { academicApi } from '@/lib/academic-api';
 import { api } from '@/lib/api';
@@ -470,8 +472,10 @@ export default function LecturePlayerPage() {
                     placeholder="Write content here using Markdown..."
                   />
                 ) : (
-                  <div className="whitespace-pre-wrap text-text-primary leading-relaxed">
-                    {currentSection.content}
+                  <div className="prose dark:prose-invert max-w-none">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      {currentSection.content}
+                    </ReactMarkdown>
                   </div>
                 )}
               </div>
