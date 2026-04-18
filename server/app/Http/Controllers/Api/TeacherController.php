@@ -41,6 +41,10 @@ class TeacherController extends Controller
 
         $teachers = $query->paginate($perPage);
 
+        $teachers->getCollection()->transform(function ($teacher) {
+            return $this->formatTeacherResponse($teacher);
+        });
+
         return response()->json($teachers);
     }
 

@@ -40,6 +40,10 @@ class StaffController extends Controller
 
         $staff = $query->paginate($perPage);
 
+        $staff->getCollection()->transform(function ($member) {
+            return $this->formatStaffResponse($member);
+        });
+
         return response()->json($staff);
     }
 
