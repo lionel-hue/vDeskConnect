@@ -179,6 +179,13 @@ class LectureController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
+        Log::info('Lecture update debug', [
+            'lecture_id' => $id,
+            'has_content' => $request->has('content'),
+            'content_length' => $request->input('content') ? strlen($request->input('content')) : 0,
+            'all_inputs' => $request->all(),
+        ]);
+
         $lecture->update($request->only([
             'title', 'description', 'content', 'teacher_id', 'grade_level_id', 'subject_id',
             'section_id', 'scheduled_at', 'duration_minutes', 'status', 'type', 'is_online', 

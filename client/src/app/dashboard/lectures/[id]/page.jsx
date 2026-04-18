@@ -215,10 +215,11 @@ export default function LecturePlayerPage() {
   const saveContent = async () => {
     setEditSaving(true);
     try {
-      await academicApi.lectures.update(lecture.id, { content: editedContent });
+      const newContent = buildFullContent(sectionContents);
+      await academicApi.lectures.update(lecture.id, { content: newContent });
       toast.success('Content saved!');
-      setLecture({ ...lecture, content: editedContent });
-      setSectionContents(parseContentSections(editedContent));
+      setLecture({ ...lecture, content: newContent });
+      setSectionContents(parseContentSections(newContent));
       setEditMode(false);
     } catch (err) {
       toast.error(err.data?.message || 'Failed to save');
