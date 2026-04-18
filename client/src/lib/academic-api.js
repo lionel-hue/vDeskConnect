@@ -171,14 +171,17 @@ export const academicApi = {
     getAll: (lectureId) => api.get(`/lectures/${lectureId}/resources`),
     add: (lectureId, data) => api.post(`/lectures/${lectureId}/resources`, data),
     upload: async (lectureId, file, title, type, orderIndex) => {
+      console.log('academicApi.lectureResources.upload called with:', { lectureId, file: file?.name, title, type, orderIndex });
       const formData = new FormData();
       formData.append('file', file);
       formData.append('title', title || file.name);
       formData.append('type', type);
       formData.append('order_index', orderIndex || 0);
       
+      const url = `/lectures/${lectureId}/resources/upload`;
+      console.log('Calling API endpoint:', url);
       try {
-        const data = await api.request(`/lectures/${lectureId}/resources/upload`, {
+        const data = await api.request(url, {
           method: 'POST',
           body: formData,
         });
