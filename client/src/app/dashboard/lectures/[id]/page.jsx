@@ -651,7 +651,9 @@ export default function LecturePlayerPage() {
                   />
                 </svg>
                 <span className="absolute inset-0 flex items-center justify-center text-sm font-bold text-text-primary">
-                  {progress}%
+                  {isDirector 
+                    ? `${currentSectionIndex + 1}/${sectionContents.length}`
+                    : `${progress}%`}
                 </span>
               </div>
               <div>
