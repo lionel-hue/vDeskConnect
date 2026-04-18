@@ -150,16 +150,16 @@ class VDeskConnectSeeder extends Seeder
             'name'         => '2025/2026 Academic Year',
             'start_date'   => '2025-09-01',
             'end_date'     => '2026-08-31',
-            'is_active'    => true,
+            'active'       => true,
             'created_at'   => $now,
             'updated_at'   => $now,
         ]);
 
         $term1 = DB::table('academic_terms')->insertGetId([
             'school_id'         => $demoSchool,
-            'academic_session_id' => $academicSession,
+            'session_id'        => $academicSession,
             'name'              => 'First Term',
-            'term_number'       => 1,
+            'order'             => 1,
             'start_date'        => '2025-09-01',
             'end_date'          => '2025-11-30',
             'created_at'        => $now,
@@ -168,9 +168,9 @@ class VDeskConnectSeeder extends Seeder
 
         $term2 = DB::table('academic_terms')->insertGetId([
             'school_id'         => $demoSchool,
-            'academic_session_id' => $academicSession,
+            'session_id'        => $academicSession,
             'name'              => 'Second Term',
-            'term_number'       => 2,
+            'order'             => 2,
             'start_date'        => '2025-12-01',
             'end_date'          => '2026-03-31',
             'created_at'        => $now,
