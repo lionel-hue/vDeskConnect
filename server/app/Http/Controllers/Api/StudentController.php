@@ -41,6 +41,10 @@ class StudentController extends Controller
 
         $students = $query->paginate($perPage);
 
+        $students->getCollection()->transform(function ($student) {
+            return $this->formatStudentResponse($student);
+        });
+
         return response()->json($students);
     }
 
