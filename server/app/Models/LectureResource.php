@@ -21,6 +21,7 @@ class LectureResource extends Model
         'is_savable',
         'available_from',
         'order_index',
+        'content_id',
     ];
 
     protected $casts = [

@@ -374,8 +374,15 @@ class LectureController extends Controller
 
         // Normalize content_id - if empty string, treat as null (entire lecture)
         $contentId = $request->input('content_id');
+        Log::info('Upload content_id debug', [
+            'raw_content_id' => $contentId,
+            'type' => gettype($contentId),
+            'all_inputs' => $request->all(),
+        ]);
         if ($contentId === '' || $contentId === null || $contentId === 'all') {
             $contentId = null;
+        } else {
+            $contentId = (int)$contentId;
         }
 
         if ($validator->fails()) {
@@ -433,7 +440,11 @@ class LectureController extends Controller
         $contentId = $request->input('content_id');
         if ($contentId === '' || $contentId === null || $contentId === 'all') {
             $contentId = null;
+        } else {
+            $contentId = (int)$contentId;
         }
+
+        Log::info('Upload content_id final', ['contentId' => $contentId, 'type' => gettype($contentId)]);
 
         $resource = LectureResource::create([
             'lecture_id' => $lecture->id,
