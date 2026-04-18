@@ -569,7 +569,7 @@ export default function LecturePlayerPage() {
               {/* All Resources */}
               <div className="mt-12 pt-8 border-t border-border">
                 <h3 className="text-lg font-semibold text-text-primary mb-4">All Lecture Resources</h3>
-                {resources.length === 0 ? (
+                {resources.filter(r => r.content_id == null).length === 0 ? (
                   <p className="text-text-muted text-center py-8">No resources attached.</p>
                 ) : (
                   <div className="grid gap-3">
