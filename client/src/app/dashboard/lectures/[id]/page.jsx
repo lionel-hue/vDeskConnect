@@ -811,12 +811,29 @@ export default function LecturePlayerPage() {
                 {previewResource.type === 'video' && (
                   <div className="relative aspect-video bg-black rounded-lg overflow-hidden">
                     {previewResource.url.includes('youtube') || previewResource.url.includes('youtu.be') ? (
-                      <iframe
-                        src={previewResource.url.replace('watch?v=', 'embed/').replace('/youtu.be/', '/embed/')}
-                        className="w-full h-full"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                      />
+                      (() => {
+                        let videoId = '';
+                        if (previewResource.url.includes('youtu.be/')) {
+                          videoId = previewResource.url.split('youtu.be/')[1]?.split('?')[0];
+                        } else if (previewResource.url.includes('watch?v=')) {
+                          const params = new URL(previewResource.url).searchParams;
+                          videoId = params.get('v');
+                        }
+                        const embedUrl = videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+                        return embedUrl ? (
+                          <iframe
+                            src={embedUrl}
+                            className="w-full h-full"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                          />
+                        ) : (
+                          <div className="flex flex-col items-center justify-center h-full text-white">
+                            <Video className="w-12 h-12 mb-2 opacity-50" />
+                            <p className="text-sm opacity-70">Preview unavailable</p>
+                          </div>
+                        );
+                      })()
                     ) : (
                       <video src={previewResource.url} controls className="w-full h-full" />
                     )}
