@@ -125,17 +125,18 @@ export default function LecturePlayerPage() {
     setResourceSaving(true);
     try {
       const detectedType = detectResourceType(resourceForm.url);
-      await academicApi.lectureResources.add(lecture.id, {
+      const payload = {
         ...resourceForm,
         type: detectedType,
-        content_id: resourceForm.content_id,
-        order_index: resourceForm.content_id !== null ? resourceForm.content_id : 0,
-      });
+        content_id: resourceForm.content_id !== '' ? resourceForm.content_id : null,
+        order_index: resourceForm.content_id !== '' ? parseInt(resourceForm.content_id) : 0,
+      };
+      await academicApi.lectureResources.add(lecture.id, payload);
       toast.success('Resource added!');
       setShowAddResource(false);
       setResourceForm({
         title: '', type: 'pdf', url: '', description: '',
-        is_downloadable: false, is_savable: false, available_from: '', order_index: 0, content_id: null,
+        is_downloadable: false, is_savable: false, available_from: '', order_index: 0, content_id: '',
       });
       const res = await academicApi.lectureResources.getAll(lecture.id);
       setResources(res.resources || []);

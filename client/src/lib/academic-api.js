@@ -177,7 +177,7 @@ export const academicApi = {
       formData.append('title', title || file.name);
       formData.append('type', type);
       formData.append('order_index', orderIndex || 0);
-      if (contentId !== null) formData.append('content_id', contentId);
+      if (contentId !== null && contentId !== '') formData.append('content_id', contentId);
       formData.append('is_downloadable', isDownloadable);
       formData.append('is_savable', isSavable);
       
