@@ -1381,7 +1381,6 @@ export default function LecturesPage() {
             </div>
           </div>
         )}
-      </div>
     </DashboardLayout>
   );
 }
