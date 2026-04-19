@@ -1176,10 +1176,8 @@ export default function LecturesPage() {
                   </div>
                 )}
               </form>
-              </div>
             </div>
           )}
-        </div>
       )}
 
         {/* Lecture Builder Modal - Create complete lecture with sections */}
