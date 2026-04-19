@@ -7,6 +7,7 @@ import {
   Clock, BookOpen, Users, Link as LinkIcon, FileText, Search,
   Filter, ChevronLeft, ChevronRight, ExternalLink, AlertCircle, Eye,
   File, Download, Save, Clock3, Image, Globe, Lock, Unlock, Sparkles,
+  Layers, GripVertical, FormInput,
 } from 'lucide-react';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import { academicApi } from '@/lib/academic-api';
@@ -87,6 +88,15 @@ export default function LecturesPage() {
   });
   const [aiLoading, setAiLoading] = useState(false);
   const [aiPreview, setAiPreview] = useState(null);
+
+  // Lecture Builder modal
+  const [showBuilderModal, setShowBuilderModal] = useState(false);
+  const [builderForm, setBuilderForm] = useState({
+    title: '', description: '', teacher_id: '', grade_level_id: '',
+    subject_id: '', scheduled_at: '', duration_minutes: 40, type: 'async',
+    is_published: false, sections: [{ title: '', content: '' }],
+  });
+  const [builderLoading, setBuilderLoading] = useState(false);
 
   const fetchLectures = useCallback(async () => {
     setLoading(true);
@@ -251,6 +261,25 @@ export default function LecturesPage() {
             className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark"
           >
             <Plus className="w-4 h-4" /> Create Lecture
+          </button>
+          <button
+            onClick={() => { 
+              setBuilderForm({
+                title: '', description: '', teacher_id: '', grade_level_id: '',
+                subject_id: '', scheduled_at: '', duration_minutes: 40, type: 'async',
+                is_published: false, sections: [{ title: '', content: '' }],
+              });
+              setShowBuilderModal(true); 
+            }}
+            className="flex items-center gap-2 px-4 py-2 border border-border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+          >
+            <FormInput className="w-4 h-4" /> Builder
+          </button>
+          <button
+            onClick={() => setShowAIModal(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600"
+          >
+            <Sparkles className="w-4 h-4" /> AI
           </button>
         </div>
 
@@ -925,6 +954,185 @@ export default function LecturesPage() {
                 <div className="flex gap-3">
                   <button type="button" onClick={() => setShowResourceModal(false)} className="flex-1 px-4 py-2 border border-border rounded-lg">Cancel</button>
                   <button type="submit" className="flex-1 px-4 py-2 bg-primary text-white rounded-lg">Add</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Lecture Builder Modal */}
+        {showBuilderModal && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between p-4 border-b border-border">
+                <div className="flex items-center gap-2">
+                  <Layers className="w-5 h-5 text-primary" />
+                  <h2 className="text-lg font-semibold text-text-primary">Lecture Builder</h2>
+                </div>
+                <button onClick={() => setShowBuilderModal(false)}>
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <form onSubmit={async (e) => {
+                e.preventDefault();
+                setBuilderLoading(true);
+                try {
+                  const content = builderForm.sections
+                    .map(s => `## ${s.title}\n\n${s.content}`)
+                    .join('\n\n\n');
+                  await academicApi.lectures.create({
+                    ...builderForm,
+                    content,
+                  });
+                  toast.success('Lecture created!');
+                  setShowBuilderModal(false);
+                  fetchLectures();
+                } catch (err) {
+                  toast.error(err.data?.message || 'Failed to create');
+                } finally {
+                  setBuilderLoading(false);
+                }
+              }} className="p-4 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-1">Title *</label>
+                  <input
+                    type="text"
+                    required
+                    value={builderForm.title}
+                    onChange={e => setBuilderForm({ ...builderForm, title: e.target.value })}
+                    className="w-full px-3 py-2 border border-border rounded-lg"
+                    placeholder="Lecture title"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-text-secondary mb-1">Teacher *</label>
+                    <select
+                      required
+                      value={builderForm.teacher_id}
+                      onChange={e => setBuilderForm({ ...builderForm, teacher_id: e.target.value })}
+                      className="w-full px-3 py-2 border border-border rounded-lg"
+                    >
+                      <option value="">Select Teacher</option>
+                      {teachers.map(t => (
+                        <option key={t.id} value={t.id}>{t.first_name} {t.last_name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-text-secondary mb-1">Grade *</label>
+                    <select
+                      required
+                      value={builderForm.grade_level_id}
+                      onChange={e => setBuilderForm({ ...builderForm, grade_level_id: e.target.value, subject_id: '' })}
+                      className="w-full px-3 py-2 border border-border rounded-lg"
+                    >
+                      <option value="">Select Grade</option>
+                      {gradeLevels.map(g => (
+                        <option key={g.id} value={g.id}>{g.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-1">Subject *</label>
+                  <select
+                    required
+                    value={builderForm.subject_id}
+                    onChange={e => setBuilderForm({ ...builderForm, subject_id: e.target.value })}
+                    className="w-full px-3 py-2 border border-border rounded-lg"
+                  >
+                    <option value="">Select Subject</option>
+                    {subjects.filter(s => !builderForm.grade_level_id || s.grade_level_id == builderForm.grade_level_id).map(s => (
+                      <option key={s.id} value={s.id}>{s.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-1">Scheduled Date *</label>
+                  <input
+                    type="datetime-local"
+                    required
+                    value={builderForm.scheduled_at}
+                    onChange={e => setBuilderForm({ ...builderForm, scheduled_at: e.target.value })}
+                    className="w-full px-3 py-2 border border-border rounded-lg"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-1">Sections</label>
+                  {builderForm.sections.map((section, index) => (
+                    <div key={index} className="border border-border rounded-lg p-3 mb-2">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium">Section {index + 1}</span>
+                        {builderForm.sections.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newSections = builderForm.sections.filter((_, i) => i !== index);
+                              setBuilderForm({ ...builderForm, sections: newSections });
+                            }}
+                            className="text-red-500 text-xs"
+                          >
+                            Remove
+                          </button>
+                        )}
+                      </div>
+                      <input
+                        type="text"
+                        value={section.title}
+                        onChange={e => {
+                          const newSections = [...builderForm.sections];
+                          newSections[index].title = e.target.value;
+                          setBuilderForm({ ...builderForm, sections: newSections });
+                        }}
+                        className="w-full px-2 py-1 border border-border rounded mb-2"
+                        placeholder="Section title"
+                      />
+                      <textarea
+                        rows={3}
+                        value={section.content}
+                        onChange={e => {
+                          const newSections = [...builderForm.sections];
+                          newSections[index].content = e.target.value;
+                          setBuilderForm({ ...builderForm, sections: newSections });
+                        }}
+                        className="w-full px-2 py-1 border border-border rounded"
+                        placeholder="Section content (Markdown)"
+                      />
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => setBuilderForm({ 
+                      ...builderForm, 
+                      sections: [...builderForm.sections, { title: '', content: '' }] 
+                    })}
+                    className="text-sm text-primary"
+                  >
+                    + Add Section
+                  </button>
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowBuilderModal(false)}
+                    className="flex-1 px-4 py-2 border border-border rounded-lg"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={builderLoading}
+                    className="flex-1 px-4 py-2 bg-primary text-white rounded-lg disabled:opacity-50"
+                  >
+                    {builderLoading ? 'Creating...' : 'Create Lecture'}
+                  </button>
                 </div>
               </form>
             </div>
