@@ -1176,9 +1176,11 @@ export default function LecturesPage() {
                   </div>
                 )}
               </form>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
+      )}
 
         {/* Lecture Builder Modal - Create complete lecture with sections */}
         {showBuilderModal && (
@@ -1379,8 +1381,8 @@ export default function LecturesPage() {
                 </div>
               </form>
             </div>
-          </div>
-        )}
+          )}
+      </div>
     </DashboardLayout>
   );
 }
