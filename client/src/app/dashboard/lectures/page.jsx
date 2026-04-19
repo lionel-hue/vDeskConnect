@@ -1380,6 +1380,7 @@ export default function LecturesPage() {
               </form>
             </div>
           )}
+        </div>
       </div>
     </DashboardLayout>
   );
