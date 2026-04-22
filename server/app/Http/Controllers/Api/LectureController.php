@@ -405,39 +405,80 @@ class LectureController extends Controller
             return response()->json(['message' => 'Validation failed', 'errors' => $validator->errors()], 422);
         }
 
-        if (!$request->hasFile('file') || !$request->file('file')->isValid()) {
+        // Handle chunked upload
+        if ($request->has('chunk_index')) {
+            $chunkIndex = (int) $request->input('chunk_index');
+            $totalChunks = (int) $request->input('total_chunks');
+            $identifier = $request->input('identifier');
+
             $file = $request->file('file');
-            $errorMsg = $file ? $file->getErrorMessage() : 'No file provided';
-            Log::warning('File upload issue', [
-                'has_file' => $request->hasFile('file'),
-                'file' => $file,
-                'error' => $errorMsg,
-                'php_upload_max_filesize' => ini_get('upload_max_filesize'),
-            ]);
-            return response()->json(['message' => 'The file failed to upload: ' . $errorMsg, 'errors' => ['file' => [$errorMsg]]], 422);
-        }
+            if (!$file || !$file->isValid()) {
+                return response()->json(['message' => 'Invalid chunk'], 422);
+            }
 
-        $file = $request->file('file');
-        $originalName = $file->getClientOriginalName();
-        $extension = $file->getClientOriginalExtension();
-        
-        // Determine type from extension if not specified
-        $type = $request->type;
-        if ($extension === 'pdf') {
-            $type = 'pdf';
-        } elseif (in_array($extension, ['mp4', 'webm', 'mov', 'avi'])) {
-            $type = 'video';
-        } elseif (in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
-            $type = 'image';
-        }
+            $chunkPath = storage_path('app/public/chunks/' . $identifier);
+            if (!file_exists($chunkPath)) {
+                mkdir($chunkPath, 0755, true);
+            }
 
-        // Generate unique filename
-        $filename = time() . '_' . uniqid() . '.' . $extension;
-        
-        // Store file
-        $path = $file->storeAs('lectures/' . $lecture->id, $filename, 'public');
-        
-        $url = asset('storage/' . $path);
+            $file->move($chunkPath, $chunkIndex . '.part');
+
+            if ($chunkIndex < $totalChunks - 1) {
+                return response()->json(['message' => 'Chunk uploaded'], 200);
+            }
+
+            // Assemble chunks
+            $extension = pathinfo($request->input('title', $identifier), PATHINFO_EXTENSION);
+            if (!$extension) $extension = 'mp4'; // default to mp4 if unknown for videos
+            $filename = time() . '_' . uniqid() . '.' . $extension;
+            $finalPathDir = storage_path('app/public/lectures/' . $lecture->id);
+            if (!file_exists($finalPathDir)) mkdir($finalPathDir, 0755, true);
+
+            $finalPath = $finalPathDir . '/' . $filename;
+            $finalFile = fopen($finalPath, 'wb');
+            for ($i = 0; $i < $totalChunks; $i++) {
+                $partPath = $chunkPath . '/' . $i . '.part';
+                if (file_exists($partPath)) {
+                    $partFile = fopen($partPath, 'rb');
+                    stream_copy_to_stream($partFile, $finalFile);
+                    fclose($partFile);
+                    unlink($partPath);
+                }
+            }
+            fclose($finalFile);
+            rmdir($chunkPath);
+
+            $url = asset('storage/lectures/' . $lecture->id . '/' . $filename);
+            $type = $request->input('type');
+        } else {
+            // Standard single file upload
+            if (!$request->hasFile('file') || !$request->file('file')->isValid()) {
+                $file = $request->file('file');
+                $errorMsg = $file ? $file->getErrorMessage() : 'No file provided';
+                return response()->json(['message' => 'The file failed to upload: ' . $errorMsg, 'errors' => ['file' => [$errorMsg]]], 422);
+            }
+
+            $file = $request->file('file');
+            $originalName = $file->getClientOriginalName();
+            $extension = $file->getClientOriginalExtension();
+            
+            // Determine type from extension if not specified
+            $type = $request->type;
+            if ($extension === 'pdf') {
+                $type = 'pdf';
+            } elseif (in_array($extension, ['mp4', 'webm', 'mov', 'avi'])) {
+                $type = 'video';
+            } elseif (in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
+                $type = 'image';
+            }
+
+            // Generate unique filename
+            $filename = time() . '_' . uniqid() . '.' . $extension;
+            
+            // Store file
+            $path = $file->storeAs('lectures/' . $lecture->id, $filename, 'public');
+            $url = asset('storage/' . $path);
+        }
 
         $isDownloadable = $request->is_downloadable ? 
             in_array(strtolower($request->is_downloadable), ['on', 'true', '1', 'yes']) : false;
