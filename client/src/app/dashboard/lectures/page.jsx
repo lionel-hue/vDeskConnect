@@ -1001,7 +1001,8 @@ export default function LecturesPage() {
                   
                   const lectureId = lectureRes.lecture?.id || lectureRes.id;
                   
-                  for (const section of builderForm.sections) {
+                  for (let sectionIndex = 0; sectionIndex < builderForm.sections.length; sectionIndex++) {
+                    const section = builderForm.sections[sectionIndex];
                     for (const resource of (section.resources || [])) {
                       if (resource.file) {
                         setBuilderUploading(prev => ({ ...prev, [resource.file.name]: true }));
@@ -1011,8 +1012,8 @@ export default function LecturesPage() {
                             resource.file,
                             resource.title,
                             resource.type,
-                            0,
-                            'all',
+                            sectionIndex, // order_index
+                            sectionIndex, // content_id
                             false,
                             false
                           );
@@ -1024,6 +1025,8 @@ export default function LecturesPage() {
                           title: resource.title,
                           url: resource.url,
                           type: resource.type,
+                          content_id: sectionIndex,
+                          order_index: sectionIndex,
                         });
                       }
                     }
