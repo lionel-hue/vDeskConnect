@@ -52,6 +52,7 @@ export default function LecturePlayerPage() {
     is_downloadable: false, is_savable: false, available_from: '', order_index: 0, content_id: '',
   });
   const [resourceSaving, setResourceSaving] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   // Detect YouTube URL and set type automatically
   const detectResourceType = (url) => {
@@ -89,6 +90,7 @@ export default function LecturePlayerPage() {
       return;
     }
     setResourceSaving(true);
+    setUploadProgress(0);
     console.log('Uploading to lecture ID:', lecture.id);
     try {
       const res = await academicApi.lectureResources.upload(
@@ -99,7 +101,8 @@ export default function LecturePlayerPage() {
         resourceForm.order_index,
         resourceForm.content_id !== '' ? resourceForm.content_id : null,
         resourceForm.is_downloadable,
-        resourceForm.is_savable
+        resourceForm.is_savable,
+        (progress) => setUploadProgress(progress)
       );
       
       if (res.resource) {
