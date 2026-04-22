@@ -498,7 +498,7 @@ class LectureController extends Controller
             'lecture_id' => $lecture->id,
             'type' => $type,
             'url' => $url,
-            'title' => $request->title ?: $originalName,
+            'title' => $request->title ?: ($request->has('chunk_index') ? $request->input('title', 'Video Resource') : $originalName),
             'uploaded_by' => $user->id,
             'content_id' => $contentId,
             'order_index' => $request->order_index ?? 0,

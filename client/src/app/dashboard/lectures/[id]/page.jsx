@@ -806,6 +806,21 @@ export default function LecturePlayerPage() {
                         placeholder={selectedFile ? selectedFile.name : 'Resource title'}
                       />
                     </div>
+                    
+                    {resourceSaving && (
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-xs font-medium text-text-secondary">
+                          <span>Uploading...</span>
+                          <span>{uploadProgress}%</span>
+                        </div>
+                        <div className="h-2 w-full bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-primary transition-all duration-300"
+                            style={{ width: `${uploadProgress}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
 
                     <button
                       type="button"
