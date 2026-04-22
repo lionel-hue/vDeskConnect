@@ -4,8 +4,10 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   School, Users, BookOpen, UserRound, Plus, Trash2, X, Edit2,
-  GraduationCap, Layers, Tag, ChevronLeft, CheckCircle, Sparkles,
+  GraduationCap, Layers, Tag, ChevronLeft, CheckCircle, Sparkles, Eye
 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import MarkdownEditor from '@/components/MarkdownEditor';
 import { academicApi } from '@/lib/academic-api';
@@ -43,6 +45,7 @@ export default function ClassesPage() {
   const [schemeForm, setSchemeForm] = useState({ week_number: '', topic: '', aspects: { objectives: '', activities: '', resources: '', evaluation: '' } });
   const [schemeLoading, setSchemeLoading] = useState(false);
   const [editingScheme, setEditingScheme] = useState(null);
+  const [viewingScheme, setViewingScheme] = useState(null);
 
   // Scheme AI Builder state
   const [showSchemeAIModal, setShowSchemeAIModal] = useState(false);
@@ -734,8 +737,15 @@ export default function ClassesPage() {
                                   </div>
                                 )}
                               </div>
-                              <div className="flex gap-2 flex-shrink-0">
-                                {scheme.status === 'draft' && (
+                                <div className="flex gap-2 flex-shrink-0">
+                                  <button
+                                    onClick={() => setViewingScheme(scheme)}
+                                    className="text-primary hover:text-primary/80"
+                                    title="View Details"
+                                  >
+                                    <Eye className="w-4 h-4" />
+                                  </button>
+                                  {scheme.status === 'draft' && (
                                   <button
                                     onClick={() => handlePublishScheme(scheme.id)}
                                     className="text-success hover:text-success/80"
@@ -876,6 +886,81 @@ export default function ClassesPage() {
                   <button type="submit" disabled={assignLoading} className="flex-1 px-4 py-2 text-sm md:text-base bg-primary text-white rounded-lg hover:bg-primary-dark disabled:opacity-50">{assignLoading ? 'Assigning...' : 'Assign Teacher'}</button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* ==================== VIEW SCHEME MODAL ==================== */}
+        {viewingScheme && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] flex items-center justify-center p-4" onClick={() => setViewingScheme(null)}>
+            <div className="bg-card dark:bg-gray-800 rounded-card border border-border p-4 md:p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="px-2 py-0.5 bg-primary/10 text-primary text-xs rounded-full font-semibold">Week {viewingScheme.week_number}</span>
+                    <span className={`px-2 py-0.5 text-xs rounded-full ${
+                      viewingScheme.status === 'published' ? 'bg-success/10 text-success' : 'bg-warning/10 text-warning'
+                    }`}>
+                      {viewingScheme.status === 'published' ? 'Published' : 'Draft'}
+                    </span>
+                  </div>
+                  <h3 className="text-xl font-bold text-text-primary">{viewingScheme.topic}</h3>
+                  <p className="text-sm text-text-muted mt-1">
+                    {viewingScheme.subject?.name} • {viewingScheme.term?.name}
+                  </p>
+                </div>
+                <button onClick={() => setViewingScheme(null)} className="text-text-muted hover:text-text-primary">
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="space-y-8">
+                {viewingScheme.aspects?.objectives && (
+                  <div>
+                    <h4 className="text-sm font-bold text-text-primary mb-2 border-b pb-1">Learning Objectives</h4>
+                    <div className="prose dark:prose-invert max-w-none text-sm">
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{viewingScheme.aspects.objectives}</ReactMarkdown>
+                    </div>
+                  </div>
+                )}
+                
+                {viewingScheme.aspects?.activities && (
+                  <div>
+                    <h4 className="text-sm font-bold text-text-primary mb-2 border-b pb-1">Activities</h4>
+                    <div className="prose dark:prose-invert max-w-none text-sm">
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{viewingScheme.aspects.activities}</ReactMarkdown>
+                    </div>
+                  </div>
+                )}
+
+                {viewingScheme.aspects?.resources && (
+                  <div>
+                    <h4 className="text-sm font-bold text-text-primary mb-2 border-b pb-1">Resources</h4>
+                    <div className="prose dark:prose-invert max-w-none text-sm">
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{viewingScheme.aspects.resources}</ReactMarkdown>
+                    </div>
+                  </div>
+                )}
+
+                {viewingScheme.aspects?.evaluation && (
+                  <div>
+                    <h4 className="text-sm font-bold text-text-primary mb-2 border-b pb-1">Evaluation</h4>
+                    <div className="prose dark:prose-invert max-w-none text-sm">
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{viewingScheme.aspects.evaluation}</ReactMarkdown>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-8 pt-6 border-t flex justify-end">
+                <button
+                  onClick={() => { setViewingScheme(null); handleEditScheme(viewingScheme); }}
+                  className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark"
+                >
+                  <Edit2 className="w-4 h-4" />
+                  Edit Scheme
+                </button>
+              </div>
             </div>
           </div>
         )}

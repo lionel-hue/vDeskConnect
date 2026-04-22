@@ -383,16 +383,15 @@ export default function LessonNotesPage() {
                     </div>
                     <h3 className="font-semibold text-text-primary text-sm md:text-base truncate">{note.topic}</h3>
                   </div>
-                    </div>
-                    <div className="flex gap-1 flex-shrink-0 ml-2">
-                      <button
-                        onClick={() => setViewingNote(note)}
-                        className="p-1 text-primary hover:text-primary/80"
-                        title="View Details"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </button>
-                      {note.status === 'draft' && (
+                  <div className="flex gap-1 flex-shrink-0 ml-2">
+                    <button
+                      onClick={() => setViewingNote(note)}
+                      className="p-1 text-primary hover:text-primary/80"
+                      title="View Details"
+                    >
+                      <Eye className="w-4 h-4" />
+                    </button>
+                    {note.status === 'draft' && (
                       <button
                         onClick={() => handlePublish(note.id)}
                         className="p-1 text-success hover:text-success/80"
@@ -433,8 +432,6 @@ export default function LessonNotesPage() {
               </div>
             ))}
           </div>
-        )}
-
         )}
 
         {/* ==================== VIEW MODAL ==================== */}
