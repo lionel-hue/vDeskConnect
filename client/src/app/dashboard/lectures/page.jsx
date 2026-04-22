@@ -264,7 +264,8 @@ export default function LecturesPage() {
                 title: '', description: '', content: '', teacher_id: '', grade_level_id: '',
                 subject_id: '', scheduled_at: '', duration_minutes: 40, type: 'async',
                 is_online: false, meeting_link: '', is_published: false,
-                sections: [{ title: '', content: '', resources: [] }],
+                sections: [{ title: '', content: '' }],
+                resources: [],
               });
               setShowBuilderModal(true);
             }}
@@ -348,7 +349,8 @@ export default function LecturesPage() {
                   title: '', description: '', content: '', teacher_id: '', grade_level_id: '',
                   subject_id: '', scheduled_at: '', duration_minutes: 40, type: 'async',
                   is_online: false, meeting_link: '', is_published: false,
-                  sections: [{ title: '', content: '', resources: [] }],
+                  sections: [{ title: '', content: '' }],
+                  resources: [],
                 });
                 setShowBuilderModal(true);
               }}
@@ -1001,34 +1003,33 @@ export default function LecturesPage() {
                   
                   const lectureId = lectureRes.lecture?.id || lectureRes.id;
                   
-                  for (let sectionIndex = 0; sectionIndex < builderForm.sections.length; sectionIndex++) {
-                    const section = builderForm.sections[sectionIndex];
-                    for (const resource of (section.resources || [])) {
-                      if (resource.file) {
-                        setBuilderUploading(prev => ({ ...prev, [resource.file.name]: true }));
-                        try {
-                          await academicApi.lectureResources.upload(
-                            lectureId,
-                            resource.file,
-                            resource.title,
-                            resource.type,
-                            sectionIndex, // order_index
-                            sectionIndex, // content_id
-                            false,
-                            false
-                          );
-                        } finally {
-                          setBuilderUploading(prev => ({ ...prev, [resource.file.name]: false }));
-                        }
-                      } else if (resource.url) {
-                        await academicApi.lectureResources.add(lectureId, {
-                          title: resource.title,
-                          url: resource.url,
-                          type: resource.type,
-                          content_id: sectionIndex,
-                          order_index: sectionIndex,
-                        });
+                  for (let rIndex = 0; rIndex < (builderForm.resources || []).length; rIndex++) {
+                    const resource = builderForm.resources[rIndex];
+                    const contentId = resource.target === 'all' ? 'all' : parseInt(resource.target);
+                    if (resource.sourceType === 'file' && resource.file) {
+                      setBuilderUploading(prev => ({ ...prev, [resource.file.name]: true }));
+                      try {
+                        await academicApi.lectureResources.upload(
+                          lectureId,
+                          resource.file,
+                          resource.title,
+                          resource.type || 'pdf',
+                          contentId === 'all' ? 0 : contentId,
+                          contentId,
+                          false,
+                          false
+                        );
+                      } finally {
+                        setBuilderUploading(prev => ({ ...prev, [resource.file.name]: false }));
                       }
+                    } else if (resource.sourceType === 'link' && resource.url) {
+                      await academicApi.lectureResources.add(lectureId, {
+                        title: resource.title,
+                        url: resource.url,
+                        type: resource.type || 'link',
+                        content_id: contentId === 'all' ? null : contentId,
+                        order_index: contentId === 'all' ? 0 : contentId,
+                      });
                     }
                   }
                   
@@ -1165,7 +1166,7 @@ export default function LecturesPage() {
                       type="button"
                       onClick={() => setBuilderForm({ 
                         ...builderForm, 
-                        sections: [...builderForm.sections, { title: '', content: '', resources: [] }] 
+                        sections: [...builderForm.sections, { title: '', content: '' }] 
                       })}
                       className="text-sm text-primary hover:underline"
                     >
@@ -1215,99 +1216,170 @@ export default function LecturesPage() {
                         className="w-full px-3 py-2 border border-border rounded-lg bg-white dark:bg-gray-700 text-text-primary font-mono text-sm mb-3"
                         placeholder="Section content (Markdown)"
                       />
-                      
-                      <div className="border-t border-border pt-3">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm font-medium text-text-secondary">Resources</span>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const newSections = [...builderForm.sections];
-                              newSections[index].resources = [...(newSections[index].resources || []), { title: '', url: '', type: 'pdf', file: null }];
-                              setBuilderForm({ ...builderForm, sections: newSections });
-                            }}
-                            className="text-xs text-primary hover:underline"
-                          >
-                            + Add Resource
-                          </button>
-                        </div>
-                        
-                        {(section.resources || []).map((resource, rIndex) => (
-                          <div key={rIndex} className="flex gap-2 mb-2 items-center flex-wrap">
-                            <select
-                              value={resource.type}
-                              onChange={e => {
-                                const newSections = [...builderForm.sections];
-                                newSections[index].resources[rIndex].type = e.target.value;
-                                setBuilderForm({ ...builderForm, sections: newSections });
-                              }}
-                              className="px-2 py-1 border border-border rounded-lg bg-white dark:bg-gray-700 text-text-primary text-sm"
-                            >
-                              <option value="pdf">PDF</option>
-                              <option value="video">Video</option>
-                              <option value="link">Link</option>
-                              <option value="image">Image</option>
-                            </select>
-                            <input
-                              type="text"
-                              value={resource.title}
-                              onChange={e => {
-                                const newSections = [...builderForm.sections];
-                                newSections[index].resources[rIndex].title = e.target.value;
-                                setBuilderForm({ ...builderForm, sections: newSections });
-                              }}
-                              className="flex-1 min-w-[120px] px-2 py-1 border border-border rounded-lg bg-white dark:bg-gray-700 text-text-primary text-sm"
-                              placeholder="Resource title"
-                            />
-                            {resource.file ? (
-                              <span className="text-xs text-success bg-success/10 px-2 py-1 rounded flex items-center gap-1">
-                                <File className="w-3 h-3" /> {resource.file.name}
-                              </span>
-                            ) : (
-                              <input
-                                type="url"
-                                value={resource.url || ''}
-                                onChange={e => {
-                                  const newSections = [...builderForm.sections];
-                                  newSections[index].resources[rIndex].url = e.target.value;
-                                  setBuilderForm({ ...builderForm, sections: newSections });
-                                }}
-                                className="flex-1 min-w-[150px] px-2 py-1 border border-border rounded-lg bg-white dark:bg-gray-700 text-text-primary text-sm"
-                                placeholder="URL"
-                              />
-                            )}
-                            <label className="cursor-pointer text-xs bg-primary text-white px-2 py-1 rounded hover:bg-primary-dark">
-                              <input
-                                type="file"
-                                className="hidden"
-                                onChange={e => {
-                                  const file = e.target.files[0];
-                                  if (file) {
-                                    const newSections = [...builderForm.sections];
-                                    newSections[index].resources[rIndex].file = file;
-                                    newSections[index].resources[rIndex].title = newSections[index].resources[rIndex].title || file.name;
-                                    setBuilderForm({ ...builderForm, sections: newSections });
-                                  }
-                                }}
-                              />
-                              Upload
-                            </label>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const newSections = [...builderForm.sections];
-                                newSections[index].resources = newSections[index].resources.filter((_, i) => i !== rIndex);
-                                setBuilderForm({ ...builderForm, sections: newSections });
-                              }}
-                              className="text-red-500 hover:text-red-700"
-                            >
-                              <X className="w-4 h-4" />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
                     </div>
                   ))}
+                  
+                  <div className="border-t border-border pt-6 mt-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-medium text-text-primary">Lecture Resources</h3>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setBuilderForm({
+                            ...builderForm,
+                            resources: [...(builderForm.resources || []), { title: '', type: 'pdf', sourceType: 'file', file: null, url: '', target: 'all' }]
+                          });
+                        }}
+                        className="text-sm text-primary hover:underline"
+                      >
+                        + Add Resource
+                      </button>
+                    </div>
+                    
+                    {(builderForm.resources || []).map((resource, rIndex) => (
+                      <div key={rIndex} className="border border-border rounded-lg p-4 bg-gray-50 dark:bg-gray-700/50 mb-3">
+                         <div className="flex justify-between items-center mb-3">
+                            <h4 className="text-sm font-medium text-text-primary">Resource {rIndex + 1}</h4>
+                            <button 
+                              type="button" 
+                              onClick={() => {
+                                const newResources = [...builderForm.resources];
+                                newResources.splice(rIndex, 1);
+                                setBuilderForm({ ...builderForm, resources: newResources });
+                              }} 
+                              className="text-red-500 hover:text-red-700"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                         </div>
+                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                            <div>
+                               <label className="block text-xs font-medium text-text-secondary mb-1">Title *</label>
+                               <input 
+                                 type="text" 
+                                 value={resource.title} 
+                                 onChange={e => {
+                                    const newResources = [...builderForm.resources];
+                                    newResources[rIndex].title = e.target.value;
+                                    setBuilderForm({ ...builderForm, resources: newResources });
+                                 }} 
+                                 className="w-full px-3 py-2 border border-border rounded-lg bg-white dark:bg-gray-700 text-text-primary text-sm" 
+                                 placeholder="Resource title" 
+                                 required 
+                               />
+                            </div>
+                            <div>
+                               <label className="block text-xs font-medium text-text-secondary mb-1">Attach To *</label>
+                               <select 
+                                 value={resource.target} 
+                                 onChange={e => {
+                                    const newResources = [...builderForm.resources];
+                                    newResources[rIndex].target = e.target.value;
+                                    setBuilderForm({ ...builderForm, resources: newResources });
+                                 }} 
+                                 className="w-full px-3 py-2 border border-border rounded-lg bg-white dark:bg-gray-700 text-text-primary text-sm"
+                               >
+                                 <option value="all">Entire Lecture</option>
+                                 {builderForm.sections.map((sec, sIdx) => (
+                                    <option key={sIdx} value={sIdx}>Section {sIdx + 1}: {sec.title || 'Untitled'}</option>
+                                 ))}
+                               </select>
+                            </div>
+                         </div>
+                         <div className="mb-3">
+                            <label className="block text-xs font-medium text-text-secondary mb-1">Source Type</label>
+                            <div className="flex gap-4">
+                               <label className="flex items-center gap-2 text-sm text-text-primary cursor-pointer">
+                                 <input 
+                                   type="radio" 
+                                   checked={resource.sourceType === 'file'} 
+                                   onChange={() => {
+                                      const newResources = [...builderForm.resources];
+                                      newResources[rIndex].sourceType = 'file';
+                                      newResources[rIndex].type = 'pdf';
+                                      setBuilderForm({ ...builderForm, resources: newResources });
+                                   }} 
+                                 /> File Upload
+                               </label>
+                               <label className="flex items-center gap-2 text-sm text-text-primary cursor-pointer">
+                                 <input 
+                                   type="radio" 
+                                   checked={resource.sourceType === 'link'} 
+                                   onChange={() => {
+                                      const newResources = [...builderForm.resources];
+                                      newResources[rIndex].sourceType = 'link';
+                                      newResources[rIndex].type = 'link';
+                                      setBuilderForm({ ...builderForm, resources: newResources });
+                                   }} 
+                                 /> URL Link
+                               </label>
+                            </div>
+                         </div>
+                         {resource.sourceType === 'file' ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                               <div>
+                                  <label className="block text-xs font-medium text-text-secondary mb-1">File Type</label>
+                                  <select 
+                                    value={resource.type} 
+                                    onChange={e => {
+                                        const newResources = [...builderForm.resources];
+                                        newResources[rIndex].type = e.target.value;
+                                        setBuilderForm({ ...builderForm, resources: newResources });
+                                    }} 
+                                    className="w-full px-3 py-2 border border-border rounded-lg bg-white dark:bg-gray-700 text-text-primary text-sm"
+                                  >
+                                    <option value="pdf">PDF</option>
+                                    <option value="video">Video</option>
+                                    <option value="image">Image</option>
+                                  </select>
+                               </div>
+                               <div>
+                                  <label className="block text-xs font-medium text-text-secondary mb-1">File *</label>
+                                  <div className="flex items-center gap-2">
+                                    <label className="cursor-pointer text-sm bg-primary text-white px-3 py-2 rounded-lg hover:bg-primary-dark whitespace-nowrap">
+                                      <input 
+                                        type="file" 
+                                        className="hidden" 
+                                        onChange={e => {
+                                          const file = e.target.files[0];
+                                          if (file) {
+                                            const newResources = [...builderForm.resources];
+                                            newResources[rIndex].file = file;
+                                            newResources[rIndex].title = newResources[rIndex].title || file.name;
+                                            setBuilderForm({ ...builderForm, resources: newResources });
+                                          }
+                                        }} 
+                                      />
+                                      Choose File
+                                    </label>
+                                    {resource.file && (
+                                      <span className="text-xs text-success bg-success/10 px-2 py-1 rounded truncate">
+                                        {resource.file.name}
+                                      </span>
+                                    )}
+                                  </div>
+                               </div>
+                            </div>
+                         ) : (
+                            <div>
+                               <label className="block text-xs font-medium text-text-secondary mb-1">URL *</label>
+                               <input 
+                                 type="url" 
+                                 value={resource.url} 
+                                 onChange={e => {
+                                    const newResources = [...builderForm.resources];
+                                    newResources[rIndex].url = e.target.value;
+                                    setBuilderForm({ ...builderForm, resources: newResources });
+                                 }} 
+                                 className="w-full px-3 py-2 border border-border rounded-lg bg-white dark:bg-gray-700 text-text-primary text-sm" 
+                                 placeholder="https://..." 
+                                 required 
+                               />
+                            </div>
+                         )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
                 )}
 
