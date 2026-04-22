@@ -246,14 +246,19 @@ export default function LecturesPage() {
       const res = await academicApi.aiLecture.generate(aiForm);
       const generated = res.lecture;
       
+      const fullContent = (generated.sections || [])
+        .map(s => `## ${s.title}\n\n${s.content}`)
+        .join("\n\n\n");
+
       setBuilderForm({
         ...builderForm,
         title: aiForm.title || generated.title,
-        description: aiForm.description || generated.description || '',
+        description: aiForm.description || generated.description || "",
         grade_level_id: aiForm.grade_level_id,
         subject_id: aiForm.subject_id,
-        type: 'async',
-        sections: generated.sections.map(s => ({
+        type: "async",
+        content: fullContent,
+        sections: (generated.sections || []).map(s => ({
           title: s.title,
           content: s.content,
           resources: []
@@ -261,15 +266,17 @@ export default function LecturesPage() {
       });
       
       if (res.ai_unavailable) {
-        toast.warning(`AI unavailable — used smart template instead. ${res.ai_reason || ''}`);
+        toast.warning(
+          `AI Limit Reached or Unavailable — Used smart academic template instead.`.trim()
+        );
       } else {
-        toast.success('Lecture generated with AI! Review and edit before saving.');
+        toast.success("AI generated lecture completed! Review and edit before saving.");
       }
       
       setShowAIModal(false);
       setShowBuilderModal(true);
     } catch (err) {
-      toast.error(err.data?.message || 'Failed to generate lecture');
+      toast.error(err.data?.message || "Failed to generate lecture");
     } finally {
       setAiLoading(false);
     }
