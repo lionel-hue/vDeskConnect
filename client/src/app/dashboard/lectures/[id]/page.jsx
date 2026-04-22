@@ -234,7 +234,11 @@ export default function LecturePlayerPage() {
       toast.success('Content saved!');
       setLecture({ ...lecture, content: newContent });
       setSectionContents(parseContentSections(newContent));
-      setEditMode(false);
+      if (searchParams.get('edit') === 'true') {
+        router.push('/dashboard/lectures');
+      } else {
+        setEditMode(false);
+      }
     } catch (err) {
       toast.error(err.data?.message || 'Failed to save');
     } finally {
@@ -448,8 +452,12 @@ export default function LecturePlayerPage() {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => {
-                      setEditMode(false);
-                      setSectionContents(parseContentSections(lecture.content));
+                      if (searchParams.get('edit') === 'true') {
+                        router.push('/dashboard/lectures');
+                      } else {
+                        setEditMode(false);
+                        setSectionContents(parseContentSections(lecture.content));
+                      }
                     }}
                     className="flex items-center gap-1 md:gap-2 px-2 md:px-3 py-1.5 border border-border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
                   >
