@@ -239,6 +239,42 @@ export default function LecturesPage() {
     }
   };
 
+  const handleAISubmit = async (e) => {
+    e.preventDefault();
+    setAiLoading(true);
+    try {
+      const res = await academicApi.aiLecture.generate(aiForm);
+      const generated = res.lecture;
+      
+      setBuilderForm({
+        ...builderForm,
+        title: aiForm.title || generated.title,
+        description: aiForm.description || generated.description || '',
+        grade_level_id: aiForm.grade_level_id,
+        subject_id: aiForm.subject_id,
+        type: 'async',
+        sections: generated.sections.map(s => ({
+          title: s.title,
+          content: s.content,
+          resources: []
+        }))
+      });
+      
+      if (res.ai_unavailable) {
+        toast.warning(`AI unavailable — used smart template instead. ${res.ai_reason || ''}`);
+      } else {
+        toast.success('Lecture generated with AI! Review and edit before saving.');
+      }
+      
+      setShowAIModal(false);
+      setShowBuilderModal(true);
+    } catch (err) {
+      toast.error(err.data?.message || 'Failed to generate lecture');
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
   const formatDate = (dateStr) => {
     if (!dateStr) return 'N/A';
     return new Date(dateStr).toLocaleDateString('en-US', {
@@ -977,7 +1013,111 @@ export default function LecturesPage() {
           </div>
         )}
 
-        {/* Lecture Builder Modal */}
+        {/* ==================== AI BUILDER MODAL ==================== */}
+        {showAIModal && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-card dark:bg-gray-800 rounded-card border border-border p-4 md:p-6 w-full max-w-lg">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-base md:text-lg font-semibold text-text-primary flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-purple-500" />
+                  AI Lecture Builder
+                </h3>
+                <button onClick={() => setShowAIModal(false)} className="text-text-muted hover:text-text-primary">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <form onSubmit={handleAISubmit} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-1">Lecture Topic/Title *</label>
+                  <input
+                    type="text"
+                    required
+                    value={aiForm.title}
+                    onChange={e => setAiForm({ ...aiForm, title: e.target.value })}
+                    className="w-full px-3 py-2 border border-border rounded-lg bg-white dark:bg-gray-700 text-text-primary"
+                    placeholder="e.g. Introduction to Quantum Physics"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-1">Brief Description (Optional)</label>
+                  <textarea
+                    rows={2}
+                    value={aiForm.description}
+                    onChange={e => setAiForm({ ...aiForm, description: e.target.value })}
+                    className="w-full px-3 py-2 border border-border rounded-lg bg-white dark:bg-gray-700 text-text-primary"
+                    placeholder="Provide context for the AI..."
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-text-secondary mb-1">Grade Level *</label>
+                    <select
+                      required
+                      value={aiForm.grade_level_id}
+                      onChange={e => setAiForm({ ...aiForm, grade_level_id: e.target.value })}
+                      className="w-full px-3 py-2 border border-border rounded-lg bg-white dark:bg-gray-700 text-text-primary"
+                    >
+                      <option value="">Select Grade</option>
+                      {gradeLevels.map(g => (
+                        <option key={g.id} value={g.id}>{g.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-text-secondary mb-1">Subject *</label>
+                    <select
+                      required
+                      value={aiForm.subject_id}
+                      onChange={e => setAiForm({ ...aiForm, subject_id: e.target.value })}
+                      className="w-full px-3 py-2 border border-border rounded-lg bg-white dark:bg-gray-700 text-text-primary"
+                    >
+                      <option value="">Select Subject</option>
+                      {subjects.map(s => (
+                        <option key={s.id} value={s.id}>{s.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-1">Number of Sections</label>
+                  <input
+                    type="number"
+                    min="2"
+                    max="10"
+                    value={aiForm.sections}
+                    onChange={e => setAiForm({ ...aiForm, sections: parseInt(e.target.value) })}
+                    className="w-full px-3 py-2 border border-border rounded-lg bg-white dark:bg-gray-700 text-text-primary"
+                  />
+                </div>
+                
+                <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-3">
+                  <p className="text-xs text-purple-700 dark:text-purple-300">
+                    <strong>Pro Tip:</strong> AI will generate a structured lecture with multiple sections. You can add resources to each section in the next step.
+                  </p>
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowAIModal(false)}
+                    className="flex-1 px-4 py-2 border border-border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={aiLoading}
+                    className="flex-1 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 disabled:opacity-50"
+                  >
+                    {aiLoading ? 'Generating...' : 'Generate with AI'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* ==================== LECTURE BUILDER MODAL ==================== */}
         {showBuilderModal && (
           <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
             <div className="bg-white dark:bg-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
