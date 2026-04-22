@@ -1139,7 +1139,7 @@ export default function LecturesPage() {
                         className="w-full px-3 py-2 border border-border rounded-lg bg-white dark:bg-gray-700 text-text-primary"
                       >
                         <option value="">Select Subject</option>
-                        {subjects.filter(s => !builderForm.grade_level_id || s.grade_level_id == builderForm.grade_level_id || s.grade_level?.id == builderForm.grade_level_id).map(s => (
+                        {subjects.map(s => (
                           <option key={s.id} value={s.id}>{s.name}</option>
                         ))}
                       </select>
