@@ -12,23 +12,17 @@ Whether you follow a 3-term Nigerian system, a semester-based American model, or
 
 ## ✨ Gallery
 
-````carousel
-![Welcome Screen](assets/welcome2.png)
-<!-- slide -->
-![Login Interface](assets/login.png)
-<!-- slide -->
-![Signup Experience](assets/signup.png)
-<!-- slide -->
-![Director Dashboard](assets/director_dashboard.png)
-<!-- slide -->
-![Lecture AI Builder](assets/lecture_ai_builder.png)
-<!-- slide -->
-![Lecture Player](assets/play_lecture_director_mode.png)
-<!-- slide -->
-![Illustration Pack Manager](assets/illustration_manager.png)
-<!-- slide -->
-![Super Admin Analytics](assets/super_admin_dashboard.png)
-````
+### Interface Highlights
+| | |
+|:---:|:---:|
+| ![Welcome Screen](assets/welcome2.png) | ![Login Interface](assets/login.png) |
+| *Welcome & Onboarding* | *Secure Authentication* |
+| ![Signup Experience](assets/signup.png) | ![Director Dashboard](assets/director_dashboard.png) |
+| *Multi-Step Registration* | *Director's Command Center* |
+| ![Lecture AI Builder](assets/lecture_ai_builder.png) | ![Lecture Player](assets/play_lecture_director_mode.png) |
+| *AI-Powered Content Generation* | *Immersive Lecture Player* |
+| ![Illustration Pack Manager](assets/illustration_manager.png) | ![Super Admin Analytics](assets/super_admin_dashboard.png) |
+| *Living UI Illustration System* | *Platform-Wide Analytics* |
 
 ---
 
