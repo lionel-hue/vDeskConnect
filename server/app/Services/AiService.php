@@ -644,7 +644,10 @@ Respond in JSON format:
             Log::error('AI lecture generation failed: ' . $e->getMessage());
         }
 
-        return $this->generateLectureFallback($lectureData, $gradeInfo, $subjectInfo, $sections);
+        $result = $this->generateLectureFallback($lectureData, $gradeInfo, $subjectInfo, $sections);
+        $result["_used_fallback"] = true;
+        $result["_fallback_reason"] = "AI API request failed or invalid JSON returned";
+        return $result;
     }
 
     /**
