@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import {
   ArrowLeft, Play, PlayCircle, Pause, CheckCircle, Lock, Unlock,
   ChevronDown, ChevronUp, ChevronRight, ChevronLeft, X,
@@ -24,6 +24,7 @@ const TYPE_LABELS = {
 export default function LecturePlayerPage() {
   const router = useRouter();
   const params = useParams();
+  const searchParams = useSearchParams();
   const toast = useToast();
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
@@ -201,7 +202,15 @@ export default function LecturePlayerPage() {
     const token = api.getToken();
     if (!token) { router.push('/login'); return; }
     fetchLecture();
-  }, [fetchLecture]);
+  }, [fetchLecture, router]);
+
+  useEffect(() => {
+    const shouldEdit = searchParams.get('edit') === 'true';
+    if (shouldEdit && isDirector && !loading && sectionContents.length > 0) {
+      setEditedContent(buildFullContent(sectionContents));
+      setEditMode(true);
+    }
+  }, [searchParams, isDirector, loading, sectionContents]);
 
   // Calculate progress
   // For director: show current section, for students: show completion percentage
@@ -395,6 +404,21 @@ export default function LecturePlayerPage() {
               {sectionContents.length === 0 && (
                 <p className="text-sm text-text-muted text-center py-8">No sections</p>
               )}
+
+              {editMode && (
+                <div className="mt-4 pt-4 border-t border-border">
+                  <button
+                    onClick={() => {
+                      const newSections = [...sectionContents, { id: `new_${Date.now()}`, title: 'New Section', content: '' }];
+                      setSectionContents(newSections);
+                      setCurrentSectionIndex(newSections.length - 1);
+                    }}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-2 border border-dashed border-primary text-primary rounded-lg hover:bg-primary/5"
+                  >
+                    <Plus className="w-4 h-4" /> Add Section
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </aside>
@@ -421,13 +445,24 @@ export default function LecturePlayerPage() {
                 {currentSectionIndex + 1} / {sectionContents.length}
               </span>
               {editMode ? (
-                <button
-                  onClick={saveContent}
-                  disabled={editSaving}
-                  className="flex items-center gap-1 md:gap-2 px-2 md:px-3 py-1.5 bg-success text-white rounded-lg"
-                >
-                  <Save className="w-4 h-4" /> <span className="hidden md:inline">{editSaving ? 'Saving...' : 'Save'}</span>
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      setEditMode(false);
+                      setSectionContents(parseContentSections(lecture.content));
+                    }}
+                    className="flex items-center gap-1 md:gap-2 px-2 md:px-3 py-1.5 border border-border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                  >
+                    <X className="w-4 h-4" /> <span className="hidden md:inline">Cancel</span>
+                  </button>
+                  <button
+                    onClick={saveContent}
+                    disabled={editSaving}
+                    className="flex items-center gap-1 md:gap-2 px-2 md:px-3 py-1.5 bg-success text-white rounded-lg"
+                  >
+                    <Save className="w-4 h-4" /> <span className="hidden md:inline">{editSaving ? 'Saving...' : 'Save'}</span>
+                  </button>
+                </div>
               ) : isDirector && (
                 <>
                   <button
@@ -479,7 +514,7 @@ export default function LecturePlayerPage() {
                       newSections[currentSectionIndex] = { ...newSections[currentSectionIndex], title: e.target.value };
                       setSectionContents(newSections);
                     }}
-                    className="text-xl font-bold w-full px-2 py-1 border border-primary rounded"
+                    className="text-xl font-bold w-full px-2 py-1 border border-primary rounded bg-transparent text-text-primary"
                   />
                 )}
               </div>
