@@ -170,29 +170,77 @@ export const academicApi = {
   lectureResources: {
     getAll: (lectureId) => api.get(`/lectures/${lectureId}/resources`),
     add: (lectureId, data) => api.post(`/lectures/${lectureId}/resources`, data),
-    upload: async (lectureId, file, title, type, orderIndex, contentId = null, isDownloadable = false, isSavable = false) => {
-      console.log('academicApi.lectureResources.upload called with:', { lectureId, file: file?.name, title, type, orderIndex, contentId });
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('title', title || file.name);
-      formData.append('type', type);
-      formData.append('order_index', orderIndex || 0);
-      if (contentId !== null && contentId !== '' && contentId !== 'all') formData.append('content_id', contentId);
-      formData.append('is_downloadable', isDownloadable);
-      formData.append('is_savable', isSavable);
-      
-      const url = `/lectures/${lectureId}/resources/upload`;
-      console.log('Calling API endpoint:', url);
-      try {
-        const data = await api.request(url, {
-          method: 'POST',
-          body: formData,
-        });
-        return data;
-      } catch (err) {
-        console.error('Upload error:', err);
-        throw err;
-      }
+    upload: (lectureId, file, title, type, orderIndex, contentId = null, isDownloadable = false, isSavable = false, onProgress = null) => {
+      return new Promise((resolve, reject) => {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : '';
+        const chunkSize = 1024 * 1024; // 1MB chunks
+        const totalChunks = Math.ceil(file.size / chunkSize);
+        const identifier = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '')}`;
+
+        const uploadChunk = async (chunkIndex) => {
+          try {
+            const start = chunkIndex * chunkSize;
+            const end = Math.min(start + chunkSize, file.size);
+            const chunk = file.slice(start, end);
+
+            const formData = new FormData();
+            formData.append('file', chunk);
+            formData.append('chunk_index', chunkIndex);
+            formData.append('total_chunks', totalChunks);
+            formData.append('identifier', identifier);
+
+            if (chunkIndex === totalChunks - 1) {
+              formData.append('title', title || file.name);
+              formData.append('type', type);
+              if (orderIndex !== undefined && orderIndex !== null) formData.append('order_index', orderIndex);
+              if (contentId !== null && contentId !== '' && contentId !== 'all') formData.append('content_id', contentId);
+              formData.append('is_downloadable', isDownloadable ? '1' : '0');
+              formData.append('is_savable', isSavable ? '1' : '0');
+            }
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'}/lectures/${lectureId}/resources/upload`, true);
+            if (token) {
+              xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+            }
+            xhr.setRequestHeader('Accept', 'application/json');
+
+            xhr.upload.onprogress = (event) => {
+              if (event.lengthComputable && onProgress) {
+                const chunkProgress = event.loaded / event.total;
+                const overallProgress = Math.round(((chunkIndex + chunkProgress) / totalChunks) * 100);
+                onProgress(Math.min(overallProgress, 100));
+              }
+            };
+
+            xhr.onload = () => {
+              if (xhr.status >= 200 && xhr.status < 300) {
+                const response = JSON.parse(xhr.responseText);
+                if (chunkIndex === totalChunks - 1) {
+                  resolve(response);
+                } else {
+                  uploadChunk(chunkIndex + 1);
+                }
+              } else {
+                let errorMsg = 'Upload failed';
+                try {
+                  const errData = JSON.parse(xhr.responseText);
+                  errorMsg = errData.message || errorMsg;
+                } catch (e) {}
+                if (xhr.status === 413) errorMsg = 'File chunk is too large. Please contact support.';
+                reject(new Error(errorMsg));
+              }
+            };
+
+            xhr.onerror = () => reject(new Error('Network error during upload'));
+            xhr.send(formData);
+          } catch (err) {
+            reject(err);
+          }
+        };
+
+        uploadChunk(0);
+      });
     },
     delete: (resourceId) => api.delete(`/lectures/resources/${resourceId}`),
   },
