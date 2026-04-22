@@ -467,7 +467,13 @@ export default function LecturesPage() {
                       </button>
                     )}
                     <button
-                      onClick={() => openEditModal(lecture)}
+                      onClick={() => {
+                        if (lecture.type === 'async' || lecture.type === 'hybrid') {
+                          router.push(`/dashboard/lectures/${lecture.id}?edit=true`);
+                        } else {
+                          openEditModal(lecture);
+                        }
+                      }}
                       className="p-2 text-text-muted hover:text-text-primary"
                     >
                       <Edit2 className="w-4 h-4" />
