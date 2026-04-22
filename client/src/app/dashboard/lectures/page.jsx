@@ -9,6 +9,8 @@ import {
   File, Download, Save, Clock3, Image, Globe, Lock, Unlock, Sparkles,
   Layers, GripVertical, FormInput,
 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import { academicApi } from '@/lib/academic-api';
 import { api } from '@/lib/api';
@@ -811,8 +813,10 @@ export default function LecturesPage() {
                       <div>
                         {(viewingLecture.type === 'async' || viewingLecture.type === 'hybrid') ? (
                           viewingLecture.content ? (
-                            <div className="prose dark:prose-invert max-w-none text-sm whitespace-pre-wrap">
-                              {viewingLecture.content}
+                            <div className="prose dark:prose-invert max-w-none text-sm">
+                              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                {viewingLecture.content}
+                              </ReactMarkdown>
                             </div>
                           ) : (
                             <p className="text-text-muted text-center py-8">No content added yet. Edit to add content.</p>

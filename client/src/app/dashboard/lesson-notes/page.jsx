@@ -4,8 +4,10 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   BookOpen, Plus, Trash2, X, Edit2, CheckCircle, Sparkles,
-  Filter, Calendar, Tag, Clock
+  Filter, Calendar, Tag, Clock, Eye
 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import MarkdownEditor from '@/components/MarkdownEditor';
 import { academicApi } from '@/lib/academic-api';
@@ -47,6 +49,7 @@ export default function LessonNotesPage() {
   // Modal state
   const [showModal, setShowModal] = useState(false);
   const [showAIModal, setShowAIModal] = useState(false);
+  const [viewingNote, setViewingNote] = useState(null);
   const [editingNote, setEditingNote] = useState(null);
   const [noteForm, setNoteForm] = useState({
     scheme_id: '',
@@ -380,8 +383,16 @@ export default function LessonNotesPage() {
                     </div>
                     <h3 className="font-semibold text-text-primary text-sm md:text-base truncate">{note.topic}</h3>
                   </div>
-                  <div className="flex gap-1 flex-shrink-0 ml-2">
-                    {note.status === 'draft' && (
+                    </div>
+                    <div className="flex gap-1 flex-shrink-0 ml-2">
+                      <button
+                        onClick={() => setViewingNote(note)}
+                        className="p-1 text-primary hover:text-primary/80"
+                        title="View Details"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+                      {note.status === 'draft' && (
                       <button
                         onClick={() => handlePublish(note.id)}
                         className="p-1 text-success hover:text-success/80"
@@ -421,6 +432,108 @@ export default function LessonNotesPage() {
                 )}
               </div>
             ))}
+          </div>
+        )}
+
+        )}
+
+        {/* ==================== VIEW MODAL ==================== */}
+        {viewingNote && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setViewingNote(null)}>
+            <div className="bg-card dark:bg-gray-800 rounded-card border border-border p-4 md:p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="px-2 py-0.5 bg-primary/10 text-primary text-xs rounded-full font-semibold">Week {viewingNote.week_number}</span>
+                    <span className={`px-2 py-0.5 text-xs rounded-full ${
+                      viewingNote.status === 'published' ? 'bg-success/10 text-success' : 'bg-warning/10 text-warning'
+                    }`}>
+                      {viewingNote.status === 'published' ? 'Published' : 'Draft'}
+                    </span>
+                  </div>
+                  <h3 className="text-xl font-bold text-text-primary">{viewingNote.topic}</h3>
+                </div>
+                <button onClick={() => setViewingNote(null)} className="text-text-muted hover:text-text-primary">
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 bg-bg-main dark:bg-gray-700/50 p-4 rounded-lg border border-border">
+                <div>
+                  <p className="text-xs text-text-muted uppercase font-semibold">Subject</p>
+                  <p className="text-sm font-medium text-text-primary">{viewingNote.subject?.name || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-text-muted uppercase font-semibold">Grade</p>
+                  <p className="text-sm font-medium text-text-primary">{viewingNote.gradeLevel?.name || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-text-muted uppercase font-semibold">Term</p>
+                  <p className="text-sm font-medium text-text-primary">{viewingNote.term?.name || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-text-muted uppercase font-semibold">Duration</p>
+                  <p className="text-sm font-medium text-text-primary">{viewingNote.contact_number || 40} mins</p>
+                </div>
+              </div>
+
+              <div className="space-y-8">
+                {viewingNote.aspects?.objective && (
+                  <div>
+                    <h4 className="text-sm font-bold text-text-primary mb-2 border-b pb-1">Learning Objective</h4>
+                    <div className="prose dark:prose-invert max-w-none text-sm">
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{viewingNote.aspects.objective}</ReactMarkdown>
+                    </div>
+                  </div>
+                )}
+                
+                {viewingNote.aspects?.content && (
+                  <div>
+                    <h4 className="text-sm font-bold text-text-primary mb-2 border-b pb-1">Content</h4>
+                    <div className="prose dark:prose-invert max-w-none text-sm">
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{viewingNote.aspects.content}</ReactMarkdown>
+                    </div>
+                  </div>
+                )}
+
+                {viewingNote.aspects?.methodology && (
+                  <div>
+                    <h4 className="text-sm font-bold text-text-primary mb-2 border-b pb-1">Methodology</h4>
+                    <div className="prose dark:prose-invert max-w-none text-sm">
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{viewingNote.aspects.methodology}</ReactMarkdown>
+                    </div>
+                  </div>
+                )}
+
+                {viewingNote.aspects?.materials && (
+                  <div>
+                    <h4 className="text-sm font-bold text-text-primary mb-2 border-b pb-1">Materials & Resources</h4>
+                    <div className="prose dark:prose-invert max-w-none text-sm">
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{viewingNote.aspects.materials}</ReactMarkdown>
+                    </div>
+                  </div>
+                )}
+
+                {viewingNote.aspects?.evaluation && (
+                  <div>
+                    <h4 className="text-sm font-bold text-text-primary mb-2 border-b pb-1">Evaluation</h4>
+                    <div className="prose dark:prose-invert max-w-none text-sm">
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{viewingNote.aspects.evaluation}</ReactMarkdown>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-8 pt-6 border-t flex justify-end">
+                <button
+                  onClick={() => { setViewingNote(null); handleEdit(viewingNote); }}
+                  className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark"
+                >
+                  <Edit2 className="w-4 h-4" />
+                  Edit Note
+                </button>
+              </div>
+            </div>
           </div>
         )}
 
